@@ -1,0 +1,327 @@
+// Holiday Vibez CRM — Phase 1 data model
+// Mirrors spec Section 4 (Data Model - Core Entities) field-for-field.
+// Entities beyond Phase 1's direct needs (Lead, Quotation, Booking, Payment, Target,
+// Notification) are included now since they're relationally load-bearing for User/Branch
+// and to avoid a schema-breaking migration in Phase 2, but only User/Branch/RateCard/
+// Session/AuditLog have API+UI coverage in this pass.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  DIRECTOR
+  ADMIN
+  BRANCH_MANAGER
+  TRAVEL_CONSULTANT
+}
+
+enum UserStatus {
+  ACTIVE
+  ON_LEAVE
+  INACTIVE
+}
+
+enum LeadSource {
+  GOOGLE
+  META
+  WEBSITE
+  WHATSAPP
+  REFERRAL
+  WALKIN
+}
+
+enum LeadStatus {
+  NEW
+  PROPOSAL_SENT
+  NO_CONNECT
+  HOT_LEAD
+  PROPOSAL_CONFIRMED
+  PLAN_DROPPED
+  FOLLOW_UP
+  CONFIRMED
+  POSTPONED
+  JUNK_NOT_INTERESTED
+}
+
+enum RateCardType {
+  ACTIVITY
+  FLIGHT
+  HOTEL
+}
+
+enum RateCardSource {
+  MANUAL
+  API
+}
+
+enum QuotationStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  SENT
+}
+
+enum PaymentType {
+  CLIENT_RECEIPT
+  DMC_PAYABLE
+  COMMISSION
+  REFUND
+}
+
+enum TargetScope {
+  BRANCH
+  CONSULTANT
+}
+
+enum TargetPeriod {
+  WEEK
+  MONTH
+  QUARTER
+}
+
+enum NotificationChannel {
+  WHATSAPP
+  EMAIL
+  PUSH
+}
+
+enum NotificationStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+model User {
+  id           String     @id @default(uuid())
+  name         String
+  email        String     @unique
+  phone        String
+  passwordHash String
+  role         Role
+  branchId     String?
+  branch       Branch?    @relation("BranchUsers", fields: [branchId], references: [id])
+  status       UserStatus @default(ACTIVE)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  managedBranch     Branch?    @relation("BranchManager")
+  assignedLeads     Lead[]     @relation("AssignedConsultant")
+  quotationsCreated Quotation[] @relation("QuotationConsultant")
+  quotationsApproved Quotation[] @relation("QuotationApprover")
+  sessions          Session[]
+  auditLogs         AuditLog[]
+
+  @@map("users")
+}
+
+model Branch {
+  id               String  @id @default(uuid())
+  name             String
+  city             String
+  managerId        String? @unique
+  manager          User?   @relation("BranchManager", fields: [managerId], references: [id])
+  monthlyTarget    Decimal @default(0) @db.Decimal(14, 2)
+  quarterlyTarget  Decimal @default(0) @db.Decimal(14, 2)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  users  User[]  @relation("BranchUsers")
+  leads  Lead[]
+  targets Target[]
+
+  @@map("branches")
+}
+
+model Lead {
+  id                   String     @id @default(uuid())
+  source               LeadSource
+  utmCampaign          String?
+  clientName           String
+  phone                String
+  email                String?
+  destination          String
+  branchId             String
+  branch               Branch     @relation(fields: [branchId], references: [id])
+  assignedConsultantId String?
+  assignedConsultant   User?      @relation("AssignedConsultant", fields: [assignedConsultantId], references: [id])
+  status               LeadStatus @default(NEW)
+  firstContactedAt     DateTime?
+  slaBreached          Boolean    @default(false)
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  travelers   Traveler[]
+  quotations  Quotation[]
+
+  @@map("leads")
+}
+
+model Traveler {
+  id                String   @id @default(uuid())
+  leadId            String
+  lead              Lead     @relation(fields: [leadId], references: [id])
+  name              String
+  phone             String?
+  email             String?
+  passportNumberEnc String?  // field-level AES-encrypted at the application layer, never stored in plaintext
+  passportExpiry    DateTime?
+  visaStatus        String?
+  insurancePolicyNo String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("travelers")
+}
+
+model RateCard {
+  id        String         @id @default(uuid())
+  type      RateCardType
+  destination String
+  name      String
+  baseCost  Decimal        @db.Decimal(14, 2)
+  taxPct    Decimal        @default(0) @db.Decimal(5, 2)
+  currency  String         @default("INR")
+  source    RateCardSource @default(MANUAL)
+  createdBy String
+  version   Int            @default(1)
+  active    Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  quotationItems QuotationItem[]
+
+  @@map("rate_cards")
+}
+
+model Quotation {
+  id           String          @id @default(uuid())
+  refNo        String          @unique
+  version      Int             @default(1)
+  leadId       String
+  lead         Lead            @relation(fields: [leadId], references: [id])
+  consultantId String
+  consultant   User            @relation("QuotationConsultant", fields: [consultantId], references: [id])
+  status       QuotationStatus @default(DRAFT)
+  approvedById String?
+  approvedBy   User?           @relation("QuotationApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime?
+  totalAmount  Decimal         @default(0) @db.Decimal(14, 2)
+  currency     String          @default("INR")
+  pdfUrl       String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  items    QuotationItem[]
+  bookings Booking[]
+
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id              String    @id @default(uuid())
+  quotationId     String
+  quotation       Quotation @relation(fields: [quotationId], references: [id])
+  rateCardId      String
+  rateCard        RateCard  @relation(fields: [rateCardId], references: [id])
+  description     String
+  snapshotAmount  Decimal   @db.Decimal(14, 2) // locked at add-time, immune to later rate changes
+  quantity        Int       @default(1)
+
+  @@map("quotation_items")
+}
+
+model Booking {
+  id            String    @id @default(uuid())
+  quotationId   String
+  quotation     Quotation @relation(fields: [quotationId], references: [id])
+  status        String    @default("CONFIRMED")
+  departureDate DateTime
+  returnDate    DateTime?
+  voucherUrl    String?
+  invoiceUrl    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  payments Payment[]
+
+  @@map("bookings")
+}
+
+model Payment {
+  id        String      @id @default(uuid())
+  bookingId String
+  booking   Booking     @relation(fields: [bookingId], references: [id])
+  type      PaymentType
+  amount    Decimal     @db.Decimal(14, 2)
+  dueDate   DateTime?
+  paidAt    DateTime?
+  gatewayRef String?
+  createdAt DateTime    @default(now())
+
+  @@map("payments")
+}
+
+model Target {
+  id               String       @id @default(uuid())
+  scope            TargetScope
+  scopeId          String
+  period           TargetPeriod
+  revenueTarget    Decimal      @db.Decimal(14, 2)
+  bookingTarget    Int          @default(0)
+  revenueAchieved  Decimal      @default(0) @db.Decimal(14, 2)
+  branchId         String?
+  branch           Branch?      @relation(fields: [branchId], references: [id])
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@map("targets")
+}
+
+model Notification {
+  id             String              @id @default(uuid())
+  channel        NotificationChannel
+  triggerType    String
+  recipient      String
+  status         NotificationStatus  @default(SENT)
+  relatedEntity  String?
+  createdAt      DateTime            @default(now())
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  action      String
+  entity      String
+  entityId    String?
+  beforeValue Json?
+  afterValue  Json?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model Session {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  deviceInfo String
+  ipAddress  String
+  refreshTokenHash String
+  createdAt  DateTime  @default(now())
+  revokedAt  DateTime?
+
+  @@map("sessions")
+}
