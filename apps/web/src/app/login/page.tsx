@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
 import { ApiError } from '@/lib/api';
 
@@ -28,8 +29,8 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
         <div className="mb-6 text-center">
-          <h1 className="text-xl font-semibold text-brand-dark">Holiday Vibez CRM</h1>
-          <p className="mt-1 text-sm text-slate-500">Sign in to your account</p>
+          <Image src="/logo.png" alt="Holiday Vibez" width={220} height={55} className="mx-auto h-auto w-48" priority />
+          <p className="mt-2 text-sm text-slate-500">Sign in to your account</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

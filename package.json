@@ -17,6 +17,8 @@
     "@nestjs/core@10.4.22": true,
     "@prisma/client@5.22.0": true,
     "@prisma/engines@5.22.0": true,
-    "prisma@5.22.0": true
+    "prisma@5.22.0": true,
+    "@embedded-postgres/darwin-x64@18.4.0-beta.17": true,
+    "fsevents@2.3.3": true
   }
 }

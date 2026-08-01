@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Role } from '@holiday-vibez/shared';
@@ -45,8 +46,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen">
       <aside className="w-60 shrink-0 border-r border-slate-200 bg-white">
         <div className="border-b border-slate-200 px-5 py-4">
-          <p className="text-sm font-semibold text-brand-dark">Holiday Vibez</p>
-          <p className="text-xs text-slate-400">CRM</p>
+          <Image src="/logo.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-32" priority />
         </div>
         <nav className="flex flex-col gap-1 p-3">
           {visibleNav.map((item) => (
