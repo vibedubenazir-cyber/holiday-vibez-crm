@@ -1,0 +1,12 @@
+{
+  "name": "Holiday Vibez CRM",
+  "short_name": "HV CRM",
+  "description": "Holiday Vibez travel CRM",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#005aaa",
+  "icons": [
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

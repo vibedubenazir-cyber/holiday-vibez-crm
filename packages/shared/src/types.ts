@@ -37,19 +37,90 @@ export interface RateCardDTO {
 export interface LeadSummaryDTO {
   id: string;
   clientName: string;
+  phone: string;
+  email: string | null;
   destination: string;
   status: LeadStatus;
   source: LeadSource;
   branchId: string;
   assignedConsultantId: string | null;
+  slaBreached: boolean;
+  createdAt: string;
+}
+
+export interface QuotationItemDTO {
+  id: string;
+  rateCardId: string;
+  description: string;
+  snapshotAmount: number;
+  quantity: number;
+  rateCard?: RateCardDTO;
 }
 
 export interface QuotationSummaryDTO {
   id: string;
   refNo: string;
+  leadId: string;
+  consultantId: string;
   status: QuotationStatus;
   totalAmount: number;
   currency: string;
+  items?: QuotationItemDTO[];
+  lead?: LeadSummaryDTO;
+}
+
+export interface BookingDTO {
+  id: string;
+  quotationId: string;
+  status: string;
+  departureDate: string;
+  returnDate: string | null;
+  voucherUrl: string | null;
+  invoiceUrl: string | null;
+  quotation?: QuotationSummaryDTO & { lead: LeadSummaryDTO };
+  payments?: PaymentDTO[];
+}
+
+export interface PaymentDTO {
+  id: string;
+  bookingId: string;
+  type: 'CLIENT_RECEIPT' | 'DMC_PAYABLE' | 'COMMISSION' | 'REFUND';
+  amount: number;
+  dueDate: string | null;
+  paidAt: string | null;
+  gatewayRef: string | null;
+}
+
+export interface TargetDTO {
+  id: string;
+  scope: 'BRANCH' | 'CONSULTANT';
+  scopeId: string;
+  period: 'WEEK' | 'MONTH' | 'QUARTER';
+  revenueTarget: number;
+  bookingTarget: number;
+  revenueAchieved: number;
+}
+
+export interface LeaderboardRowDTO {
+  consultantId?: string;
+  branchId?: string;
+  name: string;
+  revenueTarget: number;
+  revenueAchieved: number;
+  conversionPct?: number;
+}
+
+export interface CalendarEntryDTO {
+  bookingId: string;
+  leadId: string;
+  clientName: string;
+  destination: string;
+  departureDate: string;
+  returnDate: string | null;
+  readiness: 'GREEN' | 'AMBER' | 'RED';
+  paymentComplete: boolean;
+  docsComplete: boolean;
+  daysToDeparture: number;
 }
 
 export interface SessionDTO {
