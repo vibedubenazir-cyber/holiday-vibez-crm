@@ -61,6 +61,15 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   same pattern as the already-verified Automation sweep, so this is almost
   certainly sandbox flakiness rather than a code issue, but flagging it rather than
   claiming a live tick was watched when it wasn't.
+- **Custom Fields engine** (priority batch 6): Admin defines ad-hoc fields
+  (text/number/date/boolean/select) on an entity type — no schema change, no
+  redeploy — and they render as real inputs wherever that entity is actually
+  edited, not just in an admin-only list. Wired into the Lead detail page
+  (`apps/web/src/app/leads/[id]/page.tsx`) as the proof: the 3 seeded LEAD fields
+  (Anniversary Trip?, Referred By, Trip Purpose) show up there automatically, and
+  adding a 4th field ("Preferred Departure Date") from `/custom-fields` made it
+  appear on the lead page with no other code change. Verified all five field types
+  round-trip and persist correctly against the live API.
 
 ### What's intentionally stubbed or out of scope
 

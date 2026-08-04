@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AppShell } from '@/components/AppShell';
 import { api, ApiError } from '@/lib/api';
-import type { LeadSummaryDTO, QuotationSummaryDTO } from '@holiday-vibez/shared';
+import { CustomFieldType, type CustomFieldDefinitionDTO, type CustomFieldValueDTO, type LeadSummaryDTO, type QuotationSummaryDTO } from '@holiday-vibez/shared';
 
 interface TravelerRow {
   id: string;
@@ -23,19 +23,40 @@ export default function LeadDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', passportNumber: '', passportExpiry: '', visaStatus: '' });
+  const [customFieldDefs, setCustomFieldDefs] = useState<CustomFieldDefinitionDTO[]>([]);
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
 
   async function load() {
     try {
-      const [leads, t, q] = await Promise.all([
+      const [leads, t, q, defs, values] = await Promise.all([
         api.get<LeadSummaryDTO[]>('/leads'),
         api.get<TravelerRow[]>(`/leads/${id}/travelers`),
         api.get<QuotationSummaryDTO[]>('/quotations'),
+        api.get<CustomFieldDefinitionDTO[]>('/custom-fields/definitions?entityType=LEAD'),
+        api.get<CustomFieldValueDTO[]>(`/custom-fields/values?entityType=LEAD&entityId=${id}`),
       ]);
       setLead(leads.find((l) => l.id === id) ?? null);
       setTravelers(t);
       setQuotations(q.filter((qq) => qq.leadId === id));
+      setCustomFieldDefs(defs.filter((d) => d.active));
+      setCustomFieldValues(Object.fromEntries(values.map((v) => [v.definitionId, v.value])));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to load lead');
+    }
+  }
+
+  async function handleSaveCustomFields(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    try {
+      await api.put('/custom-fields/values', {
+        entityType: 'LEAD',
+        entityId: id,
+        values: customFieldDefs.map((d) => ({ definitionId: d.id, value: customFieldValues[d.id] ?? '' })),
+      });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to save custom fields');
     }
   }
 
@@ -150,6 +171,49 @@ export default function LeadDetailPage() {
           </div>
         </div>
       </div>
+
+      {customFieldDefs.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-sm font-semibold text-slate-700">Custom Fields</h2>
+          <form onSubmit={handleSaveCustomFields} className="mt-2 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-3">
+            {customFieldDefs.map((d) => (
+              <div key={d.id}>
+                <label className="mb-1 block text-xs font-medium text-slate-600">
+                  {d.label}{d.required ? ' *' : ''}
+                </label>
+                {d.fieldType === CustomFieldType.BOOLEAN ? (
+                  <input
+                    type="checkbox"
+                    checked={customFieldValues[d.id] === 'true'}
+                    onChange={(e) => setCustomFieldValues({ ...customFieldValues, [d.id]: e.target.checked ? 'true' : 'false' })}
+                  />
+                ) : d.fieldType === CustomFieldType.SELECT ? (
+                  <select
+                    required={d.required}
+                    value={customFieldValues[d.id] ?? ''}
+                    onChange={(e) => setCustomFieldValues({ ...customFieldValues, [d.id]: e.target.value })}
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  >
+                    <option value="">Select...</option>
+                    {d.options.map((o) => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                ) : (
+                  <input
+                    required={d.required}
+                    type={d.fieldType === CustomFieldType.NUMBER ? 'number' : d.fieldType === CustomFieldType.DATE ? 'date' : 'text'}
+                    value={customFieldValues[d.id] ?? ''}
+                    onChange={(e) => setCustomFieldValues({ ...customFieldValues, [d.id]: e.target.value })}
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  />
+                )}
+              </div>
+            ))}
+            <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
+              Save custom fields
+            </button>
+          </form>
+        </div>
+      )}
     </AppShell>
   );
 }

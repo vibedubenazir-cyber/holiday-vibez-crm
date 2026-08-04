@@ -287,6 +287,22 @@ async function main() {
     ],
   });
 
+  await prisma.customFieldDefinition.createMany({
+    data: [
+      { entityType: 'LEAD', label: 'Anniversary Trip?', fieldKey: 'anniversary_trip', fieldType: 'BOOLEAN', sortOrder: 1, createdBy: admin.id },
+      { entityType: 'LEAD', label: 'Referred By', fieldKey: 'referred_by', fieldType: 'TEXT', sortOrder: 2, createdBy: admin.id },
+      {
+        entityType: 'LEAD',
+        label: 'Trip Purpose',
+        fieldKey: 'trip_purpose',
+        fieldType: 'SELECT',
+        options: ['Honeymoon', 'Family', 'Business', 'Solo'],
+        sortOrder: 3,
+        createdBy: admin.id,
+      },
+    ],
+  });
+
   console.log('Seed complete.');
   console.log(`Director:   director@holidayvibez.com / ${DEFAULT_PASSWORD}`);
   console.log(`Admin:      admin@holidayvibez.com / ${DEFAULT_PASSWORD}`);

@@ -149,3 +149,11 @@ export enum AutomationTrigger {
   QUOTATION_SENT = 'QUOTATION_SENT',
   BOOKING_CONFIRMED = 'BOOKING_CONFIRMED',
 }
+
+export enum CustomFieldType {
+  TEXT = 'TEXT',
+  NUMBER = 'NUMBER',
+  DATE = 'DATE',
+  BOOLEAN = 'BOOLEAN',
+  SELECT = 'SELECT',
+}

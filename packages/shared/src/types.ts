@@ -315,6 +315,27 @@ export interface CurrencyRateDTO {
   lastUpdatedAt: string;
 }
 
+export interface CustomFieldDefinitionDTO {
+  id: string;
+  entityType: string;
+  label: string;
+  fieldKey: string;
+  fieldType: 'TEXT' | 'NUMBER' | 'DATE' | 'BOOLEAN' | 'SELECT';
+  options: string[];
+  required: boolean;
+  sortOrder: number;
+  active: boolean;
+  createdBy: string;
+}
+
+export interface CustomFieldValueDTO {
+  id: string;
+  definitionId: string;
+  entityId: string;
+  value: string;
+  definition?: CustomFieldDefinitionDTO;
+}
+
 export interface LoginResponseDTO {
   accessToken: string;
   user: UserDTO;

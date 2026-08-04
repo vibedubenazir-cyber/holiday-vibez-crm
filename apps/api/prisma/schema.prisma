@@ -166,6 +166,14 @@ enum AutomationTrigger {
   BOOKING_CONFIRMED
 }
 
+enum CustomFieldType {
+  TEXT
+  NUMBER
+  DATE
+  BOOLEAN
+  SELECT
+}
+
 model User {
   id           String     @id @default(uuid())
   name         String
@@ -622,6 +630,37 @@ model CurrencyRate {
   lastUpdatedAt DateTime       @default(now())
 
   @@map("currency_rates")
+}
+
+model CustomFieldDefinition {
+  id         String          @id @default(uuid())
+  entityType String          // "LEAD" | "TRAVELER" | "BOOKING" — validated in the DTO, kept as a plain string here since a generic engine's set of carriable entities should stay open-ended
+  label      String
+  fieldKey   String
+  fieldType  CustomFieldType
+  options    String[]        @default([]) // only meaningful for SELECT
+  required   Boolean         @default(false)
+  sortOrder  Int             @default(0)
+  active     Boolean         @default(true)
+  createdBy  String
+  createdAt  DateTime        @default(now())
+
+  values CustomFieldValue[]
+
+  @@unique([entityType, fieldKey])
+  @@map("custom_field_definitions")
+}
+
+model CustomFieldValue {
+  id           String                @id @default(uuid())
+  definitionId String
+  definition   CustomFieldDefinition @relation(fields: [definitionId], references: [id])
+  entityId     String                // polymorphic — no FK, same tradeoff as AuditLog.entityId / Notification.relatedEntity
+  value        String
+  updatedAt    DateTime              @updatedAt
+
+  @@unique([definitionId, entityId])
+  @@map("custom_field_values")
 }
 
 model AuditLog {

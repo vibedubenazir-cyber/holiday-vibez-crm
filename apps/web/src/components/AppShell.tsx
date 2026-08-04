@@ -22,6 +22,7 @@ const NAV_ITEMS: { href: string; label: string; roles: Role[] }[] = [
   { href: '/templates', label: 'Templates', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/marketing', label: 'Marketing', roles: [Role.ADMIN, Role.DIRECTOR] },
   { href: '/automation', label: 'Automation', roles: [Role.ADMIN, Role.DIRECTOR] },
+  { href: '/custom-fields', label: 'Custom Fields', roles: [Role.ADMIN, Role.DIRECTOR] },
   { href: '/cms', label: 'Website CMS', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
   { href: '/targets', label: 'Targets & Leaderboard', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/reports', label: 'Reports', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER] },
