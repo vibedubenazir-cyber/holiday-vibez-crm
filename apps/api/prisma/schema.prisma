@@ -159,6 +159,13 @@ enum CampaignStatus {
   SENT
 }
 
+enum AutomationTrigger {
+  LEAD_CREATED
+  LEAD_STATUS_CHANGED
+  QUOTATION_SENT
+  BOOKING_CONFIRMED
+}
+
 model User {
   id           String     @id @default(uuid())
   name         String
@@ -223,9 +230,10 @@ model Lead {
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
 
-  travelers     Traveler[]
-  quotations    Quotation[]
-  conversations Conversation[]
+  travelers      Traveler[]
+  quotations     Quotation[]
+  conversations  Conversation[]
+  automationLogs AutomationLog[]
 
   @@map("leads")
 }
@@ -521,7 +529,8 @@ model Template {
   createdBy String
   createdAt DateTime            @default(now())
 
-  campaigns Campaign[]
+  campaigns       Campaign[]
+  automationRules AutomationRule[]
 
   @@map("templates")
 }
@@ -571,6 +580,37 @@ model Campaign {
   createdAt         DateTime        @default(now())
 
   @@map("campaigns")
+}
+
+model AutomationRule {
+  id               String              @id @default(uuid())
+  name             String
+  trigger          AutomationTrigger
+  targetLeadStatus LeadStatus?
+  delayMinutes     Int                 @default(0)
+  channel          NotificationChannel
+  templateId       String?
+  template         Template?           @relation(fields: [templateId], references: [id])
+  active           Boolean             @default(true)
+  createdBy        String
+  createdAt        DateTime            @default(now())
+
+  logs AutomationLog[]
+
+  @@map("automation_rules")
+}
+
+model AutomationLog {
+  id      String             @id @default(uuid())
+  ruleId  String
+  rule    AutomationRule     @relation(fields: [ruleId], references: [id])
+  leadId  String
+  lead    Lead               @relation(fields: [leadId], references: [id])
+  firedAt DateTime           @default(now())
+  status  NotificationStatus @default(SENT)
+
+  @@unique([ruleId, leadId])
+  @@map("automation_logs")
 }
 
 model AuditLog {

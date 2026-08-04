@@ -283,6 +283,29 @@ export interface SessionDTO {
   current: boolean;
 }
 
+export interface AutomationRuleDTO {
+  id: string;
+  name: string;
+  trigger: 'LEAD_CREATED' | 'LEAD_STATUS_CHANGED' | 'QUOTATION_SENT' | 'BOOKING_CONFIRMED';
+  targetLeadStatus: string | null;
+  delayMinutes: number;
+  channel: 'WHATSAPP' | 'EMAIL' | 'PUSH';
+  templateId: string | null;
+  active: boolean;
+  createdBy: string;
+  template?: TemplateDTO | null;
+}
+
+export interface AutomationLogDTO {
+  id: string;
+  ruleId: string;
+  leadId: string;
+  firedAt: string;
+  status: 'SENT' | 'DELIVERED' | 'READ' | 'FAILED';
+  lead?: LeadSummaryDTO;
+  rule?: AutomationRuleDTO;
+}
+
 export interface LoginResponseDTO {
   accessToken: string;
   user: UserDTO;

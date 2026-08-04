@@ -6,6 +6,7 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LeadsService } from './leads/leads.service';
 import { MarketingService } from './marketing/marketing.service';
+import { AutomationService } from './automation/automation.service';
 
 // No production job scheduler (e.g. a cron worker) exists in this environment, so the
 // SLA-escalation sweep (spec Section 6 step 3) runs as an in-process interval instead.
@@ -17,6 +18,10 @@ const SLA_CHECK_INTERVAL_MS = 5 * 60 * 1000;
 // automation) — a real deployment checks once a day, not every 6 hours, but a shorter
 // interval makes this demonstrable without waiting a day between restarts.
 const BIRTHDAY_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
+// General-purpose successor to the two hardcoded intervals above — evaluates every
+// active AutomationRule an Admin has configured (see automation.service.ts). Same
+// 5-minute cadence as SLA since rule delays are meant to be minutes/hours, not days.
+const AUTOMATION_SWEEP_INTERVAL_MS = 5 * 60 * 1000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -38,6 +43,11 @@ async function bootstrap() {
   setInterval(() => {
     marketingService.checkBirthdaysAndAnniversaries().catch((err) => console.error('Birthday/anniversary check failed', err));
   }, BIRTHDAY_CHECK_INTERVAL_MS);
+
+  const automationService = app.get(AutomationService);
+  setInterval(() => {
+    automationService.runSweep().catch((err) => console.error('Automation sweep failed', err));
+  }, AUTOMATION_SWEEP_INTERVAL_MS);
 
   const port = process.env.PORT ?? 4000;
   await app.listen(port);

@@ -41,6 +41,14 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   (www.holidayvibez.com, a separate system this repo doesn't own) to consume. A
   6-hour in-process interval checks `Traveler.dateOfBirth`/`anniversaryDate` and
   fires the spec's birthday/anniversary greeting automation.
+- **Automation** (priority batch 4): Admin-configurable rules (trigger + delay +
+  channel + optional template) evaluated by a single 5-minute sweep against Leads —
+  the general-purpose successor to the two hardcoded intervals above, so adding a
+  new "N minutes after X, message the customer" scenario is creating a rule, not a
+  code change. Triggers: lead created, lead status changed to X, quotation sent,
+  booking confirmed. A `(ruleId, leadId)` uniqueness constraint prevents a rule from
+  double-firing for the same lead across sweep ticks — verified live by watching two
+  consecutive sweeps and confirming the fire count stayed at 1.
 
 ### What's intentionally stubbed or out of scope
 

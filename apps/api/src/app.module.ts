@@ -21,6 +21,7 @@ import { InboxModule } from './inbox/inbox.module';
 import { TemplatesModule } from './templates/templates.module';
 import { CmsModule } from './cms/cms.module';
 import { MarketingModule } from './marketing/marketing.module';
+import { AutomationModule } from './automation/automation.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -47,6 +48,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     TemplatesModule,
     CmsModule,
     MarketingModule,
+    AutomationModule,
   ],
   providers: [
     PrismaService,
