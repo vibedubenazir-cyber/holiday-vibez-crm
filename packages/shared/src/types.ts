@@ -336,6 +336,37 @@ export interface CustomFieldValueDTO {
   definition?: CustomFieldDefinitionDTO;
 }
 
+export interface HotelRoomOptionDTO {
+  roomType: string;
+  mealPlan: string;
+  nightlyRate: number;
+  totalRate: number;
+}
+
+export interface HotelSearchResultDTO {
+  hotelName: string;
+  destination: string;
+  starRating: number;
+  address: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  rooms: HotelRoomOptionDTO[];
+}
+
+export interface FlightSearchResultDTO {
+  airline: string;
+  flightNumber: string;
+  origin: string;
+  destination: string;
+  date: string;
+  departureTime: string;
+  arrivalTime: string;
+  durationHours: number;
+  fareClass: string;
+  baseFare: number;
+}
+
 export interface LoginResponseDTO {
   accessToken: string;
   user: UserDTO;

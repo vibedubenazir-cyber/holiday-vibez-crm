@@ -70,6 +70,20 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   adding a 4th field ("Preferred Departure Date") from `/custom-fields` made it
   appear on the lead page with no other code change. Verified all five field types
   round-trip and persist correctly against the live API.
+- **Hotel/Flight live search** (priority batch 7, final feature-table item): no
+  GDS/hotel-supplier API key exists in this environment, so `HotelSearchService`/
+  `FlightSearchService` are deterministic mock providers (same destination/route
+  always returns the same option set) rather than a real integration. Deliberately
+  *doesn't* build a parallel booking system — a search result becomes a `RateCard`
+  (`source: API`) with the chosen markup baked into its price, then flows through
+  the exact same `QuotationsService.addItem()` every manually-added rate card
+  already uses. Wired into the Quotation detail page
+  (`apps/web/src/app/quotations/[id]/page.tsx`) as two live-search sections above
+  the existing rate-card picker. Verified the entire existing downstream chain
+  still works unmodified with search-sourced items mixed in: searched and added a
+  hotel room and a flight (each with markup applied), submitted for approval,
+  approved, converted to a booking, and generated a voucher — all through
+  already-built modules, no changes needed there.
 
 ### What's intentionally stubbed or out of scope
 

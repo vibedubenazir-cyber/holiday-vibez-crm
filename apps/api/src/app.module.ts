@@ -24,6 +24,7 @@ import { MarketingModule } from './marketing/marketing.module';
 import { AutomationModule } from './automation/automation.module';
 import { CurrencyModule } from './currency/currency.module';
 import { CustomFieldsModule } from './custom-fields/custom-fields.module';
+import { TravelSearchModule } from './travel-search/travel-search.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -53,6 +54,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     AutomationModule,
     CurrencyModule,
     CustomFieldsModule,
+    TravelSearchModule,
   ],
   providers: [
     PrismaService,

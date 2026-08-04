@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AppShell } from '@/components/AppShell';
 import { api, ApiError } from '@/lib/api';
-import type { QuotationItemDTO, QuotationSummaryDTO, RateCardDTO } from '@holiday-vibez/shared';
+import type { FlightSearchResultDTO, HotelSearchResultDTO, QuotationItemDTO, QuotationSummaryDTO, RateCardDTO } from '@holiday-vibez/shared';
 
 interface QuotationDetail extends Omit<QuotationSummaryDTO, 'lead'> {
   items: QuotationItemDTO[];
@@ -21,6 +21,16 @@ export default function QuotationDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [departureDate, setDepartureDate] = useState('');
 
+  const [showHotelSearch, setShowHotelSearch] = useState(false);
+  const [hotelForm, setHotelForm] = useState({ destination: '', checkIn: '', checkOut: '', guests: 2 });
+  const [hotelResults, setHotelResults] = useState<HotelSearchResultDTO[]>([]);
+  const [hotelMarkup, setHotelMarkup] = useState(15);
+
+  const [showFlightSearch, setShowFlightSearch] = useState(false);
+  const [flightForm, setFlightForm] = useState({ origin: '', destination: '', date: '', pax: 2 });
+  const [flightResults, setFlightResults] = useState<FlightSearchResultDTO[]>([]);
+  const [flightMarkup, setFlightMarkup] = useState(15);
+
   async function load() {
     try {
       const [q, rates] = await Promise.all([
@@ -30,6 +40,8 @@ export default function QuotationDetailPage() {
       setQuotation(q);
       setRateCards(rates.filter((r) => r.active));
       if (!selectedRate && rates.length) setSelectedRate(rates[0].id);
+      setHotelForm((f) => (f.destination ? f : { ...f, destination: q.lead.destination }));
+      setFlightForm((f) => (f.destination ? f : { ...f, destination: q.lead.destination }));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to load quotation');
     }
@@ -49,6 +61,73 @@ export default function QuotationDetailPage() {
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to add item');
+    }
+  }
+
+  async function handleSearchHotels(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    try {
+      const params = new URLSearchParams({
+        destination: hotelForm.destination,
+        checkIn: hotelForm.checkIn,
+        checkOut: hotelForm.checkOut,
+        guests: String(hotelForm.guests),
+      });
+      setHotelResults(await api.get<HotelSearchResultDTO[]>(`/travel-search/hotels?${params}`));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to search hotels');
+    }
+  }
+
+  async function handleAddHotelRoom(hotel: HotelSearchResultDTO, room: HotelSearchResultDTO['rooms'][number]) {
+    setError(null);
+    try {
+      await api.post('/travel-search/add-to-quotation', {
+        quotationId: id,
+        type: 'HOTEL',
+        name: `${hotel.hotelName} - ${room.roomType} (${room.mealPlan}, ${hotel.nights}n)`,
+        destination: hotel.destination,
+        netRate: room.totalRate,
+        markupPct: hotelMarkup,
+      });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to add hotel room');
+    }
+  }
+
+  async function handleSearchFlights(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    try {
+      const params = new URLSearchParams({
+        origin: flightForm.origin,
+        destination: flightForm.destination,
+        date: flightForm.date,
+        pax: String(flightForm.pax),
+      });
+      setFlightResults(await api.get<FlightSearchResultDTO[]>(`/travel-search/flights?${params}`));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to search flights');
+    }
+  }
+
+  async function handleAddFlight(flight: FlightSearchResultDTO) {
+    setError(null);
+    try {
+      await api.post('/travel-search/add-to-quotation', {
+        quotationId: id,
+        type: 'FLIGHT',
+        name: `${flight.airline} ${flight.flightNumber} ${flight.origin}-${flight.destination} (${flight.fareClass})`,
+        destination: flight.destination,
+        netRate: flight.baseFare,
+        markupPct: flightMarkup,
+        quantity: flightForm.pax,
+      });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to add flight');
     }
   }
 
@@ -127,6 +206,114 @@ export default function QuotationDetailPage() {
             Convert to booking
           </button>
         </form>
+      )}
+
+      {isDraft && (
+        <div className="mt-4 space-y-3">
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <button onClick={() => setShowHotelSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
+              {showHotelSearch ? 'Hide hotel search' : '+ Search hotels (live)'}
+            </button>
+            {showHotelSearch && (
+              <>
+                <form onSubmit={handleSearchHotels} className="mt-3 flex flex-wrap items-end gap-3">
+                  <div>
+                    <label className="block text-xs text-slate-500">Destination</label>
+                    <input required value={hotelForm.destination} onChange={(e) => setHotelForm({ ...hotelForm, destination: e.target.value })} className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500">Check-in</label>
+                    <input required type="date" value={hotelForm.checkIn} onChange={(e) => setHotelForm({ ...hotelForm, checkIn: e.target.value })} className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500">Check-out</label>
+                    <input required type="date" value={hotelForm.checkOut} onChange={(e) => setHotelForm({ ...hotelForm, checkOut: e.target.value })} className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500">Guests</label>
+                    <input type="number" min={1} value={hotelForm.guests} onChange={(e) => setHotelForm({ ...hotelForm, guests: Number(e.target.value) })} className="mt-1 w-20 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500">Markup %</label>
+                    <input type="number" min={0} value={hotelMarkup} onChange={(e) => setHotelMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                  <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
+                </form>
+                <div className="mt-3 space-y-3">
+                  {hotelResults.map((hotel, hi) => (
+                    <div key={hi} className="rounded-md border border-slate-100 p-3">
+                      <p className="text-sm font-medium text-slate-800">{hotel.hotelName} · {'★'.repeat(hotel.starRating)}</p>
+                      <p className="text-xs text-slate-500">{hotel.address} · {hotel.nights} night(s)</p>
+                      <table className="mt-2 w-full text-xs">
+                        <thead className="text-left text-slate-500"><tr><th className="py-1">Room</th><th>Meal</th><th>Nightly</th><th>Total (marked up)</th><th></th></tr></thead>
+                        <tbody>
+                          {hotel.rooms.map((room, ri) => (
+                            <tr key={ri} className="border-t border-slate-100">
+                              <td className="py-1">{room.roomType}</td>
+                              <td>{room.mealPlan}</td>
+                              <td>₹{room.nightlyRate.toLocaleString('en-IN')}</td>
+                              <td>₹{Math.round(room.totalRate * (1 + hotelMarkup / 100)).toLocaleString('en-IN')}</td>
+                              <td className="text-right"><button onClick={() => handleAddHotelRoom(hotel, room)} className="text-brand hover:underline">Add</button></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <button onClick={() => setShowFlightSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
+              {showFlightSearch ? 'Hide flight search' : '+ Search flights (live)'}
+            </button>
+            {showFlightSearch && (
+              <>
+                <form onSubmit={handleSearchFlights} className="mt-3 flex flex-wrap items-end gap-3">
+                  <div>
+                    <label className="block text-xs text-slate-500">Origin</label>
+                    <input required value={flightForm.origin} onChange={(e) => setFlightForm({ ...flightForm, origin: e.target.value })} className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500">Destination</label>
+                    <input required value={flightForm.destination} onChange={(e) => setFlightForm({ ...flightForm, destination: e.target.value })} className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500">Date</label>
+                    <input required type="date" value={flightForm.date} onChange={(e) => setFlightForm({ ...flightForm, date: e.target.value })} className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500">Pax</label>
+                    <input type="number" min={1} value={flightForm.pax} onChange={(e) => setFlightForm({ ...flightForm, pax: Number(e.target.value) })} className="mt-1 w-20 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500">Markup %</label>
+                    <input type="number" min={0} value={flightMarkup} onChange={(e) => setFlightMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                  <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
+                </form>
+                <table className="mt-3 w-full text-xs">
+                  <thead className="text-left text-slate-500"><tr><th className="py-1">Airline</th><th>Flight</th><th>Depart</th><th>Arrive</th><th>Class</th><th>Fare (marked up, x{flightForm.pax} pax)</th><th></th></tr></thead>
+                  <tbody>
+                    {flightResults.map((flight, fi) => (
+                      <tr key={fi} className="border-t border-slate-100">
+                        <td className="py-1">{flight.airline}</td>
+                        <td>{flight.flightNumber}</td>
+                        <td>{flight.departureTime}</td>
+                        <td>{flight.arrivalTime}</td>
+                        <td>{flight.fareClass}</td>
+                        <td>₹{Math.round(flight.baseFare * (1 + flightMarkup / 100) * flightForm.pax).toLocaleString('en-IN')}</td>
+                        <td className="text-right"><button onClick={() => handleAddFlight(flight)} className="text-brand hover:underline">Add</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
+          </div>
+        </div>
       )}
 
       {isDraft && (
