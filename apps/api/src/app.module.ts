@@ -22,6 +22,7 @@ import { TemplatesModule } from './templates/templates.module';
 import { CmsModule } from './cms/cms.module';
 import { MarketingModule } from './marketing/marketing.module';
 import { AutomationModule } from './automation/automation.module';
+import { CurrencyModule } from './currency/currency.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -49,6 +50,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     CmsModule,
     MarketingModule,
     AutomationModule,
+    CurrencyModule,
   ],
   providers: [
     PrismaService,

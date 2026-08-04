@@ -613,6 +613,17 @@ model AutomationLog {
   @@map("automation_logs")
 }
 
+model CurrencyRate {
+  id            String         @id @default(uuid())
+  code          String         @unique
+  rateToInr     Decimal        @db.Decimal(10, 4)
+  source        RateCardSource @default(MANUAL)
+  active        Boolean        @default(true)
+  lastUpdatedAt DateTime       @default(now())
+
+  @@map("currency_rates")
+}
+
 model AuditLog {
   id          String   @id @default(uuid())
   userId      String?

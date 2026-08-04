@@ -306,6 +306,15 @@ export interface AutomationLogDTO {
   rule?: AutomationRuleDTO;
 }
 
+export interface CurrencyRateDTO {
+  id: string;
+  code: string;
+  rateToInr: number;
+  source: 'MANUAL' | 'API';
+  active: boolean;
+  lastUpdatedAt: string;
+}
+
 export interface LoginResponseDTO {
   accessToken: string;
   user: UserDTO;

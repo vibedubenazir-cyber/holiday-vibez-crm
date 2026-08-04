@@ -273,6 +273,20 @@ async function main() {
     ],
   });
 
+  await prisma.currencyRate.createMany({
+    data: [
+      { code: 'USD', rateToInr: 83.2, source: 'API' },
+      { code: 'EUR', rateToInr: 90.1, source: 'API' },
+      { code: 'GBP', rateToInr: 105.4, source: 'API' },
+      { code: 'AED', rateToInr: 22.65, source: 'API' },
+      { code: 'SGD', rateToInr: 61.8, source: 'API' },
+      { code: 'THB', rateToInr: 2.29, source: 'API' },
+      { code: 'IDR', rateToInr: 0.0052, source: 'MANUAL' },
+      { code: 'AUD', rateToInr: 54.3, source: 'MANUAL' },
+      { code: 'NPR', rateToInr: 0.625, source: 'MANUAL' },
+    ],
+  });
+
   console.log('Seed complete.');
   console.log(`Director:   director@holidayvibez.com / ${DEFAULT_PASSWORD}`);
   console.log(`Admin:      admin@holidayvibez.com / ${DEFAULT_PASSWORD}`);

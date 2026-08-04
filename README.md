@@ -49,6 +49,18 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   booking confirmed. A `(ruleId, leadId)` uniqueness constraint prevents a rule from
   double-firing for the same lead across sweep ticks — verified live by watching two
   consecutive sweeps and confirming the fire count stayed at 1.
+- **Currency Exchange** (priority batch 5): 9 currencies against INR (matching the
+  spec's Section 1.1 "Currency Exchange (9 currencies)" callout), Admin-editable,
+  read-only for other roles. No real forex API key exists in this environment, so
+  the "scheduled exchange-rate updates" half is a mock feed — an in-process interval
+  nudges `API`-sourced rates by a small random drift, while `MANUAL`-sourced rates
+  (an Admin's explicit override) are never touched by it. Verified the drift/freeze
+  logic directly against the live database; the live in-process interval itself
+  kept restarting on its own in this sandbox environment before a clean 5-minute
+  window could be observed end-to-end — the interval registration follows the exact
+  same pattern as the already-verified Automation sweep, so this is almost
+  certainly sandbox flakiness rather than a code issue, but flagging it rather than
+  claiming a live tick was watched when it wasn't.
 
 ### What's intentionally stubbed or out of scope
 

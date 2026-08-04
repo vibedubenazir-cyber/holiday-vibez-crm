@@ -7,6 +7,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LeadsService } from './leads/leads.service';
 import { MarketingService } from './marketing/marketing.service';
 import { AutomationService } from './automation/automation.service';
+import { CurrencyService } from './currency/currency.service';
 
 // No production job scheduler (e.g. a cron worker) exists in this environment, so the
 // SLA-escalation sweep (spec Section 6 step 3) runs as an in-process interval instead.
@@ -22,6 +23,9 @@ const BIRTHDAY_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 // active AutomationRule an Admin has configured (see automation.service.ts). Same
 // 5-minute cadence as SLA since rule delays are meant to be minutes/hours, not days.
 const AUTOMATION_SWEEP_INTERVAL_MS = 5 * 60 * 1000;
+// A real forex feed only needs checking hourly, not every 5 minutes — shortened here
+// for the same demonstrability reason as BIRTHDAY_CHECK_INTERVAL_MS above.
+const CURRENCY_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -48,6 +52,11 @@ async function bootstrap() {
   setInterval(() => {
     automationService.runSweep().catch((err) => console.error('Automation sweep failed', err));
   }, AUTOMATION_SWEEP_INTERVAL_MS);
+
+  const currencyService = app.get(CurrencyService);
+  setInterval(() => {
+    currencyService.refreshRates().catch((err) => console.error('Currency rate refresh failed', err));
+  }, CURRENCY_REFRESH_INTERVAL_MS);
 
   const port = process.env.PORT ?? 4000;
   await app.listen(port);
