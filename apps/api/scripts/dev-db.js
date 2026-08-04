@@ -3,9 +3,11 @@
 // real PostgreSQL instance per the spec (Section 3) — this is a dev convenience.
 const EmbeddedPostgres = require('embedded-postgres').default;
 const path = require('path');
+const fs = require('fs');
 
+const dataDir = path.join(__dirname, '..', '.pgdata');
 const pg = new EmbeddedPostgres({
-  databaseDir: path.join(__dirname, '..', '.pgdata'),
+  databaseDir: dataDir,
   user: 'holidayvibez',
   password: 'holidayvibez',
   port: 5433,
@@ -13,7 +15,10 @@ const pg = new EmbeddedPostgres({
 });
 
 async function main() {
-  await pg.initialise();
+  const alreadyInitialised = fs.existsSync(dataDir) && fs.readdirSync(dataDir).length > 0;
+  if (!alreadyInitialised) {
+    await pg.initialise();
+  }
   await pg.start();
   try {
     await pg.createDatabase('holiday_vibez_crm');

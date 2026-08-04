@@ -82,3 +82,39 @@ export enum NotificationStatus {
   READ = 'READ',
   FAILED = 'FAILED',
 }
+
+export enum SupplierType {
+  HOTEL = 'HOTEL',
+  FLIGHT = 'FLIGHT',
+  ACTIVITY = 'ACTIVITY',
+  TRANSFER = 'TRANSFER',
+  DMC = 'DMC',
+  OTHER = 'OTHER',
+}
+
+export enum VoucherType {
+  HOTEL = 'HOTEL',
+  FLIGHT = 'FLIGHT',
+  TRANSFER = 'TRANSFER',
+  COMBINED = 'COMBINED',
+}
+
+export enum InvoiceType {
+  MANUAL = 'MANUAL',
+  FLIGHT = 'FLIGHT',
+}
+
+export enum ExpenseCategory {
+  OFFICE = 'OFFICE',
+  TRAVEL = 'TRAVEL',
+  MARKETING = 'MARKETING',
+  SALARY = 'SALARY',
+  OTHER = 'OTHER',
+}
+
+export enum AttendanceStatus {
+  PRESENT = 'PRESENT',
+  ABSENT = 'ABSENT',
+  HALF_DAY = 'HALF_DAY',
+  ON_LEAVE = 'ON_LEAVE',
+}

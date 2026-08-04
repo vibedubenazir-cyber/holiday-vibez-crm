@@ -42,7 +42,8 @@ async function request<T>(path: string, options: RequestInit = {}, retry = true)
   }
 
   if (res.status === 204) return undefined as T;
-  return res.json();
+  const text = await res.text();
+  return text ? JSON.parse(text) : (null as T);
 }
 
 async function tryRefresh(): Promise<boolean> {

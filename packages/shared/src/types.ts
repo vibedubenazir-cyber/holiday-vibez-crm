@@ -123,6 +123,85 @@ export interface CalendarEntryDTO {
   daysToDeparture: number;
 }
 
+export interface SupplierDTO {
+  id: string;
+  name: string;
+  type: 'HOTEL' | 'FLIGHT' | 'ACTIVITY' | 'TRANSFER' | 'DMC' | 'OTHER';
+  contactName: string | null;
+  phone: string | null;
+  email: string | null;
+  destination: string | null;
+  paymentTerms: string | null;
+  active: boolean;
+}
+
+export interface PackageItemDTO {
+  id: string;
+  rateCardId: string;
+  dayNumber: number;
+  description: string;
+  quantity: number;
+  rateCard?: RateCardDTO;
+}
+
+export interface PackageDTO {
+  id: string;
+  name: string;
+  destination: string;
+  theme: string | null;
+  durationDays: number;
+  basePrice: number;
+  currency: string;
+  coverImageUrl: string | null;
+  active: boolean;
+  createdBy: string;
+  items?: PackageItemDTO[];
+}
+
+export interface VoucherDTO {
+  id: string;
+  bookingId: string;
+  type: 'HOTEL' | 'FLIGHT' | 'TRANSFER' | 'COMBINED';
+  refNo: string;
+  pdfUrl: string | null;
+  issuedBy: string;
+  issuedAt: string;
+}
+
+export interface InvoiceDTO {
+  id: string;
+  bookingId: string;
+  invoiceNo: string;
+  type: 'MANUAL' | 'FLIGHT';
+  amount: number;
+  taxAmount: number;
+  currency: string;
+  pdfUrl: string | null;
+  issuedBy: string;
+  issuedAt: string;
+}
+
+export interface ExpenseDTO {
+  id: string;
+  branchId: string;
+  category: 'OFFICE' | 'TRAVEL' | 'MARKETING' | 'SALARY' | 'OTHER';
+  description: string;
+  amount: number;
+  currency: string;
+  expenseDate: string;
+  createdBy: string;
+}
+
+export interface AttendanceDTO {
+  id: string;
+  userId: string;
+  date: string;
+  checkInAt: string | null;
+  checkOutAt: string | null;
+  status: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'ON_LEAVE';
+  user?: UserDTO;
+}
+
 export interface SessionDTO {
   id: string;
   deviceInfo: string;

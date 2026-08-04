@@ -3,13 +3,15 @@
 import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { api, ApiError } from '@/lib/api';
-import type { BookingDTO } from '@holiday-vibez/shared';
+import type { BookingDTO, InvoiceDTO, VoucherDTO } from '@holiday-vibez/shared';
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<BookingDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [paymentForm, setPaymentForm] = useState({ type: 'CLIENT_RECEIPT', amount: '' });
+  const [vouchers, setVouchers] = useState<Record<string, VoucherDTO[]>>({});
+  const [invoices, setInvoices] = useState<Record<string, InvoiceDTO[]>>({});
 
   async function load() {
     try {
@@ -42,6 +44,43 @@ export default function BookingsPage() {
     }
   }
 
+  async function loadDocs(bookingId: string) {
+    try {
+      const [v, i] = await Promise.all([
+        api.get<VoucherDTO[]>(`/bookings/${bookingId}/vouchers`),
+        api.get<InvoiceDTO[]>(`/bookings/${bookingId}/invoices`),
+      ]);
+      setVouchers((prev) => ({ ...prev, [bookingId]: v }));
+      setInvoices((prev) => ({ ...prev, [bookingId]: i }));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to load vouchers/invoices');
+    }
+  }
+
+  async function handleGenerateVoucher(bookingId: string) {
+    try {
+      await api.post(`/bookings/${bookingId}/vouchers`, { type: 'COMBINED' });
+      await loadDocs(bookingId);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to generate voucher');
+    }
+  }
+
+  async function handleGenerateInvoice(bookingId: string) {
+    try {
+      await api.post(`/bookings/${bookingId}/invoices`, { type: 'MANUAL' });
+      await loadDocs(bookingId);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to generate invoice');
+    }
+  }
+
+  function toggleExpanded(bookingId: string) {
+    const next = expanded === bookingId ? null : bookingId;
+    setExpanded(next);
+    if (next) loadDocs(next);
+  }
+
   return (
     <AppShell>
       <h1 className="text-lg font-semibold text-slate-800">Bookings & Payments</h1>
@@ -60,8 +99,8 @@ export default function BookingsPage() {
                   Departs {new Date(b.departureDate).toLocaleDateString()} · Status: {b.status} · Total ₹{Number(b.quotation?.totalAmount ?? 0).toLocaleString('en-IN')}
                 </p>
               </div>
-              <button onClick={() => setExpanded(expanded === b.id ? null : b.id)} className="text-sm text-brand hover:underline">
-                {expanded === b.id ? 'Hide payments' : 'Manage payments'}
+              <button onClick={() => toggleExpanded(b.id)} className="text-sm text-brand hover:underline">
+                {expanded === b.id ? 'Hide details' : 'Manage payments & documents'}
               </button>
             </div>
 
@@ -96,6 +135,38 @@ export default function BookingsPage() {
                   </select>
                   <input type="number" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} className="w-32 rounded-md border border-slate-300 px-3 py-2 text-sm" />
                   <button onClick={() => handleAddPayment(b.id)} className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add payment</button>
+                </div>
+
+                <div className="mt-4 border-t border-slate-100 pt-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Vouchers</p>
+                  <ul className="mt-1 space-y-1">
+                    {(vouchers[b.id] ?? []).map((v) => (
+                      <li key={v.id} className="text-sm">
+                        <a href={v.pdfUrl ?? '#'} className="text-brand hover:underline">{v.refNo}</a>{' '}
+                        <span className="text-slate-400">· {v.type} · issued {new Date(v.issuedAt).toLocaleDateString()}</span>
+                      </li>
+                    ))}
+                    {(!vouchers[b.id] || vouchers[b.id].length === 0) && <li className="text-sm text-slate-400">None generated yet.</li>}
+                  </ul>
+                  <button onClick={() => handleGenerateVoucher(b.id)} className="mt-2 rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">
+                    Generate voucher
+                  </button>
+                </div>
+
+                <div className="mt-4 border-t border-slate-100 pt-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Invoices</p>
+                  <ul className="mt-1 space-y-1">
+                    {(invoices[b.id] ?? []).map((i) => (
+                      <li key={i.id} className="text-sm">
+                        <a href={i.pdfUrl ?? '#'} className="text-brand hover:underline">{i.invoiceNo}</a>{' '}
+                        <span className="text-slate-400">· {i.currency} {Number(i.amount).toLocaleString('en-IN')} · issued {new Date(i.issuedAt).toLocaleDateString()}</span>
+                      </li>
+                    ))}
+                    {(!invoices[b.id] || invoices[b.id].length === 0) && <li className="text-sm text-slate-400">None generated yet.</li>}
+                  </ul>
+                  <button onClick={() => handleGenerateInvoice(b.id)} className="mt-2 rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">
+                    Generate invoice
+                  </button>
                 </div>
               </div>
             )}

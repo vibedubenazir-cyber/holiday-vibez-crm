@@ -19,6 +19,12 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   insurance compliance report.
 - **Mobile/hardening basics**: installable PWA shell, active-session management screen,
   field-level encryption for passport numbers, rate-limited public API.
+- **Ops-critical extension** (post-launch feature request, priority batch 1 of the
+  full "New CRM enhancement" table): Supplier Management, a Package/Itinerary builder
+  with a one-click "build quotation from package" action (auto-costs from the
+  package's rate cards, reuses the same snapshot logic as the manual quotation
+  builder), Voucher & Invoice generation per booking, Accounts & Finance expense
+  tracking with category rollups, and Attendance (clock-in/out + branch team view).
 
 ### What's intentionally stubbed or out of scope
 
@@ -92,6 +98,13 @@ All seeded users share the password `Password@123`:
 | Director | read-only | read-only, all branches | no | full |
 | Branch Manager | read-only | own branch only | **approves/rejects** | own branch |
 | Travel Consultant | read-only | own leads/quotations only | no | no |
+
+| Role | Suppliers | Packages | Vouchers/Invoices | Expenses |
+|---|---|---|---|---|
+| Admin | full CRUD | full CRUD | own/branch bookings | any branch |
+| Director | read-only | read-only | any (read) | any branch |
+| Branch Manager | read-only | full CRUD | own branch bookings | own branch only |
+| Travel Consultant | read-only | read + build quotation | own bookings only | no access |
 
 `POST /rates` / `PATCH /rates/:id` are Admin-only (403 otherwise). Quotations require
 Branch Manager approval before `status` moves to `SENT` — no quotation reaches a

@@ -11,6 +11,12 @@ import { TargetsModule } from './targets/targets.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { ReportsModule } from './reports/reports.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
+import { PackagesModule } from './packages/packages.module';
+import { VouchersModule } from './vouchers/vouchers.module';
+import { InvoicesModule } from './invoices/invoices.module';
+import { ExpensesModule } from './expenses/expenses.module';
+import { AttendanceModule } from './attendance/attendance.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -27,6 +33,12 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     CalendarModule,
     ReportsModule,
     NotificationsModule,
+    SuppliersModule,
+    PackagesModule,
+    VouchersModule,
+    InvoicesModule,
+    ExpensesModule,
+    AttendanceModule,
   ],
   providers: [
     PrismaService,

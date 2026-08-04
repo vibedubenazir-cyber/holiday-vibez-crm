@@ -99,6 +99,42 @@ enum NotificationStatus {
   FAILED
 }
 
+enum SupplierType {
+  HOTEL
+  FLIGHT
+  ACTIVITY
+  TRANSFER
+  DMC
+  OTHER
+}
+
+enum VoucherType {
+  HOTEL
+  FLIGHT
+  TRANSFER
+  COMBINED
+}
+
+enum InvoiceType {
+  MANUAL
+  FLIGHT
+}
+
+enum ExpenseCategory {
+  OFFICE
+  TRAVEL
+  MARKETING
+  SALARY
+  OTHER
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  ON_LEAVE
+}
+
 model User {
   id           String     @id @default(uuid())
   name         String
@@ -119,6 +155,7 @@ model User {
   quotationsApproved Quotation[] @relation("QuotationApprover")
   sessions          Session[]
   auditLogs         AuditLog[]
+  attendance        Attendance[]
 
   @@map("users")
 }
@@ -134,9 +171,10 @@ model Branch {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  users  User[]  @relation("BranchUsers")
-  leads  Lead[]
-  targets Target[]
+  users    User[]    @relation("BranchUsers")
+  leads    Lead[]
+  targets  Target[]
+  expenses Expense[]
 
   @@map("branches")
 }
@@ -194,12 +232,66 @@ model RateCard {
   createdBy String
   version   Int            @default(1)
   active    Boolean        @default(true)
+  supplierId String?
+  supplier  Supplier?      @relation(fields: [supplierId], references: [id])
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
   quotationItems QuotationItem[]
+  packageItems   PackageItem[]
 
   @@map("rate_cards")
+}
+
+model Supplier {
+  id           String       @id @default(uuid())
+  name         String
+  type         SupplierType
+  contactName  String?
+  phone        String?
+  email        String?
+  destination  String?
+  paymentTerms String?
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  rateCards RateCard[]
+  payments  Payment[]
+
+  @@map("suppliers")
+}
+
+model Package {
+  id             String   @id @default(uuid())
+  name           String
+  destination    String
+  theme          String?
+  durationDays   Int
+  basePrice      Decimal  @default(0) @db.Decimal(14, 2)
+  currency       String   @default("INR")
+  coverImageUrl  String?
+  active         Boolean  @default(true)
+  createdBy      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  items PackageItem[]
+
+  @@map("packages")
+}
+
+model PackageItem {
+  id          String   @id @default(uuid())
+  packageId   String
+  package     Package  @relation(fields: [packageId], references: [id])
+  rateCardId  String
+  rateCard    RateCard @relation(fields: [rateCardId], references: [id])
+  dayNumber   Int
+  description String
+  quantity    Int      @default(1)
+
+  @@map("package_items")
 }
 
 model Quotation {
@@ -251,23 +343,86 @@ model Booking {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  payments Payment[]
+  payments  Payment[]
+  vouchers  Voucher[]
+  invoices  Invoice[]
 
   @@map("bookings")
 }
 
 model Payment {
+  id         String      @id @default(uuid())
+  bookingId  String
+  booking    Booking     @relation(fields: [bookingId], references: [id])
+  type       PaymentType
+  amount     Decimal     @db.Decimal(14, 2)
+  dueDate    DateTime?
+  paidAt     DateTime?
+  gatewayRef String?
+  supplierId String?
+  supplier   Supplier?   @relation(fields: [supplierId], references: [id])
+  createdAt  DateTime    @default(now())
+
+  @@map("payments")
+}
+
+model Voucher {
   id        String      @id @default(uuid())
   bookingId String
   booking   Booking     @relation(fields: [bookingId], references: [id])
-  type      PaymentType
-  amount    Decimal     @db.Decimal(14, 2)
-  dueDate   DateTime?
-  paidAt    DateTime?
-  gatewayRef String?
-  createdAt DateTime    @default(now())
+  type      VoucherType
+  refNo     String      @unique
+  pdfUrl    String?
+  issuedBy  String
+  issuedAt  DateTime    @default(now())
 
-  @@map("payments")
+  @@map("vouchers")
+}
+
+model Invoice {
+  id          String      @id @default(uuid())
+  bookingId   String
+  booking     Booking     @relation(fields: [bookingId], references: [id])
+  invoiceNo   String      @unique
+  type        InvoiceType
+  amount      Decimal     @db.Decimal(14, 2)
+  taxAmount   Decimal     @default(0) @db.Decimal(14, 2)
+  currency    String      @default("INR")
+  pdfUrl      String?
+  issuedBy    String
+  issuedAt    DateTime    @default(now())
+
+  @@map("invoices")
+}
+
+model Expense {
+  id          String          @id @default(uuid())
+  branchId    String
+  branch      Branch          @relation(fields: [branchId], references: [id])
+  category    ExpenseCategory
+  description String
+  amount      Decimal         @db.Decimal(14, 2)
+  currency    String          @default("INR")
+  expenseDate DateTime
+  createdBy   String
+  createdAt   DateTime        @default(now())
+
+  @@map("expenses")
+}
+
+model Attendance {
+  id          String            @id @default(uuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id])
+  date        DateTime          @db.Date
+  checkInAt   DateTime?
+  checkOutAt  DateTime?
+  status      AttendanceStatus  @default(PRESENT)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([userId, date])
+  @@map("attendance")
 }
 
 model Target {

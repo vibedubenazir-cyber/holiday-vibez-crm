@@ -82,38 +82,87 @@ async function main() {
     }
   }
 
-  await prisma.rateCard.createMany({
+  const baliDmc = await prisma.supplier.create({
+    data: {
+      name: 'Bali Sunrise DMC',
+      type: 'DMC',
+      contactName: 'Wayan Surya',
+      phone: '+62-812-3456-7890',
+      email: 'ops@balisunrisedmc.example',
+      destination: 'Bali',
+      paymentTerms: 'Net 15',
+    },
+  });
+
+  await prisma.supplier.create({
+    data: {
+      name: 'SkyLink Flight Consolidator',
+      type: 'FLIGHT',
+      contactName: 'Ramesh Iyer',
+      phone: '+91-98765-43210',
+      email: 'bookings@skylink.example',
+      paymentTerms: 'Prepaid',
+    },
+  });
+
+  const hotelRate = await prisma.rateCard.create({
+    data: {
+      type: 'HOTEL',
+      destination: 'Bali',
+      name: 'Ubud Resort - Deluxe Room',
+      baseCost: 4500,
+      taxPct: 12,
+      currency: 'INR',
+      source: 'MANUAL',
+      createdBy: admin.id,
+      supplierId: baliDmc.id,
+    },
+  });
+
+  const activityRate = await prisma.rateCard.create({
+    data: {
+      type: 'ACTIVITY',
+      destination: 'Bali',
+      name: 'Ubud Rice Terrace & Temple Tour',
+      baseCost: 1800,
+      taxPct: 5,
+      currency: 'INR',
+      source: 'MANUAL',
+      createdBy: admin.id,
+      supplierId: baliDmc.id,
+    },
+  });
+
+  const flightRate = await prisma.rateCard.create({
+    data: {
+      type: 'FLIGHT',
+      destination: 'Bali',
+      name: 'Mumbai - Denpasar Round Trip (Economy)',
+      baseCost: 32000,
+      taxPct: 8,
+      currency: 'INR',
+      source: 'MANUAL',
+      createdBy: admin.id,
+    },
+  });
+
+  const baliPackage = await prisma.package.create({
+    data: {
+      name: 'Bali Bliss — 4N/5D',
+      destination: 'Bali',
+      theme: 'Honeymoon',
+      durationDays: 5,
+      basePrice: 45000,
+      currency: 'INR',
+      createdBy: admin.id,
+    },
+  });
+
+  await prisma.packageItem.createMany({
     data: [
-      {
-        type: 'HOTEL',
-        destination: 'Bali',
-        name: 'Ubud Resort - Deluxe Room',
-        baseCost: 4500,
-        taxPct: 12,
-        currency: 'INR',
-        source: 'MANUAL',
-        createdBy: admin.id,
-      },
-      {
-        type: 'ACTIVITY',
-        destination: 'Bali',
-        name: 'Ubud Rice Terrace & Temple Tour',
-        baseCost: 1800,
-        taxPct: 5,
-        currency: 'INR',
-        source: 'MANUAL',
-        createdBy: admin.id,
-      },
-      {
-        type: 'FLIGHT',
-        destination: 'Bali',
-        name: 'Mumbai - Denpasar Round Trip (Economy)',
-        baseCost: 32000,
-        taxPct: 8,
-        currency: 'INR',
-        source: 'MANUAL',
-        createdBy: admin.id,
-      },
+      { packageId: baliPackage.id, rateCardId: flightRate.id, dayNumber: 1, description: 'Round-trip flight to Denpasar', quantity: 2 },
+      { packageId: baliPackage.id, rateCardId: hotelRate.id, dayNumber: 1, description: '4 nights at Ubud Resort', quantity: 4 },
+      { packageId: baliPackage.id, rateCardId: activityRate.id, dayNumber: 2, description: 'Rice terrace & temple day tour', quantity: 2 },
     ],
   });
 
