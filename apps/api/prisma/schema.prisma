@@ -145,6 +145,20 @@ enum TemplateStatus {
   APPROVED
 }
 
+enum CmsContentType {
+  BLOG
+  BANNER
+  TESTIMONIAL
+  DESTINATION
+  GALLERY
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+}
+
 model User {
   id           String     @id @default(uuid())
   name         String
@@ -182,10 +196,11 @@ model Branch {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  users    User[]    @relation("BranchUsers")
-  leads    Lead[]
-  targets  Target[]
-  expenses Expense[]
+  users     User[]     @relation("BranchUsers")
+  leads     Lead[]
+  targets   Target[]
+  expenses  Expense[]
+  campaigns Campaign[]
 
   @@map("branches")
 }
@@ -226,6 +241,8 @@ model Traveler {
   passportExpiry    DateTime?
   visaStatus        String?
   insurancePolicyNo String?
+  dateOfBirth       DateTime? @db.Date
+  anniversaryDate   DateTime? @db.Date
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -504,7 +521,56 @@ model Template {
   createdBy String
   createdAt DateTime            @default(now())
 
+  campaigns Campaign[]
+
   @@map("templates")
+}
+
+model CmsContent {
+  id          String         @id @default(uuid())
+  type        CmsContentType
+  title       String
+  subtitle    String?
+  body        String?
+  imageUrl    String?
+  linkUrl     String?
+  rating      Int?           // testimonials only (1-5)
+  active      Boolean        @default(true)
+  sortOrder   Int            @default(0)
+  publishedAt DateTime?
+  createdBy   String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@map("cms_content")
+}
+
+model SiteSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model Campaign {
+  id                String          @id @default(uuid())
+  name              String
+  channel           NotificationChannel
+  templateId        String?
+  template          Template?       @relation(fields: [templateId], references: [id])
+  status            CampaignStatus  @default(DRAFT)
+  audienceBranchId  String?
+  audienceBranch    Branch?         @relation(fields: [audienceBranchId], references: [id])
+  audienceLeadStatus LeadStatus?
+  scheduledAt       DateTime?
+  sentAt            DateTime?
+  sentCount         Int             @default(0)
+  createdBy         String
+  createdAt         DateTime        @default(now())
+
+  @@map("campaigns")
 }
 
 model AuditLog {

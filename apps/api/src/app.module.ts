@@ -19,6 +19,8 @@ import { ExpensesModule } from './expenses/expenses.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { InboxModule } from './inbox/inbox.module';
 import { TemplatesModule } from './templates/templates.module';
+import { CmsModule } from './cms/cms.module';
+import { MarketingModule } from './marketing/marketing.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -43,6 +45,8 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     AttendanceModule,
     InboxModule,
     TemplatesModule,
+    CmsModule,
+    MarketingModule,
   ],
   providers: [
     PrismaService,

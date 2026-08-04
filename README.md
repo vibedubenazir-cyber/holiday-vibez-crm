@@ -32,6 +32,15 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   lookup, not the surrounding flow). Since there's no live WhatsApp/email webhook to
   receive from, inbound messages are triggered via an explicitly-labeled
   "Simulate customer reply" dev control in the Inbox UI.
+- **Marketing & Website CMS** (priority batch 3): a Marketing dashboard (leads by
+  source, campaigns sent this month, upcoming 7-day birthday/anniversary list), a
+  Campaign builder that sends to a filtered lead audience via `NotificationsService`,
+  and a CMS covering Blog/Banners/Destinations/Testimonials/Gallery through one
+  generic content model — plus no-auth `GET /public/cms/content` and
+  `GET /public/cms/settings` endpoints for the real public site
+  (www.holidayvibez.com, a separate system this repo doesn't own) to consume. A
+  6-hour in-process interval checks `Traveler.dateOfBirth`/`anniversaryDate` and
+  fires the spec's birthday/anniversary greeting automation.
 
 ### What's intentionally stubbed or out of scope
 

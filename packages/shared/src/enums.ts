@@ -128,3 +128,17 @@ export enum TemplateStatus {
   DRAFT = 'DRAFT',
   APPROVED = 'APPROVED',
 }
+
+export enum CmsContentType {
+  BLOG = 'BLOG',
+  BANNER = 'BANNER',
+  TESTIMONIAL = 'TESTIMONIAL',
+  DESTINATION = 'DESTINATION',
+  GALLERY = 'GALLERY',
+}
+
+export enum CampaignStatus {
+  DRAFT = 'DRAFT',
+  SCHEDULED = 'SCHEDULED',
+  SENT = 'SENT',
+}

@@ -197,6 +197,82 @@ async function main() {
     ],
   });
 
+  await prisma.cmsContent.createMany({
+    data: [
+      {
+        type: 'BLOG',
+        title: 'Top 5 Honeymoon Destinations for 2026',
+        subtitle: 'Where romance meets adventure',
+        body: 'From the beaches of Bali to the mountains of Switzerland, here are our top honeymoon picks for the year...',
+        sortOrder: 1,
+        publishedAt: new Date(),
+        createdBy: admin.id,
+      },
+      {
+        type: 'BLOG',
+        title: 'Visa-Free Destinations for Indian Travelers',
+        subtitle: 'Pack your bags, skip the paperwork',
+        body: 'A roundup of destinations Indian passport holders can visit visa-free or with visa-on-arrival...',
+        sortOrder: 2,
+        publishedAt: new Date(),
+        createdBy: admin.id,
+      },
+      {
+        type: 'BANNER',
+        title: 'Summer Sale — Bali Packages',
+        subtitle: 'Up to 20% off, limited seats',
+        linkUrl: '/packages/bali-bliss',
+        sortOrder: 1,
+        createdBy: admin.id,
+      },
+      {
+        type: 'BANNER',
+        title: 'Honeymoon Specials',
+        subtitle: 'Curated romantic getaways',
+        sortOrder: 2,
+        createdBy: admin.id,
+      },
+      {
+        type: 'DESTINATION',
+        title: 'Bali, Indonesia',
+        subtitle: 'Beaches, temples & rice terraces',
+        sortOrder: 1,
+        createdBy: admin.id,
+      },
+      {
+        type: 'DESTINATION',
+        title: 'Maldives',
+        subtitle: 'Overwater villas & coral reefs',
+        sortOrder: 2,
+        createdBy: admin.id,
+      },
+      {
+        type: 'TESTIMONIAL',
+        title: 'Aisha & Rohan',
+        body: 'Holiday Vibez planned our dream honeymoon down to the last detail. Could not have asked for more!',
+        rating: 5,
+        sortOrder: 1,
+        createdBy: admin.id,
+      },
+      {
+        type: 'TESTIMONIAL',
+        title: 'Vikram S.',
+        body: 'Smooth booking, great support, and an unforgettable Bali trip.',
+        rating: 5,
+        sortOrder: 2,
+        createdBy: admin.id,
+      },
+    ],
+  });
+
+  await prisma.siteSetting.createMany({
+    data: [
+      { key: 'contact_email', value: 'hello@holidayvibez.com' },
+      { key: 'contact_phone', value: '+91-98765-00000' },
+      { key: 'instagram_url', value: 'https://instagram.com/holidayvibez' },
+    ],
+  });
+
   console.log('Seed complete.');
   console.log(`Director:   director@holidayvibez.com / ${DEFAULT_PASSWORD}`);
   console.log(`Admin:      admin@holidayvibez.com / ${DEFAULT_PASSWORD}`);

@@ -233,6 +233,48 @@ export interface TemplateDTO {
   createdBy: string;
 }
 
+export interface CmsContentDTO {
+  id: string;
+  type: 'BLOG' | 'BANNER' | 'TESTIMONIAL' | 'DESTINATION' | 'GALLERY';
+  title: string;
+  subtitle: string | null;
+  body: string | null;
+  imageUrl: string | null;
+  linkUrl: string | null;
+  rating: number | null;
+  active: boolean;
+  sortOrder: number;
+  publishedAt: string | null;
+  createdBy: string;
+}
+
+export interface SiteSettingDTO {
+  id: string;
+  key: string;
+  value: string;
+}
+
+export interface CampaignDTO {
+  id: string;
+  name: string;
+  channel: 'WHATSAPP' | 'EMAIL' | 'PUSH';
+  templateId: string | null;
+  status: 'DRAFT' | 'SCHEDULED' | 'SENT';
+  audienceBranchId: string | null;
+  audienceLeadStatus: string | null;
+  scheduledAt: string | null;
+  sentAt: string | null;
+  sentCount: number;
+  template?: TemplateDTO | null;
+  audienceBranch?: BranchDTO | null;
+}
+
+export interface MarketingDashboardDTO {
+  leadsBySource: { source: string; count: number }[];
+  campaignsSentThisMonth: number;
+  upcoming: { travelerId: string; name: string; leadClientName: string; type: 'BIRTHDAY' | 'ANNIVERSARY' }[];
+}
+
 export interface SessionDTO {
   id: string;
   deviceInfo: string;
