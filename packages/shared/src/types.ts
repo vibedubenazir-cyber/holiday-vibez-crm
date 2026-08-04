@@ -202,6 +202,37 @@ export interface AttendanceDTO {
   user?: UserDTO;
 }
 
+export interface ConversationDTO {
+  id: string;
+  leadId: string;
+  channel: 'WHATSAPP' | 'EMAIL' | 'PUSH';
+  botEnabled: boolean;
+  lastMessageAt: string;
+  lead?: LeadSummaryDTO;
+  messages?: MessageDTO[];
+}
+
+export interface MessageDTO {
+  id: string;
+  conversationId: string;
+  direction: 'INBOUND' | 'OUTBOUND';
+  body: string;
+  status: 'SENT' | 'DELIVERED' | 'READ' | 'FAILED';
+  sentBy: string | null;
+  createdAt: string;
+  sender?: UserDTO | null;
+}
+
+export interface TemplateDTO {
+  id: string;
+  channel: 'WHATSAPP' | 'EMAIL' | 'PUSH';
+  name: string;
+  subject: string | null;
+  body: string;
+  status: 'DRAFT' | 'APPROVED';
+  createdBy: string;
+}
+
 export interface SessionDTO {
   id: string;
   deviceInfo: string;

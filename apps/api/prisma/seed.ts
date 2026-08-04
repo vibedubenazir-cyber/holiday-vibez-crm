@@ -166,6 +166,37 @@ async function main() {
     ],
   });
 
+  await prisma.template.createMany({
+    data: [
+      {
+        channel: 'WHATSAPP',
+        name: 'Booking Confirmation',
+        body: 'Hi {{name}}, your Holiday Vibez booking for {{destination}} is confirmed! We will share your vouchers shortly.',
+        createdBy: admin.id,
+      },
+      {
+        channel: 'WHATSAPP',
+        name: 'Follow Up',
+        body: "Hi {{name}}, just checking in on your {{destination}} trip plans — happy to answer any questions!",
+        createdBy: admin.id,
+      },
+      {
+        channel: 'EMAIL',
+        name: 'Booking Confirmation',
+        subject: 'Your Holiday Vibez booking is confirmed',
+        body: 'Dear {{name}},\n\nYour booking for {{destination}} is confirmed. Vouchers and invoice will follow shortly.\n\nWarm regards,\nHoliday Vibez',
+        createdBy: admin.id,
+      },
+      {
+        channel: 'EMAIL',
+        name: 'Follow Up',
+        subject: 'Following up on your trip enquiry',
+        body: 'Dear {{name}},\n\nJust following up on your {{destination}} enquiry — let us know if you have any questions.\n\nWarm regards,\nHoliday Vibez',
+        createdBy: admin.id,
+      },
+    ],
+  });
+
   console.log('Seed complete.');
   console.log(`Director:   director@holidayvibez.com / ${DEFAULT_PASSWORD}`);
   console.log(`Admin:      admin@holidayvibez.com / ${DEFAULT_PASSWORD}`);

@@ -17,6 +17,8 @@ import { VouchersModule } from './vouchers/vouchers.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { AttendanceModule } from './attendance/attendance.module';
+import { InboxModule } from './inbox/inbox.module';
+import { TemplatesModule } from './templates/templates.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -39,6 +41,8 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     InvoicesModule,
     ExpensesModule,
     AttendanceModule,
+    InboxModule,
+    TemplatesModule,
   ],
   providers: [
     PrismaService,

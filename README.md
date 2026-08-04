@@ -25,6 +25,13 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   package's rate cards, reuses the same snapshot logic as the manual quotation
   builder), Voucher & Invoice generation per booking, Accounts & Finance expense
   tracking with category rollups, and Attendance (clock-in/out + branch team view).
+- **WhatsApp/Email Inbox** (priority batch 2): a two-way conversation thread per
+  lead per channel, a reusable message Template library, and a rules-based "AI bot"
+  that auto-replies to inbound messages by keyword match (no LLM key in this
+  environment — swapping in a real model means replacing `InboxService`'s bot-reply
+  lookup, not the surrounding flow). Since there's no live WhatsApp/email webhook to
+  receive from, inbound messages are triggered via an explicitly-labeled
+  "Simulate customer reply" dev control in the Inbox UI.
 
 ### What's intentionally stubbed or out of scope
 

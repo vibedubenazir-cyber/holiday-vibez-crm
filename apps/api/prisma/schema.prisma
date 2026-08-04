@@ -135,6 +135,16 @@ enum AttendanceStatus {
   ON_LEAVE
 }
 
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum TemplateStatus {
+  DRAFT
+  APPROVED
+}
+
 model User {
   id           String     @id @default(uuid())
   name         String
@@ -156,6 +166,7 @@ model User {
   sessions          Session[]
   auditLogs         AuditLog[]
   attendance        Attendance[]
+  messagesSent      Message[]
 
   @@map("users")
 }
@@ -197,8 +208,9 @@ model Lead {
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
 
-  travelers   Traveler[]
-  quotations  Quotation[]
+  travelers     Traveler[]
+  quotations    Quotation[]
+  conversations Conversation[]
 
   @@map("leads")
 }
@@ -451,6 +463,48 @@ model Notification {
   createdAt      DateTime            @default(now())
 
   @@map("notifications")
+}
+
+model Conversation {
+  id            String              @id @default(uuid())
+  leadId        String
+  lead          Lead                @relation(fields: [leadId], references: [id])
+  channel       NotificationChannel
+  botEnabled    Boolean             @default(true)
+  lastMessageAt DateTime            @default(now())
+  createdAt     DateTime            @default(now())
+
+  messages Message[]
+
+  @@unique([leadId, channel])
+  @@map("conversations")
+}
+
+model Message {
+  id             String              @id @default(uuid())
+  conversationId String
+  conversation   Conversation        @relation(fields: [conversationId], references: [id])
+  direction      MessageDirection
+  body           String
+  status         NotificationStatus  @default(SENT)
+  sentBy         String?             // null = system/bot-generated
+  sender         User?               @relation(fields: [sentBy], references: [id])
+  createdAt      DateTime            @default(now())
+
+  @@map("messages")
+}
+
+model Template {
+  id        String              @id @default(uuid())
+  channel   NotificationChannel
+  name      String
+  subject   String?             // email-only
+  body      String
+  status    TemplateStatus      @default(APPROVED)
+  createdBy String
+  createdAt DateTime            @default(now())
+
+  @@map("templates")
 }
 
 model AuditLog {

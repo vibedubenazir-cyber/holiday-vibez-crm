@@ -118,3 +118,13 @@ export enum AttendanceStatus {
   HALF_DAY = 'HALF_DAY',
   ON_LEAVE = 'ON_LEAVE',
 }
+
+export enum MessageDirection {
+  INBOUND = 'INBOUND',
+  OUTBOUND = 'OUTBOUND',
+}
+
+export enum TemplateStatus {
+  DRAFT = 'DRAFT',
+  APPROVED = 'APPROVED',
+}
