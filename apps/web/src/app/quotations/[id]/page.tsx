@@ -211,6 +211,11 @@ export default function QuotationDetailPage() {
     // would still see disabled=false and fire a duplicate customer-facing
     // WhatsApp/email send. The ref is set synchronously, closing that gap.
     if (sendingRef.current) return;
+    if (!quotation) return;
+    const confirmed = window.confirm(
+      `Send quotation ${quotation.refNo} to ${quotation.lead.clientName} via WhatsApp and email now?`,
+    );
+    if (!confirmed) return;
     sendingRef.current = true;
     setError(null);
     setSending(true);
