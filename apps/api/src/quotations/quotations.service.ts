@@ -92,6 +92,8 @@ export class QuotationsService {
         triggerType: 'quotation_pending_approval',
         recipient: branch.managerId,
         relatedEntity: `quotation:${id}`,
+        subject: 'Quotation needs approval',
+        body: `${quotation.refNo} is waiting on your approval`,
       });
     }
     return updated;
@@ -150,6 +152,8 @@ export class QuotationsService {
       triggerType: 'quotation_rejected',
       recipient: quotation.consultantId,
       relatedEntity: `quotation:${id}${comments ? `:${comments}` : ''}`,
+      subject: 'Quotation rejected',
+      body: `${quotation.refNo} was rejected${comments ? `: ${comments}` : ''}`,
     });
     return updated;
   }

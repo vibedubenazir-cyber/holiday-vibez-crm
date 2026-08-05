@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { api, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { isPushConfigured, requestPushPermission, type PushPermissionResult } from '@/lib/push';
 import type { SessionDTO, TwoFactorSetupDTO } from '@holiday-vibez/shared';
 
 export default function SecurityPage() {
@@ -16,6 +17,9 @@ export default function SecurityPage() {
   const [confirmCode, setConfirmCode] = useState('');
   const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
   const [twoFactorBusy, setTwoFactorBusy] = useState(false);
+
+  const [pushResult, setPushResult] = useState<PushPermissionResult | null>(null);
+  const [pushBusy, setPushBusy] = useState(false);
 
   async function load() {
     try {
@@ -79,6 +83,15 @@ export default function SecurityPage() {
       setTwoFactorError(err instanceof ApiError ? err.message : 'Failed to disable 2FA');
     } finally {
       setTwoFactorBusy(false);
+    }
+  }
+
+  async function handleEnablePush() {
+    setPushBusy(true);
+    try {
+      setPushResult(await requestPushPermission());
+    } finally {
+      setPushBusy(false);
     }
   }
 
@@ -147,6 +160,43 @@ export default function SecurityPage() {
           >
             Enable 2FA
           </button>
+        )}
+      </section>
+
+      <section className="mt-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Push Notifications</h2>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Get a browser notification for lead assignments, SLA breaches, and quotation approvals.
+        </p>
+
+        {!isPushConfigured() ? (
+          <p className="mt-4 text-xs text-slate-400 dark:text-slate-500">
+            Not configured — set the <code className="rounded bg-slate-100 dark:bg-slate-700 px-1 py-0.5">NEXT_PUBLIC_FIREBASE_*</code> env
+            vars to enable this.
+          </p>
+        ) : pushResult === 'enabled' ? (
+          <span className="mt-4 inline-block rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs text-emerald-700 dark:text-emerald-400">
+            Enabled
+          </span>
+        ) : (
+          <>
+            <button
+              onClick={handleEnablePush}
+              disabled={pushBusy}
+              className="mt-4 rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+            >
+              {pushBusy ? 'Requesting…' : 'Enable push notifications'}
+            </button>
+            {pushResult === 'denied' && (
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                Permission denied — enable notifications for this site in your browser settings, then try again.
+              </p>
+            )}
+            {pushResult === 'unsupported' && (
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">Push notifications aren't supported in this browser.</p>
+            )}
+            {pushResult === 'error' && <p className="mt-2 text-sm text-red-600 dark:text-red-400">Something went wrong — try again.</p>}
+          </>
         )}
       </section>
 

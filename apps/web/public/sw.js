@@ -4,6 +4,33 @@
 const CACHE_NAME = 'holiday-vibez-shell-v1';
 const SHELL_ASSETS = ['/', '/logo.png', '/manifest.json'];
 
+// Firebase Cloud Messaging background handler — shows a notification when a
+// push arrives while no tab has focus. This is a static file (served from
+// public/, not processed by Next.js), so it can't read process.env — these
+// values must be filled in by hand to match the same NEXT_PUBLIC_FIREBASE_*
+// values in apps/web/.env.local once you have a real Firebase project (see
+// README's Push Notifications section). Firebase's web config is the
+// standard public client config, safe to embed — protected by Firebase's own
+// security rules, not secrecy.
+const FIREBASE_CONFIG = {
+  apiKey: '',
+  projectId: '',
+  messagingSenderId: '',
+  appId: '',
+};
+
+if (FIREBASE_CONFIG.apiKey) {
+  importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js');
+  importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js');
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const messaging = firebase.messaging();
+  messaging.onBackgroundMessage((payload) => {
+    const { title, body } = payload.notification ?? {};
+    if (!title) return;
+    self.registration.showNotification(title, { body, icon: '/logo.png' });
+  });
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS)));
   self.skipWaiting();

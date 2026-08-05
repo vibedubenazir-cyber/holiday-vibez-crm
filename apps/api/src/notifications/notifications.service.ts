@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { NotificationChannel } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { normalizePhone } from './phone.util';
+import { getFcmAccessToken } from './fcm.util';
 
 const WHATSAPP_API_VERSION = 'v20.0';
 const SENDGRID_API_URL = 'https://api.sendgrid.com/v3/mail/send';
@@ -81,7 +82,18 @@ export class NotificationsService {
       await this.sendEmail(notificationId, input);
       return;
     }
+    if (input.channel === 'PUSH' && process.env.FCM_PROJECT_ID && process.env.FCM_CLIENT_EMAIL && process.env.FCM_PRIVATE_KEY) {
+      await this.sendPush(notificationId, input);
+      return;
+    }
     this.logger.log(`[${input.channel}] ${input.triggerType} -> ${input.recipient} (${input.relatedEntity ?? 'n/a'})`);
+  }
+
+  // Registers/updates the calling user's FCM registration token, obtained
+  // client-side from Firebase's Web SDK once they opt into push notifications
+  // on /security (apps/web/src/lib/push.ts).
+  registerPushToken(userId: string, token: string) {
+    return this.prisma.user.update({ where: { id: userId }, data: { fcmToken: token } });
   }
 
   private async sendWhatsApp(notificationId: string, input: SendNotificationInput) {
@@ -153,6 +165,51 @@ export class NotificationsService {
       await this.prisma.notification.update({ where: { id: notificationId }, data: { status: 'SENT' } });
     } catch (err) {
       this.logger.error(`Email send threw for notification ${notificationId}`, err as Error);
+      await this.prisma.notification.update({ where: { id: notificationId }, data: { status: 'FAILED' } });
+    }
+  }
+
+  // Push recipient is always a User id (staff-facing: lead assigned, SLA
+  // breach, approval needed — never customer-facing). Falls back to the
+  // console-log path (not a failure) when the user hasn't opted into push yet,
+  // same graceful-degradation shape as WhatsApp/email without credentials.
+  private async sendPush(notificationId: string, input: SendNotificationInput) {
+    const user = await this.prisma.user.findUnique({ where: { id: input.recipient } });
+    if (!user?.fcmToken) {
+      this.logger.log(`[PUSH] ${input.triggerType} -> ${input.recipient} (no fcmToken registered, ${input.relatedEntity ?? 'n/a'})`);
+      return;
+    }
+
+    const title = input.subject ?? `Holiday Vibez: ${input.triggerType.replace(/_/g, ' ')}`;
+    const body = input.body ?? title;
+
+    try {
+      const accessToken = await getFcmAccessToken();
+      const res = await fetch(`https://fcm.googleapis.com/v1/projects/${process.env.FCM_PROJECT_ID}/messages:send`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: {
+            token: user.fcmToken,
+            notification: { title, body },
+            data: input.relatedEntity ? { relatedEntity: input.relatedEntity } : undefined,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        this.logger.error(`Push send failed (${res.status}) for notification ${notificationId}: ${text}`);
+        await this.prisma.notification.update({ where: { id: notificationId }, data: { status: 'FAILED' } });
+        return;
+      }
+
+      await this.prisma.notification.update({ where: { id: notificationId }, data: { status: 'SENT' } });
+    } catch (err) {
+      this.logger.error(`Push send threw for notification ${notificationId}`, err as Error);
       await this.prisma.notification.update({ where: { id: notificationId }, data: { status: 'FAILED' } });
     }
   }

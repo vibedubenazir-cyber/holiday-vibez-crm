@@ -236,16 +236,43 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   `revenueAchieved`, confirmed a bad signature is rejected, and confirmed
   the outbound request is correctly shaped (Basic Auth, amount in paise)
   against a local mock server.
+- **Real Push Notifications (Firebase Cloud Messaging)**: the four
+  PUSH-channel sends (`leads.service.ts` — lead assigned, SLA breach;
+  `quotations.service.ts` — pending approval, rejected) are staff-facing,
+  not customer-facing — `recipient` is always a User id. **Correction from
+  an earlier session**: the `FCM_SERVER_KEY` env var originally prepped
+  reflected Firebase's Legacy HTTP API, which Google shut down in mid-2024;
+  the only working option is FCM's HTTP v1 API, which needs a full
+  service-account (project id + client email + private key), not one
+  string — `FCM_PROJECT_ID`/`FCM_CLIENT_EMAIL`/`FCM_PRIVATE_KEY` replace it.
+  `apps/api/src/notifications/fcm.util.ts`'s `getFcmAccessToken()` signs a
+  service-account JWT (RS256, Node's built-in `crypto`, no new dependency)
+  and exchanges it for a short-lived OAuth2 token, cached until near-expiry.
+  Unlike WhatsApp/Email/Payments, this one is built genuinely end-to-end
+  including the frontend: `apps/web/src/lib/push.ts`'s
+  `requestPushPermission()` uses Firebase's Web SDK to request browser
+  permission and register a token (reusing the existing PWA service worker
+  at `apps/web/public/sw.js` rather than a second one), a new "Push
+  Notifications" section on `/security` triggers it, and
+  `POST /notifications/push-token` stores the token on the user. `sendPush`
+  falls back to the console-log path (not an error) for any user who hasn't
+  opted in yet. `sw.js`'s Firebase config values must be filled in by hand
+  to match `NEXT_PUBLIC_FIREBASE_*` (it's a static file, can't read
+  `process.env`) — documented inline in the file. Verified: JWT-signing
+  mechanics validated against a throwaway RSA keypair (sign + verify
+  round-trip, since there's no real Google service account to call), the
+  outbound FCM v1 request shape confirmed against a local mock server, the
+  push-token endpoint confirmed storing a token via curl, and the
+  no-token/no-credentials console-log fallbacks confirmed unchanged.
 
 ### What's intentionally stubbed or out of scope
 
-No credentials exist in this environment for push (WhatsApp, Email, and the
-payment gateway are now real — see above); swapping in FCM means
-implementing one method in `NotificationsService`, not touching callers.
+WhatsApp, Email, the payment gateway, and Push are all real now (see
+above) — nothing left in `NotificationsService`/payments needs a mock swap.
 Branded PDF generation for quotations/vouchers is a placeholder URL, not
 real rendering. **Not built at all**: WAF/DDoS protection, penetration
-testing, a native push backend, and data migration from the live
-crm.holidayvibez.com system — these are infra/process work, not application code.
+testing, and data migration from the live crm.holidayvibez.com system —
+these are infra/process work, not application code.
 
 ## Structure
 

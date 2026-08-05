@@ -195,6 +195,10 @@ model User {
   lastLoginAt  DateTime?
   twoFactorSecret  String?
   twoFactorEnabled Boolean  @default(false)
+  // Browser's current FCM registration token, set via POST /notifications/push-token
+  // once the user opts into push notifications on /security. Single most-recent
+  // token per user — multi-device push is a natural follow-up, not built here.
+  fcmToken     String?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 

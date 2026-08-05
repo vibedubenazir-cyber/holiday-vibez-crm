@@ -127,6 +127,8 @@ export class LeadsService {
       triggerType: 'lead_assigned',
       recipient: nextConsultant.id,
       relatedEntity: `lead:${leadId}`,
+      subject: 'New lead assigned',
+      body: `${lead.clientName} — ${lead.destination}`,
     });
 
     return updated;
@@ -174,6 +176,8 @@ export class LeadsService {
           triggerType: 'sla_breach_escalation',
           recipient: lead.branch.managerId,
           relatedEntity: `lead:${lead.id}`,
+          subject: 'SLA breach',
+          body: `${lead.clientName}'s lead hasn't been contacted within the SLA window`,
         });
       }
     }
