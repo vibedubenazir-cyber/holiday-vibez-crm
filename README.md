@@ -51,16 +51,8 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   consecutive sweeps and confirming the fire count stayed at 1.
 - **Currency Exchange** (priority batch 5): 9 currencies against INR (matching the
   spec's Section 1.1 "Currency Exchange (9 currencies)" callout), Admin-editable,
-  read-only for other roles. No real forex API key exists in this environment, so
-  the "scheduled exchange-rate updates" half is a mock feed — an in-process interval
-  nudges `API`-sourced rates by a small random drift, while `MANUAL`-sourced rates
-  (an Admin's explicit override) are never touched by it. Verified the drift/freeze
-  logic directly against the live database; the live in-process interval itself
-  kept restarting on its own in this sandbox environment before a clean 5-minute
-  window could be observed end-to-end — the interval registration follows the exact
-  same pattern as the already-verified Automation sweep, so this is almost
-  certainly sandbox flakiness rather than a code issue, but flagging it rather than
-  claiming a live tick was watched when it wasn't.
+  read-only for other roles. Scheduled updates are fully wired to a real provider
+  (exchangerate-api.com) — see "Real Forex Rates" below for details.
 - **Custom Fields engine** (priority batch 6): Admin defines ad-hoc fields
   (text/number/date/boolean/select) on an entity type — no schema change, no
   redeploy — and they render as real inputs wherever that entity is actually
@@ -264,6 +256,22 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   outbound FCM v1 request shape confirmed against a local mock server, the
   push-token endpoint confirmed storing a token via curl, and the
   no-token/no-credentials console-log fallbacks confirmed unchanged.
+- **Real Forex Rates (exchangerate-api.com)**: `CurrencyService.refreshRates()`
+  (run on the same `currency-refresh` BullMQ schedule as before) updates every
+  `API`-sourced `CurrencyRate` from a real feed when `FOREX_API_KEY` is set —
+  `MANUAL`-sourced rates (an Admin's explicit override) are still never touched.
+  Chosen over openexchangerates.org because that provider's free tier locks the
+  base currency to USD, which would need extra reciprocal-rate math; this one
+  supports `GET /v6/{key}/latest/INR` directly. The API returns "1 INR = X
+  {code}" (base INR); the code stores the inverse, "1 {code} = X INR", to match
+  the existing `rateToInr` field's meaning. No credentials → falls back to the
+  original small-random-drift mock update, unchanged. Verified: confirmed the
+  real (unauthenticated) endpoint's exact error shape via curl
+  (`{"result":"error","error-type":"invalid-key"}`), then set `FOREX_API_KEY`
+  to an intentionally-invalid test value and watched the matching
+  `Forex API refresh failed: ...` error log fire without crashing the job;
+  restored a clean env and confirmed the mock-drift fallback still fires
+  unchanged when unset.
 
 ### What's intentionally stubbed or out of scope
 
