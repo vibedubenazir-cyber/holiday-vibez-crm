@@ -67,22 +67,22 @@ export default function CustomFieldsPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800">Custom Fields</h1>
+        <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Custom Fields</h1>
         <button onClick={() => setShowForm((s) => !s)} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">
           {showForm ? 'Cancel' : 'Add field'}
         </button>
       </div>
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Add fields to entities without a code change — they render automatically wherever that entity is edited (e.g. the Lead detail page).
       </p>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="mt-4 flex gap-1 rounded-md border border-slate-200 bg-white p-1 text-sm">
+      <div className="mt-4 flex gap-1 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 text-sm">
         {ENTITY_TYPES.map((t) => (
           <button
             key={t}
             onClick={() => setEntityType(t)}
-            className={`rounded px-3 py-1.5 font-medium ${entityType === t ? 'bg-brand text-white' : 'text-slate-600'}`}
+            className={`rounded px-3 py-1.5 font-medium ${entityType === t ? 'bg-brand text-white' : 'text-slate-600 dark:text-slate-300'}`}
           >
             {t.charAt(0) + t.slice(1).toLowerCase()}
           </button>
@@ -90,16 +90,16 @@ export default function CustomFieldsPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-3">
-          <input required placeholder="Label (e.g. Referred By)" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          <input placeholder="Field key (auto from label if blank)" value={form.fieldKey} onChange={(e) => setForm({ ...form, fieldKey: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          <select value={form.fieldType} onChange={(e) => setForm({ ...form, fieldType: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <input required placeholder="Label (e.g. Referred By)" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input placeholder="Field key (auto from label if blank)" value={form.fieldKey} onChange={(e) => setForm({ ...form, fieldKey: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <select value={form.fieldType} onChange={(e) => setForm({ ...form, fieldType: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
             {FIELD_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
           {form.fieldType === CustomFieldType.SELECT && (
-            <input placeholder="Options, comma-separated" value={form.options} onChange={(e) => setForm({ ...form, options: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2 lg:col-span-2" />
+            <input placeholder="Options, comma-separated" value={form.options} onChange={(e) => setForm({ ...form, options: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm sm:col-span-2 lg:col-span-2" />
           )}
-          <label className="flex items-center gap-2 text-sm text-slate-600">
+          <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
             <input type="checkbox" checked={form.required} onChange={(e) => setForm({ ...form, required: e.target.checked })} />
             Required
           </label>
@@ -109,9 +109,9 @@ export default function CustomFieldsPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr>
               <th className="px-4 py-2">Label</th>
               <th className="px-4 py-2">Key</th>
@@ -123,13 +123,13 @@ export default function CustomFieldsPage() {
           </thead>
           <tbody>
             {definitions.map((d) => (
-              <tr key={d.id} className="border-t border-slate-100">
-                <td className="px-4 py-2 font-medium text-slate-800">{d.label}</td>
-                <td className="px-4 py-2 text-slate-500">{d.fieldKey}</td>
+              <tr key={d.id} className="border-t border-slate-100 dark:border-slate-800">
+                <td className="px-4 py-2 font-medium text-slate-800 dark:text-slate-100">{d.label}</td>
+                <td className="px-4 py-2 text-slate-500 dark:text-slate-400">{d.fieldKey}</td>
                 <td className="px-4 py-2">{d.fieldType}{d.fieldType === 'SELECT' ? ` (${d.options.join(', ')})` : ''}</td>
                 <td className="px-4 py-2">{d.required ? 'Yes' : 'No'}</td>
                 <td className="px-4 py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${d.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${d.active ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-slate-200 text-slate-600 dark:text-slate-300'}`}>
                     {d.active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
@@ -141,7 +141,7 @@ export default function CustomFieldsPage() {
               </tr>
             ))}
             {definitions.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">No custom fields for {entityType.toLowerCase()} yet.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">No custom fields for {entityType.toLowerCase()} yet.</td></tr>
             )}
           </tbody>
         </table>

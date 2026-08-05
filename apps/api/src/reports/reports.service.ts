@@ -68,6 +68,61 @@ export class ReportsService {
     };
   }
 
+  // Month-by-month P&L, distinct from directorDashboard/branchReport's real-time
+  // totals. Revenue/payment-costs bucket by Payment.paidAt (cash actually received/
+  // paid out, same field the existing reports already treat as "real"); Expense
+  // buckets by its own expenseDate. Payment has no direct branchId — same join path
+  // branchReport() already uses (booking.quotation.lead.branchId).
+  async getMonthlyPnL(year: number, branchId?: string) {
+    const yearStart = new Date(Date.UTC(year, 0, 1));
+    const yearEnd = new Date(Date.UTC(year + 1, 0, 1));
+
+    const [payments, expenses] = await Promise.all([
+      this.prisma.payment.findMany({
+        where: {
+          paidAt: { gte: yearStart, lt: yearEnd },
+          ...(branchId ? { booking: { quotation: { lead: { branchId } } } } : {}),
+        },
+      }),
+      this.prisma.expense.findMany({
+        where: {
+          expenseDate: { gte: yearStart, lt: yearEnd },
+          ...(branchId ? { branchId } : {}),
+        },
+      }),
+    ]);
+
+    const months = Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`);
+    const buckets = new Map(months.map((month) => [month, { revenue: 0, paymentCosts: 0, expenses: 0 }]));
+
+    for (const payment of payments) {
+      const month = payment.paidAt!.toISOString().slice(0, 7);
+      const bucket = buckets.get(month);
+      if (!bucket) continue;
+      const amount = Number(payment.amount);
+      if (payment.type === 'CLIENT_RECEIPT') bucket.revenue += amount;
+      else if (payment.type === 'DMC_PAYABLE' || payment.type === 'COMMISSION' || payment.type === 'REFUND') bucket.paymentCosts += amount;
+    }
+
+    for (const expense of expenses) {
+      const month = expense.expenseDate.toISOString().slice(0, 7);
+      const bucket = buckets.get(month);
+      if (!bucket) continue;
+      bucket.expenses += Number(expense.amount);
+    }
+
+    return months.map((month) => {
+      const b = buckets.get(month)!;
+      return {
+        month,
+        revenue: b.revenue,
+        paymentCosts: b.paymentCosts,
+        expenses: b.expenses,
+        netMargin: b.revenue - b.paymentCosts - b.expenses,
+      };
+    });
+  }
+
   // Monthly compliance job surface (spec Section 6 step 11, Section 11) — travelers
   // on an upcoming booking whose passport expires within 6 months of departure, or has
   // no visa status recorded. Exposed as an on-demand report; a real cron trigger would

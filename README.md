@@ -116,6 +116,52 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   reported exactly 4 schedulers (no duplicates), then manually enqueued a
   `currency-refresh` job and confirmed the worker picked it up and
   `CurrencyRate.lastUpdatedAt` moved forward in the live database.
+- **Monthly P&L**: `GET /reports/pnl/monthly` (`apps/api/src/reports/reports.service.ts`'s
+  `getMonthlyPnL()`) buckets client/DMC payments by `Payment.paidAt` and
+  expenses by `Expense.expenseDate` into a real month-by-month breakdown —
+  distinct from the existing real-time totals on the Director dashboard and
+  `/finance/branch-pnl`. Branch Managers are always scoped to their own
+  branch server-side; Director/Admin can pick any branch or view org-wide.
+  Rendered as a new "Monthly P&L" table on `/reports` with year/branch
+  selectors. Verified live: recorded a real client payment, confirmed it
+  landed in the correct month's row with the exact same amount, and that
+  unrelated months stayed at ₹0.
+- **Transfer Module**: `RateCardType` gained a `TRANSFER` value (previously
+  only `ACTIVITY`/`FLIGHT`/`HOTEL` — `SupplierType`/`VoucherType` already had
+  it, this was the one real gap), and a `TransferSearchService`
+  (`apps/api/src/travel-search/transfer-search.service.ts`) mirrors the
+  existing Hotel/Flight deterministic mock-search pattern. Wired into the
+  quotation detail page as a third live-search section, and into
+  `/admin/rates` so Admin can also add transfer rate cards manually.
+  Transfer items flow through the exact same
+  `RateCard(source: API) → QuotationsService.addItem()` pipeline hotel/flight
+  searches already use, so they show up in existing bookings/vouchers/reports
+  for free — no separate "transfer reports" surface needed. Verified live:
+  searched a pickup/drop pair, added a result to a draft quotation, and
+  confirmed a real `RateCard` row (`type: TRANSFER`, `source: API`) was
+  created.
+- **Client & Business Entities**: a new `Client` entity
+  (`apps/api/src/clients/`, mirroring the Suppliers module's CRUD pattern)
+  covers Individual/Agent/Corporate/Group accounts — agent commission %,
+  corporate GST number, and free-text notes per type. `Lead` gained an
+  **optional** `clientId` FK alongside its existing free-text `clientName`
+  (deliberately not replacing it, so no backfill migration was needed for
+  existing leads); the Lead creation form gets an optional "link to existing
+  client" picker that auto-fills the name field when selected. New `/clients`
+  admin page, Admin/Director-gated write. Verified live: created an Agent
+  client, linked a new Lead to it, and confirmed the name auto-filled and the
+  link persisted.
+- **Light/dark mode**: `next-themes` (`ThemeProvider` in
+  `apps/web/src/app/layout.tsx`, `darkMode: 'class'` in
+  `tailwind.config.js`) backs a sun/moon toggle in `AppShell`'s header,
+  persisted across sessions and defaulting to the OS preference. All 29 page
+  files plus the pre-auth login page got `dark:` Tailwind variants for their
+  color classes (background/border/text/badge colors) via a scripted
+  find-and-append pass rather than hand-editing each file, since there's no
+  shared Table/Card component to fix once. Verified live in the browser:
+  toggled dark mode and clicked through the dashboard, a table-heavy page,
+  the Clients form, and a nested quotation-detail page with no unreadable
+  light-on-light or dark-on-dark spots.
 
 ### What's intentionally stubbed or out of scope
 

@@ -83,19 +83,19 @@ export default function BookingsPage() {
 
   return (
     <AppShell>
-      <h1 className="text-lg font-semibold text-slate-800">Bookings & Payments</h1>
-      <p className="mt-1 text-sm text-slate-500">
+      <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Bookings & Payments</h1>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Bookings are created from approved (SENT) quotations. Payments feed branch P&L and target achievement automatically once marked paid.
       </p>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       <div className="mt-4 space-y-3">
         {bookings.map((b) => (
-          <div key={b.id} className="rounded-lg border border-slate-200 bg-white p-4">
+          <div key={b.id} className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-slate-800">{b.quotation?.lead?.clientName} · {b.quotation?.lead?.destination}</p>
-                <p className="text-xs text-slate-500">
+                <p className="font-medium text-slate-800 dark:text-slate-100">{b.quotation?.lead?.clientName} · {b.quotation?.lead?.destination}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Departs {new Date(b.departureDate).toLocaleDateString()} · Status: {b.status} · Total ₹{Number(b.quotation?.totalAmount ?? 0).toLocaleString('en-IN')}
                 </p>
               </div>
@@ -105,14 +105,14 @@ export default function BookingsPage() {
             </div>
 
             {expanded === b.id && (
-              <div className="mt-3 border-t border-slate-100 pt-3">
+              <div className="mt-3 border-t border-slate-100 dark:border-slate-800 pt-3">
                 <table className="w-full text-sm">
-                  <thead className="text-left text-xs uppercase tracking-wide text-slate-500">
+                  <thead className="text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     <tr><th className="py-1">Type</th><th className="py-1">Amount</th><th className="py-1">Status</th><th></th></tr>
                   </thead>
                   <tbody>
                     {(b.payments ?? []).map((p) => (
-                      <tr key={p.id} className="border-t border-slate-100">
+                      <tr key={p.id} className="border-t border-slate-100 dark:border-slate-800">
                         <td className="py-1">{p.type}</td>
                         <td className="py-1">₹{Number(p.amount).toLocaleString('en-IN')}</td>
                         <td className="py-1">{p.paidAt ? `Paid ${new Date(p.paidAt).toLocaleDateString()}` : 'Pending'}</td>
@@ -122,49 +122,49 @@ export default function BookingsPage() {
                       </tr>
                     ))}
                     {(!b.payments || b.payments.length === 0) && (
-                      <tr><td colSpan={4} className="py-2 text-center text-slate-400">No payments recorded yet.</td></tr>
+                      <tr><td colSpan={4} className="py-2 text-center text-slate-400 dark:text-slate-500">No payments recorded yet.</td></tr>
                     )}
                   </tbody>
                 </table>
                 <div className="mt-3 flex items-end gap-2">
-                  <select value={paymentForm.type} onChange={(e) => setPaymentForm({ ...paymentForm, type: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+                  <select value={paymentForm.type} onChange={(e) => setPaymentForm({ ...paymentForm, type: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
                     <option value="CLIENT_RECEIPT">Client receipt</option>
                     <option value="DMC_PAYABLE">DMC payable</option>
                     <option value="COMMISSION">Commission</option>
                     <option value="REFUND">Refund</option>
                   </select>
-                  <input type="number" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} className="w-32 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                  <input type="number" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} className="w-32 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   <button onClick={() => handleAddPayment(b.id)} className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add payment</button>
                 </div>
 
-                <div className="mt-4 border-t border-slate-100 pt-3">
-                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Vouchers</p>
+                <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Vouchers</p>
                   <ul className="mt-1 space-y-1">
                     {(vouchers[b.id] ?? []).map((v) => (
                       <li key={v.id} className="text-sm">
                         <a href={v.pdfUrl ?? '#'} className="text-brand hover:underline">{v.refNo}</a>{' '}
-                        <span className="text-slate-400">· {v.type} · issued {new Date(v.issuedAt).toLocaleDateString()}</span>
+                        <span className="text-slate-400 dark:text-slate-500">· {v.type} · issued {new Date(v.issuedAt).toLocaleDateString()}</span>
                       </li>
                     ))}
-                    {(!vouchers[b.id] || vouchers[b.id].length === 0) && <li className="text-sm text-slate-400">None generated yet.</li>}
+                    {(!vouchers[b.id] || vouchers[b.id].length === 0) && <li className="text-sm text-slate-400 dark:text-slate-500">None generated yet.</li>}
                   </ul>
-                  <button onClick={() => handleGenerateVoucher(b.id)} className="mt-2 rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">
+                  <button onClick={() => handleGenerateVoucher(b.id)} className="mt-2 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
                     Generate voucher
                   </button>
                 </div>
 
-                <div className="mt-4 border-t border-slate-100 pt-3">
-                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Invoices</p>
+                <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Invoices</p>
                   <ul className="mt-1 space-y-1">
                     {(invoices[b.id] ?? []).map((i) => (
                       <li key={i.id} className="text-sm">
                         <a href={i.pdfUrl ?? '#'} className="text-brand hover:underline">{i.invoiceNo}</a>{' '}
-                        <span className="text-slate-400">· {i.currency} {Number(i.amount).toLocaleString('en-IN')} · issued {new Date(i.issuedAt).toLocaleDateString()}</span>
+                        <span className="text-slate-400 dark:text-slate-500">· {i.currency} {Number(i.amount).toLocaleString('en-IN')} · issued {new Date(i.issuedAt).toLocaleDateString()}</span>
                       </li>
                     ))}
-                    {(!invoices[b.id] || invoices[b.id].length === 0) && <li className="text-sm text-slate-400">None generated yet.</li>}
+                    {(!invoices[b.id] || invoices[b.id].length === 0) && <li className="text-sm text-slate-400 dark:text-slate-500">None generated yet.</li>}
                   </ul>
-                  <button onClick={() => handleGenerateInvoice(b.id)} className="mt-2 rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">
+                  <button onClick={() => handleGenerateInvoice(b.id)} className="mt-2 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
                     Generate invoice
                   </button>
                 </div>
@@ -172,7 +172,7 @@ export default function BookingsPage() {
             )}
           </div>
         ))}
-        {bookings.length === 0 && <p className="text-sm text-slate-400">No bookings yet — convert an approved quotation into a booking.</p>}
+        {bookings.length === 0 && <p className="text-sm text-slate-400 dark:text-slate-500">No bookings yet — convert an approved quotation into a booking.</p>}
       </div>
     </AppShell>
   );

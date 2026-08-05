@@ -50,34 +50,34 @@ export default function DataAdminPage() {
 
   return (
     <AppShell>
-      <h1 className="text-lg font-semibold text-slate-800">Data Admin</h1>
-      <p className="mt-1 text-sm text-slate-500">Operational health stats and a searchable log of every create/update/delete action across the CRM.</p>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Data Admin</h1>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Operational health stats and a searchable log of every create/update/delete action across the CRM.</p>
+      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {stats && (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {(Object.keys(STAT_LABELS) as (keyof DataAdminStatsDTO)[]).map((key) => (
-            <div key={key} className="rounded-lg border border-slate-200 bg-white p-4">
-              <p className="text-2xl font-semibold text-slate-800">{stats[key]}</p>
-              <p className="text-xs text-slate-500">{STAT_LABELS[key]}</p>
+            <div key={key} className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+              <p className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{stats[key]}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{STAT_LABELS[key]}</p>
             </div>
           ))}
         </div>
       )}
 
       <div className="mt-8 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-800">Audit Log</h2>
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Audit Log</h2>
         <input
           value={entityFilter}
           onChange={(e) => setEntityFilter(e.target.value)}
           placeholder="Filter by entity (e.g. leads, bookings)"
-          className="w-64 rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          className="w-64 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
         />
       </div>
 
-      <div className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="mt-3 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr>
               <th className="px-4 py-2">When</th>
               <th className="px-4 py-2">User</th>
@@ -88,17 +88,17 @@ export default function DataAdminPage() {
           </thead>
           <tbody>
             {logs.map((log) => (
-              <tr key={log.id} className="border-t border-slate-100">
-                <td className="px-4 py-2 text-slate-500">{new Date(log.createdAt).toLocaleString()}</td>
+              <tr key={log.id} className="border-t border-slate-100 dark:border-slate-800">
+                <td className="px-4 py-2 text-slate-500 dark:text-slate-400">{new Date(log.createdAt).toLocaleString()}</td>
                 <td className="px-4 py-2">{log.user?.name ?? '—'}</td>
                 <td className="px-4 py-2">{log.action}</td>
                 <td className="px-4 py-2">{log.entity}</td>
-                <td className="px-4 py-2 text-xs text-slate-400">{log.entityId ?? '—'}</td>
+                <td className="px-4 py-2 text-xs text-slate-400 dark:text-slate-500">{log.entityId ?? '—'}</td>
               </tr>
             ))}
             {logs.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-slate-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">
                   No audit log entries found.
                 </td>
               </tr>

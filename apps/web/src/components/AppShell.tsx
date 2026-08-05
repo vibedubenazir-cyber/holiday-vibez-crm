@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Role } from '@holiday-vibez/shared';
 import { useAuth } from '@/lib/auth-context';
 
@@ -17,6 +18,7 @@ const NAV_ITEMS: { href: string; label: string; roles: Role[] }[] = [
   { href: '/calendar', label: 'Departure Calendar', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/packages', label: 'Packages', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/suppliers', label: 'Suppliers', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
+  { href: '/clients', label: 'Clients', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/expenses', label: 'Accounts & Finance', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
   { href: '/attendance', label: 'Attendance', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/templates', label: 'Templates', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
@@ -42,6 +44,27 @@ const ROLE_LABELS: Record<string, string> = {
   TRAVEL_CONSULTANT: 'Travel Consultant',
 };
 
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return <div className="h-8 w-8" />;
+
+  const isDark = resolvedTheme === 'dark';
+
+  return (
+    <button
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      aria-label="Toggle dark mode"
+      className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+    >
+      {isDark ? '☀️' : '🌙'}
+    </button>
+  );
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
@@ -56,7 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-slate-500">Loading...</p>
+        <p className="text-slate-500 dark:text-slate-400">Loading...</p>
       </div>
     );
   }
@@ -65,8 +88,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="w-60 shrink-0 border-r border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-5 py-4">
+      <aside className="w-60 shrink-0 border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+        <div className="border-b border-slate-200 px-5 py-4 dark:border-slate-700">
           <Image src="/logo.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-32" priority />
         </div>
         <nav className="flex flex-col gap-1 p-3">
@@ -76,8 +99,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               href={item.href}
               className={`rounded-md px-3 py-2 text-sm font-medium transition ${
                 pathname === item.href
-                  ? 'bg-brand-light text-brand-dark'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  ? 'bg-brand-light text-brand-dark dark:bg-brand-dark/20 dark:text-brand-light'
+                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
               }`}
             >
               {item.label}
@@ -86,17 +109,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </aside>
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3">
+        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-700 dark:bg-slate-900">
           <div>
-            <p className="text-sm font-medium text-slate-800">{user.name}</p>
-            <p className="text-xs text-slate-400">{ROLE_LABELS[user.role] ?? user.role}</p>
+            <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{user.name}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">{ROLE_LABELS[user.role] ?? user.role}</p>
           </div>
-          <button
-            onClick={() => logout()}
-            className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
-          >
-            Sign out
-          </button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              onClick={() => logout()}
+              className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              Sign out
+            </button>
+          </div>
         </header>
         <main className="flex-1 p-6">{children}</main>
       </div>

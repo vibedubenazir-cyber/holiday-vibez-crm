@@ -37,6 +37,14 @@ export enum RateCardType {
   ACTIVITY = 'ACTIVITY',
   FLIGHT = 'FLIGHT',
   HOTEL = 'HOTEL',
+  TRANSFER = 'TRANSFER',
+}
+
+export enum ClientType {
+  INDIVIDUAL = 'INDIVIDUAL',
+  AGENT = 'AGENT',
+  CORPORATE = 'CORPORATE',
+  GROUP = 'GROUP',
 }
 
 export enum RateCardSource {

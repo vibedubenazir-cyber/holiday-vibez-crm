@@ -23,7 +23,7 @@ export interface BranchDTO {
 
 export interface RateCardDTO {
   id: string;
-  type: 'ACTIVITY' | 'FLIGHT' | 'HOTEL';
+  type: 'ACTIVITY' | 'FLIGHT' | 'HOTEL' | 'TRANSFER';
   destination: string;
   name: string;
   baseCost: number;
@@ -38,6 +38,7 @@ export interface RateCardDTO {
 export interface LeadSummaryDTO {
   id: string;
   clientName: string;
+  clientId: string | null;
   phone: string;
   email: string | null;
   destination: string;
@@ -406,3 +407,33 @@ export interface TwoFactorSetupDTO {
 export type LoginResponseDTO =
   | { requiresTwoFactor: true; userId: string }
   | { requiresTwoFactor?: false; accessToken: string; user: UserDTO };
+
+export interface ClientDTO {
+  id: string;
+  name: string;
+  type: 'INDIVIDUAL' | 'AGENT' | 'CORPORATE' | 'GROUP';
+  phone: string | null;
+  email: string | null;
+  gstNumber: string | null;
+  commissionPct: number | null;
+  notes: string | null;
+  active: boolean;
+}
+
+export interface MonthlyPnLRowDTO {
+  month: string;
+  revenue: number;
+  paymentCosts: number;
+  expenses: number;
+  netMargin: number;
+}
+
+export interface TransferSearchResultDTO {
+  vehicleType: string;
+  capacity: number;
+  pickup: string;
+  drop: string;
+  date: string;
+  distanceKm: number;
+  baseFare: number;
+}

@@ -53,6 +53,14 @@ enum RateCardType {
   ACTIVITY
   FLIGHT
   HOTEL
+  TRANSFER
+}
+
+enum ClientType {
+  INDIVIDUAL
+  AGENT
+  CORPORATE
+  GROUP
 }
 
 enum RateCardSource {
@@ -240,12 +248,35 @@ model Lead {
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
 
+  // Optional link to a Client business-entity record (agent/corporate/group
+  // account). clientName stays the free-text field it always was — this is
+  // opt-in, not a replacement, so existing leads need no backfill.
+  clientId String?
+  client   Client?  @relation(fields: [clientId], references: [id])
+
   travelers      Traveler[]
   quotations     Quotation[]
   conversations  Conversation[]
   automationLogs AutomationLog[]
 
   @@map("leads")
+}
+
+model Client {
+  id            String     @id @default(uuid())
+  name          String
+  type          ClientType @default(INDIVIDUAL)
+  phone         String?
+  email         String?
+  gstNumber     String? // corporate accounts
+  commissionPct Decimal?   @db.Decimal(5, 2) // agent accounts
+  notes         String?
+  active        Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+
+  leads Lead[]
+
+  @@map("clients")
 }
 
 model Traveler {

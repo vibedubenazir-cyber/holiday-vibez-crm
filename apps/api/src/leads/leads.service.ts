@@ -48,6 +48,7 @@ export class LeadsService {
         source: dto.source,
         utmCampaign: dto.utmCampaign,
         clientName: dto.clientName,
+        clientId: dto.clientId,
         phone: dto.phone,
         email: dto.email,
         destination: dto.destination,

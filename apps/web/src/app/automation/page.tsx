@@ -79,33 +79,33 @@ export default function AutomationPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800">Automation</h1>
+        <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Automation</h1>
         <button onClick={() => setShowForm((s) => !s)} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">
           {showForm ? 'Cancel' : 'New rule'}
         </button>
       </div>
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         A sweep runs every 5 minutes, checking every active rule against Leads and firing through the same notification pipeline as the rest of the CRM.
       </p>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-3">
-          <input required placeholder="Rule name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          <select value={form.trigger} onChange={(e) => setForm({ ...form, trigger: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <input required placeholder="Rule name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <select value={form.trigger} onChange={(e) => setForm({ ...form, trigger: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
             {Object.entries(TRIGGER_LABELS).map(([v, label]) => <option key={v} value={v}>{label}</option>)}
           </select>
           {form.trigger === AutomationTrigger.LEAD_STATUS_CHANGED && (
-            <select value={form.targetLeadStatus} onChange={(e) => setForm({ ...form, targetLeadStatus: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+            <select value={form.targetLeadStatus} onChange={(e) => setForm({ ...form, targetLeadStatus: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
               {Object.values(LeadStatus).map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           )}
-          <input required type="number" min={0} placeholder="Delay (minutes)" value={form.delayMinutes} onChange={(e) => setForm({ ...form, delayMinutes: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          <select value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+          <input required type="number" min={0} placeholder="Delay (minutes)" value={form.delayMinutes} onChange={(e) => setForm({ ...form, delayMinutes: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <select value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
             <option value={NotificationChannel.WHATSAPP}>WhatsApp</option>
             <option value={NotificationChannel.EMAIL}>Email</option>
           </select>
-          <select value={form.templateId} onChange={(e) => setForm({ ...form, templateId: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+          <select value={form.templateId} onChange={(e) => setForm({ ...form, templateId: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
             <option value="">No template</option>
             {templates.filter((t) => t.channel === form.channel).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
@@ -115,10 +115,10 @@ export default function AutomationPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-100 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500">Rules</div>
+      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+        <div className="border-b border-slate-100 dark:border-slate-800 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Rules</div>
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Trigger</th>
@@ -130,13 +130,13 @@ export default function AutomationPage() {
           </thead>
           <tbody>
             {rules.map((r) => (
-              <tr key={r.id} className="border-t border-slate-100">
-                <td className="px-4 py-2 font-medium text-slate-800">{r.name}</td>
+              <tr key={r.id} className="border-t border-slate-100 dark:border-slate-800">
+                <td className="px-4 py-2 font-medium text-slate-800 dark:text-slate-100">{r.name}</td>
                 <td className="px-4 py-2">{TRIGGER_LABELS[r.trigger]}{r.targetLeadStatus ? ` (${r.targetLeadStatus})` : ''}</td>
                 <td className="px-4 py-2">{r.delayMinutes}m</td>
                 <td className="px-4 py-2">{r.channel}</td>
                 <td className="px-4 py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.active ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-slate-200 text-slate-600 dark:text-slate-300'}`}>
                     {r.active ? 'Active' : 'Paused'}
                   </span>
                 </td>
@@ -146,16 +146,16 @@ export default function AutomationPage() {
               </tr>
             ))}
             {rules.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">No automation rules yet.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">No automation rules yet.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-100 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500">Recent fires</div>
+      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+        <div className="border-b border-slate-100 dark:border-slate-800 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Recent fires</div>
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr>
               <th className="px-4 py-2">Rule</th>
               <th className="px-4 py-2">Lead</th>
@@ -165,7 +165,7 @@ export default function AutomationPage() {
           </thead>
           <tbody>
             {logs.map((l) => (
-              <tr key={l.id} className="border-t border-slate-100">
+              <tr key={l.id} className="border-t border-slate-100 dark:border-slate-800">
                 <td className="px-4 py-2">{l.rule?.name}</td>
                 <td className="px-4 py-2">{l.lead?.clientName}</td>
                 <td className="px-4 py-2">{new Date(l.firedAt).toLocaleString()}</td>
@@ -173,7 +173,7 @@ export default function AutomationPage() {
               </tr>
             ))}
             {logs.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400">No automation fires yet.</td></tr>
+              <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">No automation fires yet.</td></tr>
             )}
           </tbody>
         </table>

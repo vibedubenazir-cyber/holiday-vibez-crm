@@ -43,15 +43,15 @@ export default function ApprovalsPage() {
 
   return (
     <AppShell>
-      <h1 className="text-lg font-semibold text-slate-800">Approval Queue</h1>
-      <p className="mt-1 text-sm text-slate-500">
+      <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Approval Queue</h1>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Hard gate — no quotation reaches a customer until a Branch Manager approves it here.
       </p>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr>
               <th className="px-4 py-2">Ref No</th>
               <th className="px-4 py-2">Client</th>
@@ -61,17 +61,17 @@ export default function ApprovalsPage() {
           </thead>
           <tbody>
             {quotations.map((q) => (
-              <tr key={q.id} className="border-t border-slate-100">
-                <td className="px-4 py-2 font-medium text-slate-800">{q.refNo}</td>
+              <tr key={q.id} className="border-t border-slate-100 dark:border-slate-800">
+                <td className="px-4 py-2 font-medium text-slate-800 dark:text-slate-100">{q.refNo}</td>
                 <td className="px-4 py-2">{q.lead?.clientName ?? '—'}</td>
                 <td className="px-4 py-2">₹{Number(q.totalAmount).toLocaleString('en-IN')}</td>
                 <td className="px-4 py-2 text-right">
                   <button onClick={() => handleApprove(q.id)} className="mr-3 text-emerald-600 hover:underline">Approve & send</button>
-                  <button onClick={() => handleReject(q.id)} className="text-red-600 hover:underline">Reject</button>
+                  <button onClick={() => handleReject(q.id)} className="text-red-600 dark:text-red-400 hover:underline">Reject</button>
                 </td>
               </tr>
             ))}
-            {quotations.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400">Nothing pending approval.</td></tr>}
+            {quotations.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">Nothing pending approval.</td></tr>}
           </tbody>
         </table>
       </div>

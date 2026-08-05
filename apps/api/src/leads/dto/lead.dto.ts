@@ -12,6 +12,11 @@ export class CreateLeadDto {
   @IsString()
   clientName!: string;
 
+  // Optional link to a Client business-entity record (agent/corporate/group).
+  @IsOptional()
+  @IsString()
+  clientId?: string;
+
   @IsString()
   phone!: string;
 

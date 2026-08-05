@@ -32,29 +32,29 @@ export default function CalendarPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800">Departure Calendar</h1>
-        <select value={range} onChange={(e) => setRange(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+        <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Departure Calendar</h1>
+        <select value={range} onChange={(e) => setRange(e.target.value)} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
           <option value="7">Next 7 days</option>
           <option value="14">Next 14 days</option>
           <option value="30">Next 30 days</option>
           <option value="90">Next 90 days</option>
         </select>
       </div>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       <div className="mt-4 space-y-2">
         {entries.map((e) => (
           <div key={e.bookingId} className={`flex items-center justify-between rounded-md p-3 ${READINESS_STYLE[e.readiness]}`}>
             <div>
-              <p className="font-medium text-slate-800">{e.clientName} → {e.destination}</p>
-              <p className="text-xs text-slate-500">
+              <p className="font-medium text-slate-800 dark:text-slate-100">{e.clientName} → {e.destination}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Departs {new Date(e.departureDate).toLocaleDateString()} ({e.daysToDeparture} days) · Docs: {e.docsComplete ? 'complete' : 'pending'} · Payment: {e.paymentComplete ? 'complete' : 'pending'}
               </p>
             </div>
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">{READINESS_LABEL[e.readiness]}</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">{READINESS_LABEL[e.readiness]}</span>
           </div>
         ))}
-        {entries.length === 0 && <p className="text-sm text-slate-400">No departures in this window.</p>}
+        {entries.length === 0 && <p className="text-sm text-slate-400 dark:text-slate-500">No departures in this window.</p>}
       </div>
     </AppShell>
   );

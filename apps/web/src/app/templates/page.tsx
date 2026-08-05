@@ -43,31 +43,31 @@ export default function TemplatesPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800">Templates</h1>
+        <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Templates</h1>
         {canManage && (
           <button onClick={() => setShowForm((s) => !s)} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">
             {showForm ? 'Cancel' : 'Add template'}
           </button>
         )}
       </div>
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Reusable WhatsApp/email message templates, selectable from the Inbox compose box.
       </p>
-      {!canManage && <p className="mt-1 text-xs text-slate-400">Read-only — only Admin/Director can manage templates.</p>}
+      {!canManage && <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Read-only — only Admin/Director can manage templates.</p>}
 
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {canManage && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2">
-          <select value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:grid-cols-2">
+          <select value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
             <option value={NotificationChannel.WHATSAPP}>WhatsApp</option>
             <option value={NotificationChannel.EMAIL}>Email</option>
           </select>
-          <input required placeholder="Template name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
+          <input required placeholder="Template name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
           {form.channel === NotificationChannel.EMAIL && (
-            <input placeholder="Subject" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
+            <input placeholder="Subject" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm sm:col-span-2" />
           )}
-          <textarea required placeholder="Message body" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={3} className="rounded-md border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
+          <textarea required placeholder="Message body" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={3} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm sm:col-span-2" />
           <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2">
             Create template
           </button>
@@ -76,16 +76,16 @@ export default function TemplatesPage() {
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {templates.map((t) => (
-          <div key={t.id} className="rounded-lg border border-slate-200 bg-white p-4">
+          <div key={t.id} className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
             <div className="flex items-center justify-between">
-              <p className="font-medium text-slate-800">{t.name}</p>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">{t.channel}</span>
+              <p className="font-medium text-slate-800 dark:text-slate-100">{t.name}</p>
+              <span className="rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">{t.channel}</span>
             </div>
-            {t.subject && <p className="mt-1 text-xs text-slate-500">Subject: {t.subject}</p>}
-            <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">{t.body}</p>
+            {t.subject && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Subject: {t.subject}</p>}
+            <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600 dark:text-slate-300">{t.body}</p>
           </div>
         ))}
-        {templates.length === 0 && <p className="text-sm text-slate-400">No templates yet.</p>}
+        {templates.length === 0 && <p className="text-sm text-slate-400 dark:text-slate-500">No templates yet.</p>}
       </div>
     </AppShell>
   );

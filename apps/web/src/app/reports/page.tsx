@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { useAuth } from '@/lib/auth-context';
 import { api, ApiError } from '@/lib/api';
-import { Role, type BranchDTO } from '@holiday-vibez/shared';
+import { Role, type BranchDTO, type MonthlyPnLRowDTO } from '@holiday-vibez/shared';
 
 interface DirectorDashboard {
   totalLeads: number;
@@ -31,6 +31,12 @@ export default function ReportsPage() {
   const [branches, setBranches] = useState<BranchDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  const canViewPnL = me?.role === Role.DIRECTOR || me?.role === Role.ADMIN || me?.role === Role.BRANCH_MANAGER;
+  const [pnlYear, setPnlYear] = useState(new Date().getFullYear());
+  const [pnlBranchId, setPnlBranchId] = useState('');
+  const [pnlRows, setPnlRows] = useState<MonthlyPnLRowDTO[]>([]);
+  const [pnlError, setPnlError] = useState<string | null>(null);
+
   useEffect(() => {
     api.get<BranchDTO[]>('/branches').then(setBranches).catch(() => undefined);
     api.get<ComplianceRow[]>('/reports/compliance/expiring').then(setCompliance).catch(() => undefined);
@@ -42,10 +48,22 @@ export default function ReportsPage() {
     }
   }, [me]);
 
+  useEffect(() => {
+    if (!canViewPnL) return;
+    setPnlError(null);
+    const params = new URLSearchParams({ year: String(pnlYear) });
+    if (pnlBranchId) params.set('branchId', pnlBranchId);
+    api
+      .get<MonthlyPnLRowDTO[]>(`/reports/pnl/monthly?${params}`)
+      .then(setPnlRows)
+      .catch((err) => setPnlError(err instanceof ApiError ? err.message : 'Failed to load monthly P&L'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canViewPnL, pnlYear, pnlBranchId]);
+
   return (
     <AppShell>
-      <h1 className="text-lg font-semibold text-slate-800">Reports</h1>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Reports</h1>
+      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {dashboard && (
         <>
@@ -56,15 +74,15 @@ export default function ReportsPage() {
             <Stat label="Gross margin" value={`₹${dashboard.grossMargin.toLocaleString('en-IN')}`} />
           </div>
 
-          <h2 className="mt-6 text-sm font-semibold text-slate-700">Branch target vs. achieved</h2>
-          <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Branch target vs. achieved</h2>
+          <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+              <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 <tr><th className="px-4 py-2">Branch</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Achieved</th></tr>
               </thead>
               <tbody>
                 {dashboard.branches.map((b) => (
-                  <tr key={b.branchId} className="border-t border-slate-100">
+                  <tr key={b.branchId} className="border-t border-slate-100 dark:border-slate-800">
                     <td className="px-4 py-2">{b.name}</td>
                     <td className="px-4 py-2">₹{b.revenueTarget.toLocaleString('en-IN')}</td>
                     <td className="px-4 py-2">₹{b.revenueAchieved.toLocaleString('en-IN')}</td>
@@ -76,23 +94,82 @@ export default function ReportsPage() {
         </>
       )}
 
-      <h2 className="mt-6 text-sm font-semibold text-slate-700">Passport/visa expiry compliance</h2>
-      <p className="text-xs text-slate-500">Travelers on an upcoming booking with a passport expiring within 6 months of departure, or no visa status on file.</p>
-      <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white">
+      {canViewPnL && (
+        <>
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Monthly P&amp;L</h2>
+            <div className="flex items-center gap-2">
+              {me?.role !== Role.BRANCH_MANAGER && (
+                <select
+                  value={pnlBranchId}
+                  onChange={(e) => setPnlBranchId(e.target.value)}
+                  className="rounded-md border border-slate-300 dark:border-slate-600 px-2 py-1 text-sm"
+                >
+                  <option value="">All branches</option>
+                  {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                </select>
+              )}
+              <select
+                value={pnlYear}
+                onChange={(e) => setPnlYear(Number(e.target.value))}
+                className="rounded-md border border-slate-300 dark:border-slate-600 px-2 py-1 text-sm"
+              >
+                {Array.from({ length: 4 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Revenue and payment costs bucket by when client/DMC payments were actually recorded; expenses bucket by their own date. Net margin = revenue − payment costs − expenses.
+          </p>
+          {pnlError && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{pnlError}</p>}
+          <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                <tr>
+                  <th className="px-4 py-2">Month</th>
+                  <th className="px-4 py-2">Revenue</th>
+                  <th className="px-4 py-2">Payment costs</th>
+                  <th className="px-4 py-2">Expenses</th>
+                  <th className="px-4 py-2">Net margin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pnlRows.map((row) => (
+                  <tr key={row.month} className="border-t border-slate-100 dark:border-slate-800">
+                    <td className="px-4 py-2">{row.month}</td>
+                    <td className="px-4 py-2">₹{row.revenue.toLocaleString('en-IN')}</td>
+                    <td className="px-4 py-2">₹{row.paymentCosts.toLocaleString('en-IN')}</td>
+                    <td className="px-4 py-2">₹{row.expenses.toLocaleString('en-IN')}</td>
+                    <td className={`px-4 py-2 font-medium ${row.netMargin < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
+                      ₹{row.netMargin.toLocaleString('en-IN')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Passport/visa expiry compliance</h2>
+      <p className="text-xs text-slate-500 dark:text-slate-400">Travelers on an upcoming booking with a passport expiring within 6 months of departure, or no visa status on file.</p>
+      <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr><th className="px-4 py-2">Traveler</th><th className="px-4 py-2">Departure</th><th className="px-4 py-2">Passport expiry</th><th className="px-4 py-2">Reason</th></tr>
           </thead>
           <tbody>
             {compliance.map((c) => (
-              <tr key={c.travelerId} className="border-t border-slate-100">
+              <tr key={c.travelerId} className="border-t border-slate-100 dark:border-slate-800">
                 <td className="px-4 py-2">{c.name}</td>
                 <td className="px-4 py-2">{new Date(c.departureDate).toLocaleDateString()}</td>
                 <td className="px-4 py-2">{c.passportExpiry ? new Date(c.passportExpiry).toLocaleDateString() : '—'}</td>
-                <td className="px-4 py-2 text-red-600">{c.reason}</td>
+                <td className="px-4 py-2 text-red-600 dark:text-red-400">{c.reason}</td>
               </tr>
             ))}
-            {compliance.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400">Nothing flagged.</td></tr>}
+            {compliance.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">Nothing flagged.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -102,9 +179,9 @@ export default function ReportsPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-slate-800">{value}</p>
+    <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+      <p className="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">{label}</p>
+      <p className="mt-1 text-lg font-semibold text-slate-800 dark:text-slate-100">{value}</p>
     </div>
   );
 }

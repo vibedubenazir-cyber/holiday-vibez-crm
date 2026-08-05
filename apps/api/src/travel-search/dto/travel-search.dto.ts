@@ -35,12 +35,29 @@ export class SearchFlightsQueryDto {
   pax?: number;
 }
 
+export class SearchTransfersQueryDto {
+  @IsString()
+  pickup!: string;
+
+  @IsString()
+  drop!: string;
+
+  @IsISO8601()
+  date!: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  pax?: number;
+}
+
 export class AddSearchResultToQuotationDto {
   @IsString()
   quotationId!: string;
 
-  @IsIn(['HOTEL', 'FLIGHT'])
-  type!: 'HOTEL' | 'FLIGHT';
+  @IsIn(['HOTEL', 'FLIGHT', 'TRANSFER'])
+  type!: 'HOTEL' | 'FLIGHT' | 'TRANSFER';
 
   @IsString()
   name!: string;

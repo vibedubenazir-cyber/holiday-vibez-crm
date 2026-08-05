@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { api, ApiError } from '@/lib/api';
 import { Role, RateCardType, type RateCardDTO } from '@holiday-vibez/shared';
 
-const TYPE_OPTIONS = [RateCardType.HOTEL, RateCardType.ACTIVITY, RateCardType.FLIGHT];
+const TYPE_OPTIONS = [RateCardType.HOTEL, RateCardType.ACTIVITY, RateCardType.FLIGHT, RateCardType.TRANSFER];
 
 export default function RatesPage() {
   const { user: me } = useAuth();
@@ -65,7 +65,7 @@ export default function RatesPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800">Rate Cards</h1>
+        <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Rate Cards</h1>
         {isAdmin && (
           <button
             onClick={() => setShowForm((s) => !s)}
@@ -76,32 +76,32 @@ export default function RatesPage() {
         )}
       </div>
       {!isAdmin && (
-        <p className="mt-1 text-xs text-slate-400">Read-only — only Admin can create or edit rate cards.</p>
+        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Read-only — only Admin can create or edit rate cards.</p>
       )}
 
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {isAdmin && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-3">
-          <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
             {TYPE_OPTIONS.map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
           </select>
-          <input required placeholder="Destination" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          <input required placeholder="Name / description" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          <input required type="number" placeholder="Base cost" value={form.baseCost} onChange={(e) => setForm({ ...form, baseCost: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          <input type="number" placeholder="Tax %" value={form.taxPct} onChange={(e) => setForm({ ...form, taxPct: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-          <input placeholder="Currency" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
+          <input required placeholder="Destination" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input required placeholder="Name / description" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input required type="number" placeholder="Base cost" value={form.baseCost} onChange={(e) => setForm({ ...form, baseCost: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input type="number" placeholder="Tax %" value={form.taxPct} onChange={(e) => setForm({ ...form, taxPct: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input placeholder="Currency" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
           <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
             Create rate card
           </button>
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr>
               <th className="px-4 py-2">Type</th>
               <th className="px-4 py-2">Destination</th>
@@ -115,7 +115,7 @@ export default function RatesPage() {
           </thead>
           <tbody>
             {rates.map((r) => (
-              <tr key={r.id} className="border-t border-slate-100">
+              <tr key={r.id} className="border-t border-slate-100 dark:border-slate-800">
                 <td className="px-4 py-2">{r.type}</td>
                 <td className="px-4 py-2">{r.destination}</td>
                 <td className="px-4 py-2">{r.name}</td>
@@ -123,7 +123,7 @@ export default function RatesPage() {
                 <td className="px-4 py-2">{r.taxPct}%</td>
                 <td className="px-4 py-2">v{r.version}</td>
                 <td className="px-4 py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.active ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-slate-200 text-slate-600 dark:text-slate-300'}`}>
                     {r.active ? 'Active' : 'Inactive'}
                   </span>
                 </td>

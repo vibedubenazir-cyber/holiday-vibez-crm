@@ -47,14 +47,14 @@ export default function LoginPage() {
   if (twoFactorUserId) {
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
-        <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+        <div className="w-full max-w-sm rounded-xl bg-white dark:bg-slate-800 p-8 shadow-sm ring-1 ring-slate-200">
           <div className="mb-6 text-center">
             <Image src="/logo.png" alt="Holiday Vibez" width={220} height={55} className="mx-auto h-auto w-48" priority />
-            <p className="mt-2 text-sm text-slate-500">Enter the 6-digit code from your authenticator app</p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Enter the 6-digit code from your authenticator app</p>
           </div>
           <form onSubmit={handleVerify} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700" htmlFor="code">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="code">
                 Authentication code
               </label>
               <input
@@ -65,12 +65,12 @@ export default function LoginPage() {
                 maxLength={6}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-center text-lg tracking-widest focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-center text-lg tracking-widest focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                 placeholder="000000"
                 autoFocus
               />
             </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
             <button
               type="submit"
               disabled={submitting}
@@ -85,7 +85,7 @@ export default function LoginPage() {
                 setCode('');
                 setError(null);
               }}
-              className="w-full text-center text-sm text-slate-500 hover:underline"
+              className="w-full text-center text-sm text-slate-500 dark:text-slate-400 hover:underline"
             >
               Back to sign in
             </button>
@@ -97,14 +97,14 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+      <div className="w-full max-w-sm rounded-xl bg-white dark:bg-slate-800 p-8 shadow-sm ring-1 ring-slate-200">
         <div className="mb-6 text-center">
           <Image src="/logo.png" alt="Holiday Vibez" width={220} height={55} className="mx-auto h-auto w-48" priority />
-          <p className="mt-2 text-sm text-slate-500">Sign in to your account</p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Sign in to your account</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700" htmlFor="email">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="email">
               Email
             </label>
             <input
@@ -113,12 +113,12 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               placeholder="you@holidayvibez.com"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700" htmlFor="password">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="password">
               Password
             </label>
             <input
@@ -127,11 +127,11 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               placeholder="••••••••"
             />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
           <button
             type="submit"
             disabled={submitting}

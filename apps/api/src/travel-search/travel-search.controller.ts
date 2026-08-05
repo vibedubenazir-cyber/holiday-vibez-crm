@@ -2,8 +2,14 @@ import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { HotelSearchService } from './hotel-search.service';
 import { FlightSearchService } from './flight-search.service';
+import { TransferSearchService } from './transfer-search.service';
 import { TravelSearchAddService } from './travel-search.service';
-import { AddSearchResultToQuotationDto, SearchFlightsQueryDto, SearchHotelsQueryDto } from './dto/travel-search.dto';
+import {
+  AddSearchResultToQuotationDto,
+  SearchFlightsQueryDto,
+  SearchHotelsQueryDto,
+  SearchTransfersQueryDto,
+} from './dto/travel-search.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -17,6 +23,7 @@ export class TravelSearchController {
   constructor(
     private readonly hotelSearchService: HotelSearchService,
     private readonly flightSearchService: FlightSearchService,
+    private readonly transferSearchService: TransferSearchService,
     private readonly travelSearchAddService: TravelSearchAddService,
   ) {}
 
@@ -30,6 +37,12 @@ export class TravelSearchController {
   @Get('flights')
   searchFlights(@Query() query: SearchFlightsQueryDto) {
     return this.flightSearchService.search(query);
+  }
+
+  @Roles(...ALL_ROLES)
+  @Get('transfers')
+  searchTransfers(@Query() query: SearchTransfersQueryDto) {
+    return this.transferSearchService.search(query);
   }
 
   // Same role gate as QuotationsController's own item-add endpoint — this is just

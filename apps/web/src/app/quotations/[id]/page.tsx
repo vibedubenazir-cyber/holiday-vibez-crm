@@ -4,7 +4,14 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AppShell } from '@/components/AppShell';
 import { api, ApiError } from '@/lib/api';
-import type { FlightSearchResultDTO, HotelSearchResultDTO, QuotationItemDTO, QuotationSummaryDTO, RateCardDTO } from '@holiday-vibez/shared';
+import type {
+  FlightSearchResultDTO,
+  HotelSearchResultDTO,
+  QuotationItemDTO,
+  QuotationSummaryDTO,
+  RateCardDTO,
+  TransferSearchResultDTO,
+} from '@holiday-vibez/shared';
 
 interface QuotationDetail extends Omit<QuotationSummaryDTO, 'lead'> {
   items: QuotationItemDTO[];
@@ -30,6 +37,11 @@ export default function QuotationDetailPage() {
   const [flightForm, setFlightForm] = useState({ origin: '', destination: '', date: '', pax: 2 });
   const [flightResults, setFlightResults] = useState<FlightSearchResultDTO[]>([]);
   const [flightMarkup, setFlightMarkup] = useState(15);
+
+  const [showTransferSearch, setShowTransferSearch] = useState(false);
+  const [transferForm, setTransferForm] = useState({ pickup: '', drop: '', date: '', pax: 2 });
+  const [transferResults, setTransferResults] = useState<TransferSearchResultDTO[]>([]);
+  const [transferMarkup, setTransferMarkup] = useState(15);
 
   async function load() {
     try {
@@ -131,6 +143,39 @@ export default function QuotationDetailPage() {
     }
   }
 
+  async function handleSearchTransfers(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    try {
+      const params = new URLSearchParams({
+        pickup: transferForm.pickup,
+        drop: transferForm.drop,
+        date: transferForm.date,
+        pax: String(transferForm.pax),
+      });
+      setTransferResults(await api.get<TransferSearchResultDTO[]>(`/travel-search/transfers?${params}`));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to search transfers');
+    }
+  }
+
+  async function handleAddTransfer(transfer: TransferSearchResultDTO) {
+    setError(null);
+    try {
+      await api.post('/travel-search/add-to-quotation', {
+        quotationId: id,
+        type: 'TRANSFER',
+        name: `${transfer.vehicleType} transfer ${transfer.pickup} → ${transfer.drop}`,
+        destination: transfer.drop,
+        netRate: transfer.baseFare,
+        markupPct: transferMarkup,
+      });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to add transfer');
+    }
+  }
+
   async function handleRemoveItem(itemId: string) {
     try {
       await api.delete(`/quotations/${id}/items/${itemId}`);
@@ -164,7 +209,7 @@ export default function QuotationDetailPage() {
   if (!quotation) {
     return (
       <AppShell>
-        <p className="text-sm text-slate-500">{error ?? 'Loading...'}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{error ?? 'Loading...'}</p>
       </AppShell>
     );
   }
@@ -176,8 +221,8 @@ export default function QuotationDetailPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-800">{quotation.refNo}</h1>
-          <p className="text-sm text-slate-500">{quotation.lead.clientName} · {quotation.lead.destination} · {quotation.status}</p>
+          <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{quotation.refNo}</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{quotation.lead.clientName} · {quotation.lead.destination} · {quotation.status}</p>
         </div>
         <div className="flex gap-2">
           {isDraft && (
@@ -188,18 +233,18 @@ export default function QuotationDetailPage() {
         </div>
       </div>
 
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {isSent && (
-        <form onSubmit={handleCreateBooking} className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-4">
+        <form onSubmit={handleCreateBooking} className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
           <div>
-            <label className="block text-xs text-slate-500">Departure date</label>
+            <label className="block text-xs text-slate-500 dark:text-slate-400">Departure date</label>
             <input
               required
               type="date"
               value={departureDate}
               onChange={(e) => setDepartureDate(e.target.value)}
-              className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
             />
           </div>
           <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">
@@ -210,7 +255,7 @@ export default function QuotationDetailPage() {
 
       {isDraft && (
         <div className="mt-4 space-y-3">
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
             <button onClick={() => setShowHotelSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
               {showHotelSearch ? 'Hide hotel search' : '+ Search hotels (live)'}
             </button>
@@ -218,37 +263,37 @@ export default function QuotationDetailPage() {
               <>
                 <form onSubmit={handleSearchHotels} className="mt-3 flex flex-wrap items-end gap-3">
                   <div>
-                    <label className="block text-xs text-slate-500">Destination</label>
-                    <input required value={hotelForm.destination} onChange={(e) => setHotelForm({ ...hotelForm, destination: e.target.value })} className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Destination</label>
+                    <input required value={hotelForm.destination} onChange={(e) => setHotelForm({ ...hotelForm, destination: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500">Check-in</label>
-                    <input required type="date" value={hotelForm.checkIn} onChange={(e) => setHotelForm({ ...hotelForm, checkIn: e.target.value })} className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Check-in</label>
+                    <input required type="date" value={hotelForm.checkIn} onChange={(e) => setHotelForm({ ...hotelForm, checkIn: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500">Check-out</label>
-                    <input required type="date" value={hotelForm.checkOut} onChange={(e) => setHotelForm({ ...hotelForm, checkOut: e.target.value })} className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Check-out</label>
+                    <input required type="date" value={hotelForm.checkOut} onChange={(e) => setHotelForm({ ...hotelForm, checkOut: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500">Guests</label>
-                    <input type="number" min={1} value={hotelForm.guests} onChange={(e) => setHotelForm({ ...hotelForm, guests: Number(e.target.value) })} className="mt-1 w-20 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Guests</label>
+                    <input type="number" min={1} value={hotelForm.guests} onChange={(e) => setHotelForm({ ...hotelForm, guests: Number(e.target.value) })} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500">Markup %</label>
-                    <input type="number" min={0} value={hotelMarkup} onChange={(e) => setHotelMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Markup %</label>
+                    <input type="number" min={0} value={hotelMarkup} onChange={(e) => setHotelMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
                 </form>
                 <div className="mt-3 space-y-3">
                   {hotelResults.map((hotel, hi) => (
-                    <div key={hi} className="rounded-md border border-slate-100 p-3">
-                      <p className="text-sm font-medium text-slate-800">{hotel.hotelName} · {'★'.repeat(hotel.starRating)}</p>
-                      <p className="text-xs text-slate-500">{hotel.address} · {hotel.nights} night(s)</p>
+                    <div key={hi} className="rounded-md border border-slate-100 dark:border-slate-800 p-3">
+                      <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{hotel.hotelName} · {'★'.repeat(hotel.starRating)}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{hotel.address} · {hotel.nights} night(s)</p>
                       <table className="mt-2 w-full text-xs">
-                        <thead className="text-left text-slate-500"><tr><th className="py-1">Room</th><th>Meal</th><th>Nightly</th><th>Total (marked up)</th><th></th></tr></thead>
+                        <thead className="text-left text-slate-500 dark:text-slate-400"><tr><th className="py-1">Room</th><th>Meal</th><th>Nightly</th><th>Total (marked up)</th><th></th></tr></thead>
                         <tbody>
                           {hotel.rooms.map((room, ri) => (
-                            <tr key={ri} className="border-t border-slate-100">
+                            <tr key={ri} className="border-t border-slate-100 dark:border-slate-800">
                               <td className="py-1">{room.roomType}</td>
                               <td>{room.mealPlan}</td>
                               <td>₹{room.nightlyRate.toLocaleString('en-IN')}</td>
@@ -265,7 +310,7 @@ export default function QuotationDetailPage() {
             )}
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
             <button onClick={() => setShowFlightSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
               {showFlightSearch ? 'Hide flight search' : '+ Search flights (live)'}
             </button>
@@ -273,32 +318,32 @@ export default function QuotationDetailPage() {
               <>
                 <form onSubmit={handleSearchFlights} className="mt-3 flex flex-wrap items-end gap-3">
                   <div>
-                    <label className="block text-xs text-slate-500">Origin</label>
-                    <input required value={flightForm.origin} onChange={(e) => setFlightForm({ ...flightForm, origin: e.target.value })} className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Origin</label>
+                    <input required value={flightForm.origin} onChange={(e) => setFlightForm({ ...flightForm, origin: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500">Destination</label>
-                    <input required value={flightForm.destination} onChange={(e) => setFlightForm({ ...flightForm, destination: e.target.value })} className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Destination</label>
+                    <input required value={flightForm.destination} onChange={(e) => setFlightForm({ ...flightForm, destination: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500">Date</label>
-                    <input required type="date" value={flightForm.date} onChange={(e) => setFlightForm({ ...flightForm, date: e.target.value })} className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Date</label>
+                    <input required type="date" value={flightForm.date} onChange={(e) => setFlightForm({ ...flightForm, date: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500">Pax</label>
-                    <input type="number" min={1} value={flightForm.pax} onChange={(e) => setFlightForm({ ...flightForm, pax: Number(e.target.value) })} className="mt-1 w-20 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Pax</label>
+                    <input type="number" min={1} value={flightForm.pax} onChange={(e) => setFlightForm({ ...flightForm, pax: Number(e.target.value) })} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500">Markup %</label>
-                    <input type="number" min={0} value={flightMarkup} onChange={(e) => setFlightMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Markup %</label>
+                    <input type="number" min={0} value={flightMarkup} onChange={(e) => setFlightMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
                 </form>
                 <table className="mt-3 w-full text-xs">
-                  <thead className="text-left text-slate-500"><tr><th className="py-1">Airline</th><th>Flight</th><th>Depart</th><th>Arrive</th><th>Class</th><th>Fare (marked up, x{flightForm.pax} pax)</th><th></th></tr></thead>
+                  <thead className="text-left text-slate-500 dark:text-slate-400"><tr><th className="py-1">Airline</th><th>Flight</th><th>Depart</th><th>Arrive</th><th>Class</th><th>Fare (marked up, x{flightForm.pax} pax)</th><th></th></tr></thead>
                   <tbody>
                     {flightResults.map((flight, fi) => (
-                      <tr key={fi} className="border-t border-slate-100">
+                      <tr key={fi} className="border-t border-slate-100 dark:border-slate-800">
                         <td className="py-1">{flight.airline}</td>
                         <td>{flight.flightNumber}</td>
                         <td>{flight.departureTime}</td>
@@ -313,22 +358,69 @@ export default function QuotationDetailPage() {
               </>
             )}
           </div>
+
+          <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+            <button onClick={() => setShowTransferSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
+              {showTransferSearch ? 'Hide transfer search' : '+ Search transfers (live)'}
+            </button>
+            {showTransferSearch && (
+              <>
+                <form onSubmit={handleSearchTransfers} className="mt-3 flex flex-wrap items-end gap-3">
+                  <div>
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Pickup</label>
+                    <input required value={transferForm.pickup} onChange={(e) => setTransferForm({ ...transferForm, pickup: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Drop</label>
+                    <input required value={transferForm.drop} onChange={(e) => setTransferForm({ ...transferForm, drop: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Date</label>
+                    <input required type="date" value={transferForm.date} onChange={(e) => setTransferForm({ ...transferForm, date: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Pax</label>
+                    <input type="number" min={1} value={transferForm.pax} onChange={(e) => setTransferForm({ ...transferForm, pax: Number(e.target.value) })} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-500 dark:text-slate-400">Markup %</label>
+                    <input type="number" min={0} value={transferMarkup} onChange={(e) => setTransferMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                  </div>
+                  <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
+                </form>
+                <table className="mt-3 w-full text-xs">
+                  <thead className="text-left text-slate-500 dark:text-slate-400"><tr><th className="py-1">Vehicle</th><th>Capacity</th><th>Distance</th><th>Fare (marked up)</th><th></th></tr></thead>
+                  <tbody>
+                    {transferResults.map((transfer, ti) => (
+                      <tr key={ti} className="border-t border-slate-100 dark:border-slate-800">
+                        <td className="py-1">{transfer.vehicleType}</td>
+                        <td>{transfer.capacity} pax</td>
+                        <td>{transfer.distanceKm} km</td>
+                        <td>₹{Math.round(transfer.baseFare * (1 + transferMarkup / 100)).toLocaleString('en-IN')}</td>
+                        <td className="text-right"><button onClick={() => handleAddTransfer(transfer)} className="text-brand hover:underline">Add</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
+          </div>
         </div>
       )}
 
       {isDraft && (
-        <form onSubmit={handleAddItem} className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-4">
+        <form onSubmit={handleAddItem} className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
           <div className="flex-1 min-w-[220px]">
-            <label className="block text-xs text-slate-500">Rate card</label>
-            <select value={selectedRate} onChange={(e) => setSelectedRate(e.target.value)} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+            <label className="block text-xs text-slate-500 dark:text-slate-400">Rate card</label>
+            <select value={selectedRate} onChange={(e) => setSelectedRate(e.target.value)} className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
               {rateCards.map((r) => (
                 <option key={r.id} value={r.id}>{r.type} · {r.name} ({r.destination}) — {r.currency} {Number(r.baseCost).toLocaleString('en-IN')}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-xs text-slate-500">Qty</label>
-            <input type="number" min={1} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 px-3 py-2 text-sm" />
+            <label className="block text-xs text-slate-500 dark:text-slate-400">Qty</label>
+            <input type="number" min={1} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
           </div>
           <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">
             + Add to quotation
@@ -336,9 +428,9 @@ export default function QuotationDetailPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr>
               <th className="px-4 py-2">Item</th>
               <th className="px-4 py-2">Unit amount</th>
@@ -349,24 +441,24 @@ export default function QuotationDetailPage() {
           </thead>
           <tbody>
             {quotation.items.map((item) => (
-              <tr key={item.id} className="border-t border-slate-100">
+              <tr key={item.id} className="border-t border-slate-100 dark:border-slate-800">
                 <td className="px-4 py-2">{item.description}</td>
                 <td className="px-4 py-2">₹{Number(item.snapshotAmount).toLocaleString('en-IN')}</td>
                 <td className="px-4 py-2">{item.quantity}</td>
                 <td className="px-4 py-2">₹{(Number(item.snapshotAmount) * item.quantity).toLocaleString('en-IN')}</td>
                 {isDraft && (
                   <td className="px-4 py-2 text-right">
-                    <button onClick={() => handleRemoveItem(item.id)} className="text-red-600 hover:underline">Remove</button>
+                    <button onClick={() => handleRemoveItem(item.id)} className="text-red-600 dark:text-red-400 hover:underline">Remove</button>
                   </td>
                 )}
               </tr>
             ))}
             {quotation.items.length === 0 && (
-              <tr><td colSpan={isDraft ? 5 : 4} className="px-4 py-6 text-center text-slate-400">No items yet — add rate cards above.</td></tr>
+              <tr><td colSpan={isDraft ? 5 : 4} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">No items yet — add rate cards above.</td></tr>
             )}
           </tbody>
           <tfoot>
-            <tr className="border-t border-slate-200 bg-slate-50 font-semibold">
+            <tr className="border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-semibold">
               <td className="px-4 py-2" colSpan={3}>Total</td>
               <td className="px-4 py-2">₹{Number(quotation.totalAmount).toLocaleString('en-IN')}</td>
               {isDraft && <td></td>}
