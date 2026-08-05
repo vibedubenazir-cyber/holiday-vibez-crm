@@ -3,16 +3,18 @@ import { NotificationChannel, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { normalizePhone } from '../notifications/phone.util';
+import { getLlmReply, LlmMessage } from './llm.util';
 
 type Actor = { id: string; role: Role; branchId: string | null };
 
-// Canned rule-based responder standing in for a real LLM bot (no AI/LLM credentials
-// exist in this environment) — keyword match against the inbound body, default fallback.
+// Canned rule-based responder — the fallback when ANTHROPIC_API_KEY isn't set
+// (also what runs if a real LLM call throws, so the bot never goes silent).
 const BOT_RULES: { keywords: string[]; reply: string }[] = [
   { keywords: ['price', 'cost', 'quote'], reply: 'Thanks for reaching out! A consultant will share your quotation shortly.' },
   { keywords: ['hi', 'hello', 'hey'], reply: 'Hi! Thanks for messaging Holiday Vibez — how can we help with your trip?' },
 ];
 const BOT_FALLBACK_REPLY = "Thanks for your message — a consultant will get back to you shortly.";
+const LLM_HISTORY_LIMIT = 10;
 
 @Injectable()
 export class InboxService {
@@ -112,10 +114,10 @@ export class InboxService {
   }
 
   // Shared core for both the dev-simulate endpoint and the real webhook: records
-  // the inbound message, runs the keyword-match bot (standing in for a real LLM —
-  // no AI/LLM credentials exist in this environment) if enabled, and — only when
-  // triggered by a real webhook — actually sends the bot's reply back over
-  // WhatsApp, since a real customer is on the other end.
+  // the inbound message, runs the bot (real LLM reply when ANTHROPIC_API_KEY is
+  // set, keyword-match fallback otherwise) if enabled, and — only when triggered
+  // by a real webhook — actually sends the bot's reply back over WhatsApp, since
+  // a real customer is on the other end.
   private async processInbound(
     conversation: { id: string; botEnabled: boolean; channel: NotificationChannel; lead: { phone: string; email: string | null } },
     body: string,
@@ -129,9 +131,7 @@ export class InboxService {
 
     let botReply = null;
     if (conversation.botEnabled) {
-      const lower = body.toLowerCase();
-      const rule = BOT_RULES.find((r) => r.keywords.some((k) => lower.includes(k)));
-      const replyBody = rule?.reply ?? BOT_FALLBACK_REPLY;
+      const replyBody = await this.generateBotReply(conversationId, body);
       botReply = await this.prisma.message.create({
         data: { conversationId, direction: 'OUTBOUND', body: replyBody, status: 'SENT', sentBy: null },
       });
@@ -149,6 +149,40 @@ export class InboxService {
 
     await this.prisma.conversation.update({ where: { id: conversationId }, data: { lastMessageAt: new Date() } });
     return { inbound, botReply };
+  }
+
+  // Real LLM reply when ANTHROPIC_API_KEY is set (recent conversation history
+  // gives the model context), falling back to keyword matching otherwise — same
+  // shape as an unconfigured/failed call to any other provider in this app, never
+  // an error surfaced to the customer.
+  private async generateBotReply(conversationId: string, latestInboundBody: string): Promise<string> {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return this.matchBotRule(latestInboundBody);
+    }
+
+    try {
+      const recent = await this.prisma.message.findMany({
+        where: { conversationId },
+        orderBy: { createdAt: 'desc' },
+        take: LLM_HISTORY_LIMIT,
+      });
+      const history: LlmMessage[] = recent
+        .reverse()
+        .map((m) => ({ role: m.direction === 'INBOUND' ? 'user' : 'assistant', content: m.body }));
+      if (history.length === 0 || history[history.length - 1].role !== 'user') {
+        history.push({ role: 'user', content: latestInboundBody });
+      }
+      return await getLlmReply(history);
+    } catch (err) {
+      this.logger.error('LLM bot reply failed, falling back to keyword match', err as Error);
+      return this.matchBotRule(latestInboundBody);
+    }
+  }
+
+  private matchBotRule(body: string): string {
+    const lower = body.toLowerCase();
+    const rule = BOT_RULES.find((r) => r.keywords.some((k) => lower.includes(k)));
+    return rule?.reply ?? BOT_FALLBACK_REPLY;
   }
 
   async updateConversation(conversationId: string, botEnabled: boolean, actor: Actor) {

@@ -26,12 +26,13 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   builder), Voucher & Invoice generation per booking, Accounts & Finance expense
   tracking with category rollups, and Attendance (clock-in/out + branch team view).
 - **WhatsApp/Email Inbox** (priority batch 2): a two-way conversation thread per
-  lead per channel, a reusable message Template library, and a rules-based "AI bot"
-  that auto-replies to inbound messages by keyword match (no LLM key in this
-  environment — swapping in a real model means replacing `InboxService`'s bot-reply
-  lookup, not the surrounding flow). Since there's no live WhatsApp/email webhook to
-  receive from, inbound messages are triggered via an explicitly-labeled
-  "Simulate customer reply" dev control in the Inbox UI.
+  lead per channel, a reusable message Template library, and an "AI bot" that
+  auto-replies to inbound messages — a real Anthropic Claude call when
+  `ANTHROPIC_API_KEY` is set, keyword-match rules otherwise (see "Real AI/LLM
+  bot" below). Real WhatsApp inbound arrives via the webhook (see "Real
+  WhatsApp" below); an explicitly-labeled "Simulate customer reply" dev control
+  in the Inbox UI exercises the same bot-reply path without needing a live
+  message.
 - **Marketing & Website CMS** (priority batch 3): a Marketing dashboard (leads by
   source, campaigns sent this month, upcoming 7-day birthday/anniversary list), a
   Campaign builder that sends to a filtered lead audience via `NotificationsService`,
@@ -165,7 +166,7 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   (`apps/api/src/inbox/whatsapp-webhook.controller.ts`, registered at
   `POST /api/webhooks/whatsapp` — enter that URL in Meta's dashboard) handles
   both inbound customer replies (matched to a Lead by phone number, feeding
-  the same keyword-match bot the dev-only "Simulate customer reply" control
+  the same bot-reply path the dev-only "Simulate customer reply" control
   already used) and delivery/read/failed status callbacks (correlated back to
   the sending `Notification` row via a new `externalId` column storing Meta's
   WAMID). The webhook's `GET` handshake checks `WHATSAPP_WEBHOOK_VERIFY_TOKEN`;
@@ -272,11 +273,36 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   `Forex API refresh failed: ...` error log fire without crashing the job;
   restored a clean env and confirmed the mock-drift fallback still fires
   unchanged when unset.
+- **Real AI/LLM bot (Anthropic Claude)**: `InboxService.processInbound()`'s bot
+  reply (fires on real WhatsApp webhook messages and the dev "Simulate customer
+  reply" control alike, when a conversation has `botEnabled`) calls Anthropic's
+  Messages API (`apps/api/src/inbox/llm.util.ts`, model `claude-haiku-4-5`) with
+  the last 10 messages of that conversation as context when `ANTHROPIC_API_KEY`
+  is set, replacing the old fixed keyword-match rules with an actual
+  concierge-style reply. The system prompt keeps it on a short leash: it's told
+  it's a first-line holding reply only (a human consultant owns the lead), never
+  to invent prices/availability/itineraries, and to keep replies WhatsApp-short.
+  No credentials, or any failure calling the real API (rate limit, bad key,
+  network error), falls back to the original keyword-match rules rather than
+  going silent or erroring out to the customer — the bot never surfaces a raw
+  API failure. Verified: confirmed the real (invalid-key) endpoint's exact
+  error shape via curl (`{"type":"error","error":{"type":"authentication_error",...}}`),
+  then set `ANTHROPIC_API_KEY` to an intentionally-invalid test value and
+  watched the matching `LLM bot reply failed, falling back to keyword match`
+  error log fire — with a correct keyword-fallback reply still delivered, no
+  crash — via `POST /conversations/:id/simulate-inbound`; validated the success
+  path's response-parsing logic against a local mock server matching
+  Anthropic's Messages API contract; restored a clean env and confirmed the
+  original keyword-match fallback still fires unchanged when unset.
 
 ### What's intentionally stubbed or out of scope
 
-WhatsApp, Email, the payment gateway, and Push are all real now (see
-above) — nothing left in `NotificationsService`/payments needs a mock swap.
+WhatsApp, Email, the payment gateway, Push, Forex rates, and the Inbox AI bot
+are all real now (see above) — nothing left in `NotificationsService`/payments/
+`CurrencyService`/`InboxService` needs a mock swap. Still mock: Hotel/Flight/
+Transfer supplier search (`travel-search/`) returns deterministic fake
+results, and uploads (`storage/`) write to local disk instead of a real object
+store — both documented with their own env var slots in `.env.example`.
 Branded PDF generation for quotations/vouchers is a placeholder URL, not
 real rendering. **Not built at all**: WAF/DDoS protection, penetration
 testing, and data migration from the live crm.holidayvibez.com system —
