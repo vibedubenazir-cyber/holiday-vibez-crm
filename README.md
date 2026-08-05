@@ -294,19 +294,41 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   path's response-parsing logic against a local mock server matching
   Anthropic's Messages API contract; restored a clean env and confirmed the
   original keyword-match fallback still fires unchanged when unset.
+- **Real Object Storage (AWS S3)**: `StorageController.upload()`
+  (`apps/api/src/storage/storage.controller.ts`) uploads real files to an S3
+  bucket via the official `@aws-sdk/client-s3` (`apps/api/src/storage/s3.util.ts`)
+  when `OBJECT_STORAGE_ACCESS_KEY_ID`/`OBJECT_STORAGE_KEY`/`OBJECT_STORAGE_BUCKET`/
+  `OBJECT_STORAGE_REGION` are all set — the file interceptor switched from
+  `diskStorage` to `memoryStorage` so the same handler can branch to either
+  destination at request time rather than needing two separate routes. No
+  credentials → falls back to the original local-disk write under
+  `apps/api/uploads/` (still served statically), unchanged. Went with the
+  official AWS SDK rather than hand-rolling S3's request-signing (unlike
+  WhatsApp/Razorpay/FCM's simpler HMAC/RS256 signing, AWS's SigV4 algorithm is
+  intricate enough that a hand-rolled version would be a genuine correctness
+  risk untestable against a real bucket in this sandbox) — a deliberate
+  exception to this pass's usual "no new dependency" pattern. Every caller
+  (CMS content, Package cover images) is unaffected either way since both
+  paths just return a URL string. Verified: confirmed the local-disk fallback
+  end-to-end (uploaded a file via curl, fetched the returned URL back, got a
+  real 200); confirmed the S3 code path's request shape (SigV4
+  `Authorization` header, `x-amz-content-sha256`, path, body) is correct by
+  pointing the same `S3Client`/`PutObjectCommand` calls at a local mock
+  server (no real AWS account exists in this sandbox to upload against).
 
 ### What's intentionally stubbed or out of scope
 
-WhatsApp, Email, the payment gateway, Push, Forex rates, and the Inbox AI bot
-are all real now (see above) — nothing left in `NotificationsService`/payments/
-`CurrencyService`/`InboxService` needs a mock swap. Still mock: Hotel/Flight/
-Transfer supplier search (`travel-search/`) returns deterministic fake
-results, and uploads (`storage/`) write to local disk instead of a real object
-store — both documented with their own env var slots in `.env.example`.
-Branded PDF generation for quotations/vouchers is a placeholder URL, not
-real rendering. **Not built at all**: WAF/DDoS protection, penetration
-testing, and data migration from the live crm.holidayvibez.com system —
-these are infra/process work, not application code.
+WhatsApp, Email, the payment gateway, Push, Forex rates, the Inbox AI bot, and
+Object Storage are all real now (see above) — nothing left in
+`NotificationsService`/payments/`CurrencyService`/`InboxService`/`storage/`
+needs a mock swap. Still mock: Hotel/Flight/Transfer supplier search
+(`travel-search/`) returns deterministic fake results instead of calling a
+real GDS/aggregator — documented with its own env var slots in
+`.env.example`. Branded PDF generation for quotations/vouchers is a
+placeholder URL, not real rendering. **Not built at all**: WAF/DDoS
+protection, penetration testing, and data migration from the live
+crm.holidayvibez.com system — these are infra/process work, not application
+code.
 
 ## Structure
 

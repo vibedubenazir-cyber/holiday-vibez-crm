@@ -1,23 +1,24 @@
 import { Controller, Post, UploadedFile, UseGuards, UseInterceptors, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
+import { extname, join } from 'path';
 import { randomUUID } from 'crypto';
+import { writeFile } from 'fs/promises';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { isS3Configured, uploadToS3 } from './s3.util';
 
 const ALLOWED_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.pdf'];
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
 /**
- * No object-storage credential (S3/GCS) exists in this environment —
- * OBJECT_STORAGE_KEY in .env.example is unset — so this writes to local disk
- * under apps/api/uploads/, served statically (see main.ts's useStaticAssets).
- * Swapping to real object storage means replacing this one handler's storage
- * engine, not touching any caller — every form that takes an image URL today
- * (CMS content, Package cover images) just needs a URL string back.
+ * Uploads to real S3 (or any S3-compatible bucket) when OBJECT_STORAGE_ACCESS_KEY_ID/
+ * OBJECT_STORAGE_KEY/OBJECT_STORAGE_BUCKET/OBJECT_STORAGE_REGION are all set; falls
+ * back to local disk under apps/api/uploads/ (served statically, see main.ts's
+ * useStaticAssets) otherwise. Every caller (CMS content, Package cover images) just
+ * needs a URL string back either way, so nothing downstream changes.
  */
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('storage')
@@ -26,13 +27,7 @@ export class StorageController {
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (_req, file, cb) => {
-          const ext = extname(file.originalname).toLowerCase();
-          cb(null, `${randomUUID()}${ext}`);
-        },
-      }),
+      storage: memoryStorage(),
       limits: { fileSize: MAX_FILE_SIZE_BYTES },
       fileFilter: (_req, file, cb) => {
         const ext = extname(file.originalname).toLowerCase();
@@ -44,12 +39,24 @@ export class StorageController {
       },
     }),
   )
-  upload(@UploadedFile() file: Express.Multer.File) {
+  async upload(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No file uploaded');
+
+    const ext = extname(file.originalname).toLowerCase();
+    const key = `${randomUUID()}${ext}`;
+    const url = isS3Configured()
+      ? await uploadToS3(file.buffer, key, file.mimetype)
+      : await this.writeToLocalDisk(file.buffer, key);
+
     return {
-      url: `/uploads/${file.filename}`,
+      url,
       originalName: file.originalname,
       sizeBytes: file.size,
     };
+  }
+
+  private async writeToLocalDisk(buffer: Buffer, key: string): Promise<string> {
+    await writeFile(join(process.cwd(), 'uploads', key), buffer);
+    return `/uploads/${key}`;
   }
 }
