@@ -80,14 +80,14 @@ export default function MarketingPage() {
 
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
-          <p className="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">Campaigns sent this month</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">Campaigns sent this month</p>
           <p className="mt-1 text-2xl font-semibold text-slate-800 dark:text-slate-100">{dashboard?.campaignsSentThisMonth ?? 0}</p>
         </div>
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:col-span-2">
-          <p className="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">Leads by source</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">Leads by source</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {dashboard?.leadsBySource.map((s) => (
-              <span key={s.source} className="rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-1 text-xs text-slate-600 dark:text-slate-300">
+              <span key={s.source} className="rounded-full bg-brand-50 dark:bg-brand-900/30 px-2 py-1 text-xs text-brand-700 dark:text-brand-200">
                 {s.source}: {s.count}
               </span>
             ))}
@@ -95,7 +95,7 @@ export default function MarketingPage() {
           </div>
         </div>
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:col-span-3">
-          <p className="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">Upcoming birthdays &amp; anniversaries (next 7 days)</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">Upcoming birthdays &amp; anniversaries (next 7 days)</p>
           <div className="mt-2 space-y-1">
             {dashboard?.upcoming.map((u) => (
               <p key={u.travelerId} className="text-sm text-slate-600 dark:text-slate-300">

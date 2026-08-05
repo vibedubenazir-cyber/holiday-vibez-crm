@@ -130,7 +130,7 @@ export default function BookingsPage() {
             {expanded === b.id && (
               <div className="mt-3 border-t border-slate-100 dark:border-slate-800 pt-3">
                 <table className="w-full text-sm">
-                  <thead className="text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  <thead className="text-left text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">
                     <tr><th className="py-1">Type</th><th className="py-1">Amount</th><th className="py-1">Status</th><th></th></tr>
                   </thead>
                   <tbody>
@@ -188,7 +188,7 @@ export default function BookingsPage() {
                     ))}
                     {(!vouchers[b.id] || vouchers[b.id].length === 0) && <li className="text-sm text-slate-400 dark:text-slate-500">None generated yet.</li>}
                   </ul>
-                  <button onClick={() => handleGenerateVoucher(b.id)} className="mt-2 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                  <button onClick={() => handleGenerateVoucher(b.id)} className="mt-2 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand dark:hover:bg-slate-700 dark:hover:text-brand-200">
                     Generate voucher
                   </button>
                 </div>
@@ -204,7 +204,7 @@ export default function BookingsPage() {
                     ))}
                     {(!invoices[b.id] || invoices[b.id].length === 0) && <li className="text-sm text-slate-400 dark:text-slate-500">None generated yet.</li>}
                   </ul>
-                  <button onClick={() => handleGenerateInvoice(b.id)} className="mt-2 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                  <button onClick={() => handleGenerateInvoice(b.id)} className="mt-2 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand dark:hover:bg-slate-700 dark:hover:text-brand-200">
                     Generate invoice
                   </button>
                 </div>

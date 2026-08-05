@@ -139,7 +139,7 @@ export default function PackagesPage() {
             {expanded === p.id && (
               <div className="mt-3 border-t border-slate-100 dark:border-slate-800 pt-3">
                 <table className="w-full text-sm">
-                  <thead className="text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  <thead className="text-left text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">
                     <tr><th className="py-1">Day</th><th className="py-1">Description</th><th className="py-1">Rate card</th><th className="py-1">Qty</th></tr>
                   </thead>
                   <tbody>

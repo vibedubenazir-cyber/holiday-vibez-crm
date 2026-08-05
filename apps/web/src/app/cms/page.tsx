@@ -94,7 +94,7 @@ export default function CmsPage() {
         <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Website CMS</h1>
         {canManage && (
           <div className="flex gap-2">
-            <button onClick={() => setShowSettings((s) => !s)} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+            <button onClick={() => setShowSettings((s) => !s)} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand dark:hover:bg-slate-700 dark:hover:text-brand-200">
               {showSettings ? 'Hide settings' : 'Site settings'}
             </button>
             <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">

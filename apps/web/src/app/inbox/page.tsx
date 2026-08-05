@@ -220,7 +220,7 @@ export default function InboxPage() {
                     placeholder="e.g. What's the price for Bali?"
                     className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
                   />
-                  <button type="submit" className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                  <button type="submit" className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors text-slate-700 dark:text-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand dark:hover:bg-slate-700 dark:hover:text-brand-200">
                     Simulate
                   </button>
                 </div>

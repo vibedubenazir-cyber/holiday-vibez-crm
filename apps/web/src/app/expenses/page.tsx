@@ -82,7 +82,7 @@ export default function ExpensesPage() {
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {summary.map((s) => (
           <div key={s.category} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-3">
-            <p className="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">{s.category}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">{s.category}</p>
             <p className="mt-1 text-base font-medium text-slate-800 dark:text-slate-100">₹{s.total.toLocaleString('en-IN')}</p>
           </div>
         ))}

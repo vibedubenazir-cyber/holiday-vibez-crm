@@ -81,14 +81,14 @@ export default function PublicQuotationPage() {
         </div>
 
         <div className="mt-6">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Prepared for</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand">Prepared for</p>
           <p className="mt-1 font-medium text-slate-800">{quotation.client.name}</p>
           <p className="text-sm text-slate-500">{quotation.client.phone}{quotation.client.email ? ` · ${quotation.client.email}` : ''}</p>
           <p className="text-sm text-slate-500">Destination: {quotation.client.destination}</p>
         </div>
 
         <table className="mt-8 w-full text-sm">
-          <thead className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-400">
+          <thead className="border-b border-slate-200 text-left text-xs font-semibold uppercase tracking-wide text-brand">
             <tr>
               <th className="py-2">Description</th>
               <th className="py-2 text-right">Qty</th>

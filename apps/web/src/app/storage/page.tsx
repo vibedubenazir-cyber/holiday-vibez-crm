@@ -87,7 +87,7 @@ export default function StoragePage() {
               />
               <button
                 onClick={handleCopy}
-                className="shrink-0 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="shrink-0 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:border-brand-200 hover:bg-brand-50 hover:text-brand dark:hover:bg-slate-700 dark:hover:text-brand-200"
               >
                 {copied ? 'Copied!' : 'Copy URL'}
               </button>

@@ -80,7 +80,7 @@ export default function ReportsPage() {
             {dashboard.leadsByStatus.map((row) => (
               <span
                 key={row.status}
-                className="rounded-full bg-slate-100 dark:bg-slate-700 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-200"
+                className="rounded-full bg-brand-50 dark:bg-brand-900/30 px-3 py-1 text-xs font-medium text-brand-700 dark:text-brand-200"
               >
                 {row.status.replaceAll('_', ' ')}: {row._count}
               </span>
@@ -194,7 +194,7 @@ export default function ReportsPage() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
-      <p className="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">{label}</p>
       <p className="mt-1 text-xl font-bold tracking-tight text-slate-900 dark:text-white">{value}</p>
     </div>
   );
