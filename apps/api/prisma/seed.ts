@@ -270,6 +270,14 @@ async function main() {
       { key: 'contact_email', value: 'hello@holidayvibez.com' },
       { key: 'contact_phone', value: '+91-98765-00000' },
       { key: 'instagram_url', value: 'https://instagram.com/holidayvibez' },
+      // Consumed by the customer-facing quotation view (apps/web/src/app/quote/[id]) —
+      // edit via /cms's Site Settings, same as the contact_* keys above.
+      { key: 'company_name', value: 'Holiday Vibez Private Limited' },
+      { key: 'company_address', value: '2nd Floor, Anandham Elite, MRTS Road, Velachery, Chennai, Tamil Nadu 600042' },
+      { key: 'gst_number', value: '33AAICH2636Q1Z7' },
+      // Empty by default — upload an image via /storage, then paste the returned URL
+      // into this setting's value from /cms to put a logo on the quotation header.
+      { key: 'company_logo_url', value: '' },
     ],
   });
 

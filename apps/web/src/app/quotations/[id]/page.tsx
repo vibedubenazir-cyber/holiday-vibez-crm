@@ -27,6 +27,7 @@ export default function QuotationDetailPage() {
   const [selectedRate, setSelectedRate] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [departureDate, setDepartureDate] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const [showHotelSearch, setShowHotelSearch] = useState(false);
   const [hotelForm, setHotelForm] = useState({ destination: '', checkIn: '', checkOut: '', guests: 2 });
@@ -195,6 +196,12 @@ export default function QuotationDetailPage() {
     }
   }
 
+  function handleCopyClientLink() {
+    navigator.clipboard.writeText(`${window.location.origin}/quote/${id}`);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  }
+
   async function handleCreateBooking(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -225,6 +232,24 @@ export default function QuotationDetailPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400">{quotation.lead.clientName} · {quotation.lead.destination} · {quotation.status}</p>
         </div>
         <div className="flex gap-2">
+          {isSent && (
+            <>
+              <a
+                href={`/quote/${id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+              >
+                View quotation
+              </a>
+              <button
+                onClick={handleCopyClientLink}
+                className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+              >
+                {linkCopied ? 'Copied!' : 'Copy client link'}
+              </button>
+            </>
+          )}
           {isDraft && (
             <button onClick={handleSubmit} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">
               Submit for approval

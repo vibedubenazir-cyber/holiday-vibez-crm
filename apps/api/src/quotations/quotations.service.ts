@@ -119,12 +119,17 @@ export class QuotationsService {
       },
     });
 
+    // Real, branded, viewable/printable quotation — no auth needed since the
+    // customer has no account (see publicView() below) — replaces the old
+    // "PDF not yet generated" placeholder link.
+    const viewUrl = `${process.env.WEB_ORIGIN}/quote/${id}`;
+
     await this.notifications.send({
       channel: 'WHATSAPP',
       triggerType: 'quotation_sent',
       recipient: quotation.lead.phone,
       relatedEntity: `quotation:${id}`,
-      body: `Hi ${quotation.lead.clientName}, your quotation ${quotation.refNo} for ${quotation.lead.destination} (${quotation.currency} ${Number(quotation.totalAmount).toLocaleString('en-IN')}) has been sent — check your email for the full itinerary.`,
+      body: `Hi ${quotation.lead.clientName}, your quotation ${quotation.refNo} for ${quotation.lead.destination} (${quotation.currency} ${Number(quotation.totalAmount).toLocaleString('en-IN')}) has been sent. View it here: ${viewUrl}`,
     });
     await this.notifications.send({
       channel: 'EMAIL',
@@ -132,7 +137,7 @@ export class QuotationsService {
       recipient: quotation.lead.email ?? quotation.lead.phone,
       relatedEntity: `quotation:${id}`,
       subject: `Your quotation ${quotation.refNo} for ${quotation.lead.destination}`,
-      body: `Hi ${quotation.lead.clientName},\n\nYour quotation ${quotation.refNo} for ${quotation.lead.destination} (${quotation.currency} ${Number(quotation.totalAmount).toLocaleString('en-IN')}) has been sent. Your travel consultant will follow up with the full itinerary shortly.\n\nThank you for choosing Holiday Vibez.`,
+      body: `Hi ${quotation.lead.clientName},\n\nYour quotation ${quotation.refNo} for ${quotation.lead.destination} (${quotation.currency} ${Number(quotation.totalAmount).toLocaleString('en-IN')}) has been sent.\n\nView your quotation: ${viewUrl}\n\nYour travel consultant will follow up shortly.\n\nThank you for choosing Holiday Vibez.`,
     });
 
     return updated;
@@ -159,11 +164,59 @@ export class QuotationsService {
     return updated;
   }
 
-  // Placeholder document generation — real branded-PDF rendering (spec Section 15.4)
-  // is a template-design task, not wired up here. Returns a stable reference instead.
+  // Real branded, viewable/printable quotation (spec Section 15.4) — a web page
+  // instead of a server-rendered PDF file; the browser's own "Print to PDF"
+  // covers the PDF-export need without a headless-Chrome/PDF-library dependency.
+  // Only exposes SENT quotations (approved, customer-facing) — DRAFT/
+  // PENDING_APPROVAL/REJECTED aren't meant for the customer to see, even via a
+  // guessable-if-leaked link.
   async pdfUrl(id: string) {
     const quotation = await this.ensureExists(id);
-    return { pdfUrl: quotation.pdfUrl ?? `/quotations/${id}/pdf-not-yet-generated`, refNo: quotation.refNo };
+    return { pdfUrl: `${process.env.WEB_ORIGIN}/quote/${id}`, refNo: quotation.refNo };
+  }
+
+  // Called by the unauthenticated public controller — no actor, so this must
+  // never return anything beyond what a customer holding this exact link
+  // should see (their own quotation's items/total, not internal cost data).
+  async publicView(id: string) {
+    const quotation = await this.prisma.quotation.findUnique({
+      where: { id },
+      include: { items: { orderBy: { id: 'asc' } }, lead: true },
+    });
+    if (!quotation || quotation.status !== QuotationStatus.SENT) {
+      throw new NotFoundException('Quotation not found');
+    }
+
+    const settingKeys = ['company_name', 'company_address', 'gst_number', 'contact_email', 'contact_phone', 'company_logo_url'];
+    const settings = await this.prisma.siteSetting.findMany({ where: { key: { in: settingKeys } } });
+    const settingsMap = Object.fromEntries(settings.map((s) => [s.key, s.value]));
+
+    return {
+      refNo: quotation.refNo,
+      createdAt: quotation.createdAt,
+      currency: quotation.currency,
+      totalAmount: Number(quotation.totalAmount),
+      client: {
+        name: quotation.lead.clientName,
+        phone: quotation.lead.phone,
+        email: quotation.lead.email,
+        destination: quotation.lead.destination,
+      },
+      items: quotation.items.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitAmount: Number(item.snapshotAmount),
+        lineTotal: Number(item.snapshotAmount) * item.quantity,
+      })),
+      company: {
+        name: settingsMap.company_name ?? 'Holiday Vibez',
+        address: settingsMap.company_address ?? '',
+        gstNumber: settingsMap.gst_number ?? '',
+        email: settingsMap.contact_email ?? '',
+        phone: settingsMap.contact_phone ?? '',
+        logoUrl: settingsMap.company_logo_url || null,
+      },
+    };
   }
 
   private async recalculateTotal(quotationId: string) {
