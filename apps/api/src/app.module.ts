@@ -27,6 +27,7 @@ import { CustomFieldsModule } from './custom-fields/custom-fields.module';
 import { TravelSearchModule } from './travel-search/travel-search.module';
 import { StorageModule } from './storage/storage.module';
 import { DataAdminModule } from './data-admin/data-admin.module';
+import { JobsModule } from './jobs/jobs.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -59,6 +60,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     TravelSearchModule,
     StorageModule,
     DataAdminModule,
+    JobsModule,
   ],
   providers: [
     PrismaService,

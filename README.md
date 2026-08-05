@@ -99,14 +99,23 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   endpoint completing the session after the TOTP code checks out — verified live
   end-to-end (enabled 2FA on the Admin account, confirmed plain-password login now
   stops at a code prompt, verified with a server-generated TOTP code, then
-  disabled it and confirmed normal login returns). The four in-process
-  `setInterval` background jobs (SLA escalation, birthday/anniversary check,
-  automation sweep, currency refresh) in `apps/api/src/main.ts` were replaced with
-  `node-cron` scheduled tasks using real cron expressions — a genuine correctness
-  improvement, but still in-process: it doesn't survive restarts or coordinate
-  across instances. `infra/docker-compose.yml` already provisions Redis but
-  nothing uses it yet; BullMQ+Redis is the honest next step for true job
-  durability, not part of this pass.
+  disabled it and confirmed normal login returns).
+- **Durable job scheduling (BullMQ + Redis)**: the four background jobs (SLA
+  escalation, birthday/anniversary check, automation sweep, currency refresh)
+  now run as real BullMQ repeatable jobs against Redis
+  (`apps/api/src/jobs/` — `jobs.scheduler.ts` registers each schedule via
+  `queue.upsertJobScheduler()`, `jobs.processor.ts` is the worker that calls
+  through to the exact same `LeadsService`/`MarketingService`/
+  `AutomationService`/`CurrencyService` methods the old node-cron version
+  called). `upsertJobScheduler()` is idempotent by scheduler id, so it's safe
+  to call unconditionally on every boot — including every `nest start --watch`
+  reload — without ever double-registering a job; schedule state now lives in
+  Redis instead of the API process's memory, so it survives restarts and
+  would coordinate correctly across multiple API instances. Verified live:
+  restarted the API mid-run and confirmed `queue.getJobSchedulers()` still
+  reported exactly 4 schedulers (no duplicates), then manually enqueued a
+  `currency-refresh` job and confirmed the worker picked it up and
+  `CurrencyRate.lastUpdatedAt` moved forward in the live database.
 
 ### What's intentionally stubbed or out of scope
 
@@ -115,12 +124,9 @@ gateway — `NotificationsService` and the payment mark-paid flow are real, wire
 abstractions with **console-log/mock providers**; swapping in Twilio/WhatsApp Cloud
 API, SES, FCM, or a real gateway means implementing one class, not touching callers.
 Branded PDF generation for quotations/vouchers is a placeholder URL, not real
-rendering. Background jobs (SLA escalation, birthday/anniversary check, automation
-sweep, currency refresh) run as in-process `node-cron` tasks, not a durable job
-queue (BullMQ+Redis) — correct schedules, but no multi-instance/restart guarantee.
-**Not built at all**: WAF/DDoS protection, penetration testing, a native push
-backend, and data migration from the live crm.holidayvibez.com system — these are
-infra/process work, not application code.
+rendering. **Not built at all**: WAF/DDoS protection, penetration testing, a
+native push backend, and data migration from the live crm.holidayvibez.com
+system — these are infra/process work, not application code.
 
 ## Structure
 
@@ -162,8 +168,12 @@ Web runs at http://localhost:3000, API at http://localhost:4000/api (adjust
 No Docker on hand? `apps/api/scripts/dev-db.js` boots a local-only embedded Postgres
 (via the `embedded-postgres` npm package) instead — run `node scripts/dev-db.js` from
 `apps/api` in place of step 1, then point `DATABASE_URL` in `.env` at
-`postgresql://holidayvibez:holidayvibez@127.0.0.1:5433/holiday_vibez_crm`. Dev-only;
-production still targets a real managed PostgreSQL instance.
+`postgresql://holidayvibez:holidayvibez@127.0.0.1:5433/holiday_vibez_crm`.
+`apps/api/scripts/dev-redis.js` does the same for Redis (via `redis-memory-server`,
+which downloads and runs a real Redis binary) — run `node scripts/dev-redis.js`
+alongside it; it listens on the same port 6379 that `docker-compose` would use, so
+`REDIS_URL` doesn't need to change either way. Both are dev-only; production still
+targets real managed Postgres and Redis instances.
 
 ## Seeded logins
 
