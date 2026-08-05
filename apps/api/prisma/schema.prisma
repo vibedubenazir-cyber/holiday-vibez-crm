@@ -526,6 +526,9 @@ model Notification {
   recipient      String
   status         NotificationStatus  @default(SENT)
   relatedEntity  String?
+  // WhatsApp message id (WAMID) returned by Meta's Cloud API on send — lets the
+  // webhook's delivery/read/failed status callbacks correlate back to this row.
+  externalId     String?
   createdAt      DateTime            @default(now())
 
   @@map("notifications")

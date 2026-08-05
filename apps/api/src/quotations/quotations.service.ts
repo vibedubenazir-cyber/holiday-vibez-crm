@@ -121,6 +121,7 @@ export class QuotationsService {
       triggerType: 'quotation_sent',
       recipient: quotation.lead.phone,
       relatedEntity: `quotation:${id}`,
+      body: `Hi ${quotation.lead.clientName}, your quotation ${quotation.refNo} for ${quotation.lead.destination} (${quotation.currency} ${Number(quotation.totalAmount).toLocaleString('en-IN')}) has been sent — check your email for the full itinerary.`,
     });
     await this.notifications.send({
       channel: 'EMAIL',

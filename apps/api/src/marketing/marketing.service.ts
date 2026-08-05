@@ -34,8 +34,12 @@ export class MarketingService {
 
   // Mock send — resolves the audience from Leads matching the stored filters and
   // calls the same NotificationsService every other messaging feature uses (Inbox,
-  // Quotation approval, Voucher/Invoice issuance). No real WhatsApp/email provider
-  // exists in this environment; delivery is a console-log + Notification row.
+  // Quotation approval, Voucher/Invoice issuance) — real for WhatsApp when
+  // WHATSAPP_API_KEY is configured (see notifications.service.ts), console-log
+  // otherwise. Note: WhatsApp campaigns are business-initiated and outside any
+  // recent customer conversation, so Meta requires a pre-approved message
+  // template for these in production — free text (what we send here) will only
+  // succeed for leads within an active 24h session window.
   async sendCampaign(id: string) {
     const campaign = await this.prisma.campaign.findUnique({ where: { id }, include: { template: true } });
     if (!campaign) throw new NotFoundException('Campaign not found');
@@ -54,6 +58,7 @@ export class MarketingService {
         triggerType: 'campaign',
         recipient,
         relatedEntity: `campaign:${id}`,
+        body: campaign.template?.body,
       });
     }
 

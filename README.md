@@ -162,17 +162,49 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   toggled dark mode and clicked through the dashboard, a table-heavy page,
   the Clients form, and a nested quotation-detail page with no unreadable
   light-on-light or dark-on-dark spots.
+- **Real WhatsApp (Meta Cloud API)**: `NotificationsService.deliver()`
+  (`apps/api/src/notifications/notifications.service.ts`) sends real WhatsApp
+  text messages via `POST https://graph.facebook.com/v20.0/{phone_number_id}/messages`
+  when `WHATSAPP_API_KEY` + `WHATSAPP_PHONE_NUMBER_ID` are set — falls back to
+  the original console-log behavior when they're not, so nothing breaks
+  before real credentials exist. All customer-facing sends (voucher/quotation
+  issuance, marketing campaigns, automation rules, Inbox replies) now carry
+  real message text, not just a trigger-type log line. A new webhook
+  (`apps/api/src/inbox/whatsapp-webhook.controller.ts`, registered at
+  `POST /api/webhooks/whatsapp` — enter that URL in Meta's dashboard) handles
+  both inbound customer replies (matched to a Lead by phone number, feeding
+  the same keyword-match bot the dev-only "Simulate customer reply" control
+  already used) and delivery/read/failed status callbacks (correlated back to
+  the sending `Notification` row via a new `externalId` column storing Meta's
+  WAMID). The webhook's `GET` handshake checks `WHATSAPP_WEBHOOK_VERIFY_TOKEN`;
+  every `POST` is checked against Meta's `X-Hub-Signature-256` header (HMAC
+  over the raw request body using `WHATSAPP_APP_SECRET` — required
+  `rawBody: true` in `main.ts`'s `NestFactory.create()` to access the
+  unparsed bytes). Verified live: hand-built a Meta-shaped webhook payload
+  with a correctly-computed HMAC signature and confirmed it created a real
+  inbound `Message` against the right Lead/Conversation, exactly like the
+  simulate control does; confirmed a mismatched signature is rejected;
+  confirmed the outbound `fetch` call is correctly shaped against a local
+  mock server.
+  **Known limitation, not solved here**: Meta requires a pre-approved message
+  *template* (not free text) for business-initiated messages outside a 24h
+  customer-service window — campaigns/automation rules firing without a
+  recent inbound message from that lead will fail via the real API until
+  this app's `Template` rows are mapped to actual Meta-approved template
+  names, which requires a manual approval step in Meta Business Manager this
+  codebase can't do for you.
 
 ### What's intentionally stubbed or out of scope
 
-No credentials exist in this environment for WhatsApp, email, push, or a payment
-gateway — `NotificationsService` and the payment mark-paid flow are real, wired-up
-abstractions with **console-log/mock providers**; swapping in Twilio/WhatsApp Cloud
-API, SES, FCM, or a real gateway means implementing one class, not touching callers.
-Branded PDF generation for quotations/vouchers is a placeholder URL, not real
-rendering. **Not built at all**: WAF/DDoS protection, penetration testing, a
-native push backend, and data migration from the live crm.holidayvibez.com
-system — these are infra/process work, not application code.
+No credentials exist in this environment for email, push, or a payment
+gateway (WhatsApp is now real — see above) — `NotificationsService` and the
+payment mark-paid flow are real, wired-up abstractions with **console-log/mock
+providers** for these; swapping in SES, FCM, or a real gateway means
+implementing one class, not touching callers. Branded PDF generation for
+quotations/vouchers is a placeholder URL, not real rendering. **Not built at
+all**: WAF/DDoS protection, penetration testing, a native push backend, and
+data migration from the live crm.holidayvibez.com system — these are
+infra/process work, not application code.
 
 ## Structure
 

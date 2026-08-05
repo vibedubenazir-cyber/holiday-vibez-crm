@@ -1,7 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { NotificationChannel, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { normalizePhone } from '../notifications/phone.util';
 
 type Actor = { id: string; role: Role; branchId: string | null };
 
@@ -15,6 +16,8 @@ const BOT_FALLBACK_REPLY = "Thanks for your message — a consultant will get ba
 
 @Injectable()
 export class InboxService {
+  private readonly logger = new Logger(InboxService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
@@ -74,34 +77,74 @@ export class InboxService {
       triggerType: 'inbox_message',
       recipient: conversation.channel === 'WHATSAPP' ? conversation.lead.phone : (conversation.lead.email ?? conversation.lead.phone),
       relatedEntity: `conversation:${conversationId}`,
+      body,
     });
 
     return message;
   }
 
-  // Dev-only stand-in for a real WhatsApp/email webhook — there is no live inbound
-  // channel wired up. Feeds the same bot logic a real webhook handler would call.
+  // Dev-only stand-in for a real WhatsApp webhook, still useful when no WhatsApp
+  // credentials are configured. Actor-scoped (only staff who can see this
+  // conversation can trigger it) and never delivers the bot reply anywhere real —
+  // it's just for exercising the UI. Real inbound messages arrive via
+  // receiveInboundWhatsApp() below, called from the webhook controller.
   async simulateInbound(conversationId: string, body: string, actor: Actor) {
     const conversation = await this.ensureConversationExists(conversationId);
     this.assertScope(actor, conversation.lead.assignedConsultantId, conversation.lead.branchId);
+    return this.processInbound(conversation, body, 'DELIVERED', false);
+  }
 
+  // Real WhatsApp webhook entry point (see inbox/whatsapp-webhook.controller.ts).
+  // Matches the inbound "from" number against Lead.phone (both normalized to
+  // digits-only, since seeded/entered phones aren't consistently formatted) —
+  // no actor to scope against, this is an unauthenticated request from Meta.
+  async receiveInboundWhatsApp(fromPhone: string, body: string) {
+    const normalized = normalizePhone(fromPhone);
+    const leads = await this.prisma.lead.findMany();
+    const lead = leads.find((l) => normalizePhone(l.phone).endsWith(normalized.slice(-10)));
+    if (!lead) {
+      this.logger.warn(`Inbound WhatsApp message from unrecognized number ${fromPhone} — no matching lead`);
+      return null;
+    }
+
+    const conversation = await this.ensureForLead(lead.id, 'WHATSAPP');
+    return this.processInbound({ ...conversation, lead }, body, 'DELIVERED', true);
+  }
+
+  // Shared core for both the dev-simulate endpoint and the real webhook: records
+  // the inbound message, runs the keyword-match bot (standing in for a real LLM —
+  // no AI/LLM credentials exist in this environment) if enabled, and — only when
+  // triggered by a real webhook — actually sends the bot's reply back over
+  // WhatsApp, since a real customer is on the other end.
+  private async processInbound(
+    conversation: { id: string; botEnabled: boolean; channel: NotificationChannel; lead: { phone: string; email: string | null } },
+    body: string,
+    status: 'SENT' | 'DELIVERED' | 'READ' | 'FAILED',
+    deliverBotReply: boolean,
+  ) {
+    const conversationId = conversation.id;
     const inbound = await this.prisma.message.create({
-      data: { conversationId, direction: 'INBOUND', body, status: 'DELIVERED' },
+      data: { conversationId, direction: 'INBOUND', body, status },
     });
 
     let botReply = null;
     if (conversation.botEnabled) {
       const lower = body.toLowerCase();
       const rule = BOT_RULES.find((r) => r.keywords.some((k) => lower.includes(k)));
+      const replyBody = rule?.reply ?? BOT_FALLBACK_REPLY;
       botReply = await this.prisma.message.create({
-        data: {
-          conversationId,
-          direction: 'OUTBOUND',
-          body: rule?.reply ?? BOT_FALLBACK_REPLY,
-          status: 'SENT',
-          sentBy: null,
-        },
+        data: { conversationId, direction: 'OUTBOUND', body: replyBody, status: 'SENT', sentBy: null },
       });
+
+      if (deliverBotReply) {
+        await this.notifications.send({
+          channel: conversation.channel,
+          triggerType: 'inbox_bot_reply',
+          recipient: conversation.channel === 'WHATSAPP' ? conversation.lead.phone : (conversation.lead.email ?? conversation.lead.phone),
+          relatedEntity: `conversation:${conversationId}`,
+          body: replyBody,
+        });
+      }
     }
 
     await this.prisma.conversation.update({ where: { id: conversationId }, data: { lastMessageAt: new Date() } });

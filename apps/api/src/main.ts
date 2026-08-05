@@ -8,7 +8,9 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // rawBody: true — needed to verify the WhatsApp webhook's X-Hub-Signature-256
+  // header (HMAC over the exact raw bytes Meta sent, not the re-serialized JSON).
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
   app.use(cookieParser());
   app.enableCors({
     origin: process.env.WEB_ORIGIN?.split(',') ?? ['http://localhost:3000'],

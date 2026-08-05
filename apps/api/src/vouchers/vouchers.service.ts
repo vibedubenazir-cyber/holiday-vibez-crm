@@ -39,6 +39,7 @@ export class VouchersService {
       triggerType: 'voucher_issued',
       recipient: booking.quotation.lead.phone,
       relatedEntity: `booking:${bookingId}`,
+      body: `Hi ${booking.quotation.lead.clientName}, your ${dto.type.toLowerCase()} voucher ${refNo} is ready. View it here: ${voucher.pdfUrl}`,
     });
 
     return voucher;
