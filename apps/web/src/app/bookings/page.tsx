@@ -5,6 +5,13 @@ import { AppShell } from '@/components/AppShell';
 import { api, ApiError } from '@/lib/api';
 import type { BookingDTO, InvoiceDTO, VoucherDTO } from '@holiday-vibez/shared';
 
+const PAYMENT_TYPE_COLORS: Record<string, string> = {
+  CLIENT_RECEIPT: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',
+  DMC_PAYABLE: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400',
+  COMMISSION: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
+  REFUND: 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400',
+};
+
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<BookingDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -114,12 +121,14 @@ export default function BookingsPage() {
 
       <div className="mt-4 space-y-3">
         {bookings.map((b) => (
-          <div key={b.id} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <div key={b.id} className="rounded-xl border-t-4 border-t-emerald-500 border-x border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-slate-800 dark:text-slate-100">{b.quotation?.lead?.clientName} · {b.quotation?.lead?.destination}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Departs {new Date(b.departureDate).toLocaleDateString()} · Status: {b.status} · Total ₹{Number(b.quotation?.totalAmount ?? 0).toLocaleString('en-IN')}
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Departs {new Date(b.departureDate).toLocaleDateString()} ·{' '}
+                  <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 font-medium text-emerald-700 dark:text-emerald-400">{b.status}</span>{' '}
+                  · Total ₹{Number(b.quotation?.totalAmount ?? 0).toLocaleString('en-IN')}
                 </p>
               </div>
               <button onClick={() => toggleExpanded(b.id)} className="text-sm text-brand hover:underline">
@@ -136,9 +145,21 @@ export default function BookingsPage() {
                   <tbody>
                     {(b.payments ?? []).map((p) => (
                       <tr key={p.id} className="border-t border-slate-100 dark:border-slate-800">
-                        <td className="py-1">{p.type}</td>
+                        <td className="py-1">
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PAYMENT_TYPE_COLORS[p.type] ?? 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
+                            {p.type.replaceAll('_', ' ')}
+                          </span>
+                        </td>
                         <td className="py-1">₹{Number(p.amount).toLocaleString('en-IN')}</td>
-                        <td className="py-1">{p.paidAt ? `Paid ${new Date(p.paidAt).toLocaleDateString()}` : 'Pending'}</td>
+                        <td className="py-1">
+                          {p.paidAt ? (
+                            <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                              Paid {new Date(p.paidAt).toLocaleDateString()}
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">Pending</span>
+                          )}
+                        </td>
                         <td className="py-1 text-right">
                           {!p.paidAt && (
                             <div className="flex items-center justify-end gap-3">
