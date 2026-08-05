@@ -1,11 +1,20 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/AppShell';
 import { useAuth } from '@/lib/auth-context';
-import { api, ApiError } from '@/lib/api';
+import { api, ApiError, getAccessToken } from '@/lib/api';
 import { LeadSource, LeadStatus, Role, type BranchDTO, type ClientDTO, type LeadSummaryDTO } from '@holiday-vibez/shared';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+
+interface BulkImportRow {
+  row: number;
+  success: boolean;
+  leadId?: string;
+  error?: string;
+}
 
 const SOURCE_OPTIONS = [LeadSource.GOOGLE, LeadSource.META, LeadSource.WEBSITE, LeadSource.WHATSAPP, LeadSource.REFERRAL, LeadSource.WALKIN];
 const STATUS_OPTIONS = Object.values(LeadStatus);
@@ -26,6 +35,11 @@ export default function LeadsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const canCreate = me?.role === Role.ADMIN || me?.role === Role.BRANCH_MANAGER;
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
+  const [importResults, setImportResults] = useState<BulkImportRow[] | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     source: LeadSource.WEBSITE as string,
@@ -80,6 +94,36 @@ export default function LeadsPage() {
     }
   }
 
+  async function handleBulkImport(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportError(null);
+    setImportResults(null);
+    setImporting(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const token = getAccessToken();
+      const res = await fetch(`${API_BASE}/leads/bulk-import`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: formData,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ message: res.statusText }));
+        throw new ApiError(res.status, typeof body.message === 'string' ? body.message : JSON.stringify(body.message));
+      }
+      setImportResults(await res.json());
+      await load();
+    } catch (err) {
+      setImportError(err instanceof ApiError ? err.message : 'Import failed');
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
   async function handleStatusChange(id: string, status: string) {
     try {
       await api.patch(`/leads/${id}`, { status });
@@ -94,13 +138,41 @@ export default function LeadsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Leads</h1>
         {canCreate && (
-          <button onClick={() => setShowForm((s) => !s)} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">
-            {showForm ? 'Cancel' : 'Add lead'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50"
+            >
+              {importing ? 'Importing…' : 'Bulk import (CSV)'}
+            </button>
+            <input ref={fileInputRef} type="file" accept=".csv,text/csv" onChange={handleBulkImport} className="hidden" />
+            <button onClick={() => setShowForm((s) => !s)} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">
+              {showForm ? 'Cancel' : 'Add lead'}
+            </button>
+          </div>
         )}
       </div>
+      {canCreate && (
+        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+          CSV columns: source,clientName,phone,email,destination,branch — source must be one of {SOURCE_OPTIONS.join(', ')}; branch must match an existing branch name.
+        </p>
+      )}
 
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {importError && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{importError}</p>}
+      {importResults && (
+        <div className="mt-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-sm">
+          <p className="font-medium text-slate-700 dark:text-slate-200">
+            Imported {importResults.filter((r) => r.success).length} of {importResults.length} rows
+          </p>
+          <ul className="mt-2 space-y-1">
+            {importResults.filter((r) => !r.success).map((r) => (
+              <li key={r.row} className="text-red-600 dark:text-red-400">Row {r.row}: {r.error}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {canCreate && showForm && (
         <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:grid-cols-2 lg:grid-cols-3">

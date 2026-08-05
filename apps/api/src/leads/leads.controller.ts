@@ -1,4 +1,7 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
+import { parse } from 'csv-parse/sync';
 import { Role } from '@prisma/client';
 import { LeadsService } from './leads.service';
 import { CreateLeadDto, UpdateLeadDto } from './dto/lead.dto';
@@ -6,6 +9,8 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+
+const MAX_CSV_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('leads')
@@ -35,6 +40,24 @@ export class LeadsController {
   @Post()
   create(@Body() dto: CreateLeadDto) {
     return this.leadsService.create(dto);
+  }
+
+  // CSV columns: source,clientName,phone,email,destination,branch — same write
+  // tier as single-lead create(); each row auto-assigns round-robin same as a
+  // one-off create, just looped with per-row error reporting.
+  @Roles(Role.ADMIN, Role.BRANCH_MANAGER)
+  @Post('bulk-import')
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage(), limits: { fileSize: MAX_CSV_SIZE_BYTES } }))
+  async bulkImport(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('No CSV file uploaded');
+    let rows: Record<string, string>[];
+    try {
+      rows = parse(file.buffer, { columns: true, skip_empty_lines: true, trim: true });
+    } catch (err) {
+      throw new BadRequestException(`Could not parse CSV: ${err instanceof Error ? err.message : 'invalid format'}`);
+    }
+    if (rows.length === 0) throw new BadRequestException('CSV has no data rows');
+    return this.leadsService.bulkImport(rows);
   }
 
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)

@@ -1,8 +1,15 @@
 import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { LeadStatus, Role } from '@prisma/client';
+import { LeadSource, LeadStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateLeadDto, PublicCreateLeadDto, UpdateLeadDto } from './dto/lead.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+
+export interface BulkImportRow {
+  row: number;
+  success: boolean;
+  leadId?: string;
+  error?: string;
+}
 
 type Actor = { id: string; role: Role; branchId: string | null };
 
@@ -58,6 +65,52 @@ export class LeadsService {
       },
     });
     return this.autoAssign(lead.id);
+  }
+
+  // CSV bulk import — same permission tier and create() path as a single lead (so
+  // each row still auto-assigns round-robin), just looped with per-row validation
+  // so one bad row doesn't sink the whole batch. Branch is matched by name
+  // case-insensitively since operators upload spreadsheets, not branch UUIDs.
+  async bulkImport(rows: Record<string, string>[]): Promise<BulkImportRow[]> {
+    const branches = await this.prisma.branch.findMany();
+    const branchByName = new Map(branches.map((b) => [b.name.toLowerCase(), b.id]));
+    const validSources = new Set(Object.values(LeadSource));
+
+    const results: BulkImportRow[] = [];
+    for (let i = 0; i < rows.length; i++) {
+      const rowNum = i + 2; // +1 for 0-index, +1 for the header row
+      const row = rows[i];
+      try {
+        const source = (row.source ?? '').trim().toUpperCase();
+        const clientName = (row.clientName ?? '').trim();
+        const phone = (row.phone ?? '').trim();
+        const destination = (row.destination ?? '').trim();
+        const branchName = (row.branch ?? '').trim();
+        const email = (row.email ?? '').trim();
+
+        if (!validSources.has(source as LeadSource)) {
+          throw new Error(`Invalid source "${row.source}" — must be one of ${[...validSources].join(', ')}`);
+        }
+        if (!clientName) throw new Error('clientName is required');
+        if (!phone) throw new Error('phone is required');
+        if (!destination) throw new Error('destination is required');
+        const branchId = branchByName.get(branchName.toLowerCase());
+        if (!branchId) throw new Error(`Unknown branch "${row.branch}"`);
+
+        const lead = await this.create({
+          source: source as LeadSource,
+          clientName,
+          phone,
+          destination,
+          branchId,
+          email: email || undefined,
+        });
+        results.push({ row: rowNum, success: true, leadId: lead.id });
+      } catch (err) {
+        results.push({ row: rowNum, success: false, error: err instanceof Error ? err.message : 'Unknown error' });
+      }
+    }
+    return results;
   }
 
   // Public Lead Capture API (spec Section 10) — website forms post here with no branch
