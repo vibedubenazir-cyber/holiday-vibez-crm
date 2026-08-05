@@ -91,6 +91,7 @@ export interface PaymentDTO {
   dueDate: string | null;
   paidAt: string | null;
   gatewayRef: string | null;
+  gatewayLinkUrl: string | null;
 }
 
 export interface TargetDTO {

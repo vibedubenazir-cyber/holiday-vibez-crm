@@ -12,6 +12,8 @@ export default function BookingsPage() {
   const [paymentForm, setPaymentForm] = useState({ type: 'CLIENT_RECEIPT', amount: '' });
   const [vouchers, setVouchers] = useState<Record<string, VoucherDTO[]>>({});
   const [invoices, setInvoices] = useState<Record<string, InvoiceDTO[]>>({});
+  const [linkBusy, setLinkBusy] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -42,6 +44,25 @@ export default function BookingsPage() {
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to mark payment paid');
     }
+  }
+
+  async function handleGeneratePaymentLink(paymentId: string) {
+    setError(null);
+    setLinkBusy(paymentId);
+    try {
+      await api.post(`/payments/${paymentId}/create-payment-link`);
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to generate payment link');
+    } finally {
+      setLinkBusy(null);
+    }
+  }
+
+  async function handleCopyLink(paymentId: string, url: string) {
+    await navigator.clipboard.writeText(url);
+    setCopiedId(paymentId);
+    setTimeout(() => setCopiedId((id) => (id === paymentId ? null : id)), 2000);
   }
 
   async function loadDocs(bookingId: string) {
@@ -85,7 +106,9 @@ export default function BookingsPage() {
     <AppShell>
       <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Bookings & Payments</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-        Bookings are created from approved (SENT) quotations. Payments feed branch P&L and target achievement automatically once marked paid.
+        Bookings are created from approved (SENT) quotations. Generate a payment link to send the customer a real hosted-checkout
+        page (Razorpay), or use "Mark paid" for offline/cash payments already received — either way, payments feed branch P&L
+        and target achievement automatically once paid.
       </p>
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
@@ -117,7 +140,24 @@ export default function BookingsPage() {
                         <td className="py-1">₹{Number(p.amount).toLocaleString('en-IN')}</td>
                         <td className="py-1">{p.paidAt ? `Paid ${new Date(p.paidAt).toLocaleDateString()}` : 'Pending'}</td>
                         <td className="py-1 text-right">
-                          {!p.paidAt && <button onClick={() => handleMarkPaid(p.id)} className="text-emerald-600 hover:underline">Mark paid</button>}
+                          {!p.paidAt && (
+                            <div className="flex items-center justify-end gap-3">
+                              {p.gatewayLinkUrl ? (
+                                <button onClick={() => handleCopyLink(p.id, p.gatewayLinkUrl!)} className="text-brand hover:underline">
+                                  {copiedId === p.id ? 'Copied!' : 'Copy payment link'}
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleGeneratePaymentLink(p.id)}
+                                  disabled={linkBusy === p.id}
+                                  className="text-brand hover:underline disabled:opacity-60"
+                                >
+                                  {linkBusy === p.id ? 'Generating…' : 'Generate payment link'}
+                                </button>
+                              )}
+                              <button onClick={() => handleMarkPaid(p.id)} className="text-emerald-600 hover:underline">Mark paid</button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}

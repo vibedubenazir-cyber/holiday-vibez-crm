@@ -210,18 +210,42 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   credentials configured, and confirmed the outbound request is correctly
   shaped (Bearer auth, `personalizations`/`from`/`subject`/`content` body)
   against a local mock server matching SendGrid's API contract.
+- **Real Payment Gateway (Razorpay)**: replaces the trust-based "Mark paid"
+  button as the primary path — spec Section 11's "PCI-scope-free payments
+  via hosted checkout" means the customer pays on Razorpay's own page, not
+  on staff's word. `PaymentsService.createPaymentLink()`
+  (`apps/api/src/payments/payments.service.ts`) calls Razorpay's Payment
+  Links API (`POST /v1/payment_links`, HTTP Basic Auth with
+  `PAYMENT_GATEWAY_KEY_ID`/`PAYMENT_GATEWAY_KEY`) and returns a hosted
+  checkout URL — shown with a copy button on `/bookings` so staff can paste
+  it into a WhatsApp message or email to the customer (both now real, so
+  this closes the loop end-to-end). A new webhook
+  (`apps/api/src/payments/razorpay-webhook.controller.ts`, registered at
+  `POST /api/webhooks/razorpay`) confirms the payment once Razorpay reports
+  it paid, verified via `X-Razorpay-Signature` (HMAC over the raw body using
+  `PAYMENT_GATEWAY_WEBHOOK_SECRET`) — same shape as the WhatsApp webhook.
+  Both the manual "Mark paid" button and the real webhook now funnel through
+  one shared `confirmPaid()` method, so target-crediting can never drift
+  between the two paths. With no gateway credentials configured,
+  `createPaymentLink` returns a clear error telling staff to use "Mark paid"
+  instead, rather than silently no-op'ing — there's no sensible mock hosted
+  checkout to fall back to the way there is for WhatsApp/email. Verified
+  live: confirmed the no-credentials error path, hand-built and signed a
+  Razorpay-shaped `payment_link.paid` webhook payload and confirmed it set
+  `paidAt`/a real `gatewayRef` and credited the linked Target's
+  `revenueAchieved`, confirmed a bad signature is rejected, and confirmed
+  the outbound request is correctly shaped (Basic Auth, amount in paise)
+  against a local mock server.
 
 ### What's intentionally stubbed or out of scope
 
-No credentials exist in this environment for push or a payment gateway
-(WhatsApp and Email are now real — see above) — the payment mark-paid flow
-is a real, wired-up abstraction with a **console-log/mock provider**; swapping
-in FCM or a real gateway means implementing one method, not touching
-callers. Branded PDF generation for quotations/vouchers is a placeholder
-URL, not real rendering. **Not built at all**: WAF/DDoS protection,
-penetration testing, a native push backend, and data migration from the
-live crm.holidayvibez.com system — these are
-infra/process work, not application code.
+No credentials exist in this environment for push (WhatsApp, Email, and the
+payment gateway are now real — see above); swapping in FCM means
+implementing one method in `NotificationsService`, not touching callers.
+Branded PDF generation for quotations/vouchers is a placeholder URL, not
+real rendering. **Not built at all**: WAF/DDoS protection, penetration
+testing, a native push backend, and data migration from the live
+crm.holidayvibez.com system — these are infra/process work, not application code.
 
 ## Structure
 

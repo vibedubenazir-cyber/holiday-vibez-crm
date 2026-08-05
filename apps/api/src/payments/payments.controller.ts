@@ -29,6 +29,12 @@ export class PaymentsController {
     return this.paymentsService.markPaid(id);
   }
 
+  @Roles(Role.ADMIN, Role.BRANCH_MANAGER)
+  @Post('payments/:id/create-payment-link')
+  createPaymentLink(@Param('id') id: string) {
+    return this.paymentsService.createPaymentLink(id);
+  }
+
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER)
   @Get('finance/branch-pnl')
   branchPnl(@Query('branchId') branchId: string) {

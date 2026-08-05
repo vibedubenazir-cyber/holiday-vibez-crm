@@ -1,9 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreatePaymentDto } from './dto/payment.dto';
 
+const RAZORPAY_API_URL = 'https://api.razorpay.com/v1/payment_links';
+
 @Injectable()
 export class PaymentsService {
+  private readonly logger = new Logger(PaymentsService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   findAll(bookingId?: string) {
@@ -21,22 +25,86 @@ export class PaymentsService {
     });
   }
 
-  // Mock hosted-checkout gateway (spec Section 11: "PCI-scope-free payments via
-  // hosted checkout") — no real payment processor is wired up in this environment,
-  // this just marks the record paid and stamps a synthetic gateway reference.
+  // Manual/offline reconciliation path (cash, bank transfer already received) —
+  // stays trust-based by design, distinct from the real gateway flow below.
   async markPaid(id: string) {
     const payment = await this.prisma.payment.findUnique({ where: { id } });
     if (!payment) throw new NotFoundException('Payment not found');
+    return this.confirmPaid(payment, `MOCK-${Date.now()}`);
+  }
+
+  // Real hosted-checkout gateway (spec Section 11: "PCI-scope-free payments via
+  // hosted checkout") via Razorpay's Payment Links API — the customer pays on
+  // Razorpay's own page, so card data never touches this app. Returns a URL for
+  // staff to send the customer (e.g. over WhatsApp); the payment only actually
+  // gets marked paid once Razorpay's webhook confirms it (razorpay-webhook.controller.ts),
+  // not by this call itself.
+  async createPaymentLink(id: string) {
+    if (!process.env.PAYMENT_GATEWAY_KEY_ID || !process.env.PAYMENT_GATEWAY_KEY) {
+      throw new BadRequestException('Payment gateway not configured — use "Mark paid" for offline/manual payments instead');
+    }
+
+    const payment = await this.prisma.payment.findUnique({
+      where: { id },
+      include: { booking: { include: { quotation: { include: { lead: true } } } } },
+    });
+    if (!payment) throw new NotFoundException('Payment not found');
+    if (payment.paidAt) throw new BadRequestException('Payment is already paid');
+
+    const lead = payment.booking.quotation.lead;
+    const auth = Buffer.from(`${process.env.PAYMENT_GATEWAY_KEY_ID}:${process.env.PAYMENT_GATEWAY_KEY}`).toString('base64');
+
+    const res = await fetch(RAZORPAY_API_URL, {
+      method: 'POST',
+      headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: Math.round(Number(payment.amount) * 100), // paise
+        currency: 'INR',
+        reference_id: payment.id,
+        description: `Holiday Vibez — ${payment.type.replace(/_/g, ' ').toLowerCase()} for ${lead.destination}`,
+        customer: {
+          name: lead.clientName,
+          contact: lead.phone,
+          email: lead.email ?? undefined,
+        },
+        notify: { sms: false, email: false }, // we send the link ourselves, over WhatsApp/email
+      }),
+    });
+
+    const body = await res.json().catch(() => null);
+    if (!res.ok) {
+      this.logger.error(`Razorpay payment link creation failed (${res.status}): ${JSON.stringify(body)}`);
+      throw new BadRequestException('Failed to create payment link');
+    }
 
     const updated = await this.prisma.payment.update({
       where: { id },
-      data: { paidAt: new Date(), gatewayRef: `MOCK-${Date.now()}` },
+      data: { gatewayLinkId: body.id, gatewayLinkUrl: body.short_url },
+    });
+    return updated;
+  }
+
+  // Shared by the manual mark-paid path and the real Razorpay webhook — both
+  // "paid" outcomes flow through exactly the same target-crediting logic, so
+  // the two paths can never drift apart on what actually happens on payment.
+  private async confirmPaid(payment: { id: string; bookingId: string; type: string; amount: unknown }, gatewayRef: string) {
+    const updated = await this.prisma.payment.update({
+      where: { id: payment.id },
+      data: { paidAt: new Date(), gatewayRef },
     });
 
     if (payment.type === 'CLIENT_RECEIPT') {
       await this.applyToTargets(payment.bookingId, Number(payment.amount));
     }
     return updated;
+  }
+
+  // Called by razorpay-webhook.controller.ts once Razorpay confirms a payment
+  // link was actually paid.
+  async confirmPaidByGatewayLinkId(gatewayLinkId: string, gatewayPaymentId: string) {
+    const payment = await this.prisma.payment.findFirst({ where: { gatewayLinkId } });
+    if (!payment || payment.paidAt) return null;
+    return this.confirmPaid(payment, gatewayPaymentId);
   }
 
   // Feeds Target.revenue_achieved automatically on payment (spec Section 13 API

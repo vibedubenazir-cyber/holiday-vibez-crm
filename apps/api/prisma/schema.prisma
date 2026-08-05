@@ -437,6 +437,11 @@ model Payment {
   dueDate    DateTime?
   paidAt     DateTime?
   gatewayRef String?
+  // Razorpay Payment Link id/url — set when a hosted-checkout link is generated
+  // for this payment; the webhook looks the payment up by gatewayLinkId when
+  // Razorpay reports it paid.
+  gatewayLinkId  String?
+  gatewayLinkUrl String?
   supplierId String?
   supplier   Supplier?   @relation(fields: [supplierId], references: [id])
   createdAt  DateTime    @default(now())
