@@ -70,8 +70,8 @@ export default function ExpensesPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Accounts & Finance — Expenses</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Accounts & Finance — Expenses</h1>
+        <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
           {showForm ? 'Cancel' : 'Log expense'}
         </button>
       </div>
@@ -81,7 +81,7 @@ export default function ExpensesPage() {
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {summary.map((s) => (
-          <div key={s.category} className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3">
+          <div key={s.category} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-3">
             <p className="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">{s.category}</p>
             <p className="mt-1 text-base font-medium text-slate-800 dark:text-slate-100">₹{s.total.toLocaleString('en-IN')}</p>
           </div>
@@ -90,25 +90,25 @@ export default function ExpensesPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:grid-cols-2 lg:grid-cols-3">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
           {needsBranchPicker && (
-            <select value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+            <select value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
               {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           )}
-          <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+          <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
             {CATEGORY_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
-          <input required type="date" value={form.expenseDate} onChange={(e) => setForm({ ...form, expenseDate: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input required type="number" placeholder="Amount" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input required placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm sm:col-span-2 lg:col-span-3" />
-          <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
+          <input required type="date" value={form.expenseDate} onChange={(e) => setForm({ ...form, expenseDate: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input required type="number" placeholder="Amount" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input required placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm sm:col-span-2 lg:col-span-3" />
+          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
             Log expense
           </button>
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr>

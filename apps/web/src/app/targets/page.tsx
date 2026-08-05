@@ -69,44 +69,44 @@ export default function TargetsPage() {
 
   return (
     <AppShell>
-      <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Targets & Leaderboard</h1>
+      <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Targets & Leaderboard</h1>
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       <div className="mt-4 flex items-center gap-3">
         <label className="text-sm text-slate-600 dark:text-slate-300">Branch:</label>
-        <select value={branchId} onChange={(e) => setBranchId(e.target.value)} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+        <select value={branchId} onChange={(e) => setBranchId(e.target.value)} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
           {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
       </div>
 
       {canSetTargets && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <select value={form.scope} onChange={(e) => setForm({ ...form, scope: e.target.value as 'CONSULTANT' | 'BRANCH', scopeId: '' })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <select value={form.scope} onChange={(e) => setForm({ ...form, scope: e.target.value as 'CONSULTANT' | 'BRANCH', scopeId: '' })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
             <option value="CONSULTANT">Consultant target</option>
             <option value="BRANCH">Branch target</option>
           </select>
           {form.scope === 'CONSULTANT' ? (
-            <select value={form.scopeId} onChange={(e) => setForm({ ...form, scopeId: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+            <select value={form.scopeId} onChange={(e) => setForm({ ...form, scopeId: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
               <option value="">Select consultant</option>
               {branchConsultants.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           ) : (
-            <input value={branchId} readOnly className="rounded-md border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm text-slate-500 dark:text-slate-400" />
+            <input value={branchId} readOnly className="rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm text-slate-500 dark:text-slate-400" />
           )}
-          <select value={form.period} onChange={(e) => setForm({ ...form, period: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+          <select value={form.period} onChange={(e) => setForm({ ...form, period: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
             <option value="WEEK">Weekly</option>
             <option value="MONTH">Monthly</option>
             <option value="QUARTER">Quarterly</option>
           </select>
-          <input required type="number" placeholder="Revenue target (₹)" value={form.revenueTarget} onChange={(e) => setForm({ ...form, revenueTarget: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-4">
+          <input required type="number" placeholder="Revenue target (₹)" value={form.revenueTarget} onChange={(e) => setForm({ ...form, revenueTarget: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-4">
             Set target
           </button>
         </form>
       )}
 
       <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Branch leaderboard</h2>
-      <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+      <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr><th className="px-4 py-2">Consultant</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Achieved</th><th className="px-4 py-2">%</th></tr>
@@ -132,7 +132,7 @@ export default function TargetsPage() {
       {companyLeaderboard.length > 0 && (
         <>
           <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Company-wide (branches)</h2>
-          <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 <tr><th className="px-4 py-2">Branch</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Achieved</th></tr>

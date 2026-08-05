@@ -58,10 +58,10 @@ export default function AttendancePage() {
 
   return (
     <AppShell>
-      <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Attendance</h1>
+      <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Attendance</h1>
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="mt-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+      <div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
         <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Today</p>
         {today ? (
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -75,14 +75,14 @@ export default function AttendancePage() {
           <button
             onClick={handleClockIn}
             disabled={!!today}
-            className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-40"
+            className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-40"
           >
             Clock in
           </button>
           <button
             onClick={handleClockOut}
             disabled={!today || !!today.checkOutAt}
-            className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40"
+            className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40"
           >
             Clock out
           </button>
@@ -90,7 +90,7 @@ export default function AttendancePage() {
       </div>
 
       {canSeeTeam && (
-        <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
           <div className="border-b border-slate-100 dark:border-slate-800 px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-100">Team attendance — this month</div>
           <table className="w-full text-sm">
             <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">

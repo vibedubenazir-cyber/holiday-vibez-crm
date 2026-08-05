@@ -257,7 +257,7 @@ export default function QuotationDetailPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{quotation.refNo}</h1>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">{quotation.refNo}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">{quotation.lead.clientName} · {quotation.lead.destination} · {quotation.status}</p>
         </div>
         <div className="flex gap-2">
@@ -267,27 +267,27 @@ export default function QuotationDetailPage() {
                 href={`/quote/${id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
               >
                 View quotation
               </a>
               <button
                 onClick={handleCopyClientLink}
-                className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
               >
                 {linkCopied ? 'Copied!' : 'Copy client link'}
               </button>
               <button
                 onClick={handleSendToClient}
                 disabled={sending}
-                className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+                className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105 disabled:opacity-60"
               >
                 {sending ? 'Sending...' : sent ? 'Sent!' : 'Send to client (WhatsApp + Email)'}
               </button>
             </>
           )}
           {isDraft && (
-            <button onClick={handleSubmit} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">
+            <button onClick={handleSubmit} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
               Submit for approval
             </button>
           )}
@@ -297,7 +297,7 @@ export default function QuotationDetailPage() {
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {isSent && (
-        <form onSubmit={handleCreateBooking} className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+        <form onSubmit={handleCreateBooking} className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <div>
             <label className="block text-xs text-slate-500 dark:text-slate-400">Departure date</label>
             <input
@@ -305,10 +305,10 @@ export default function QuotationDetailPage() {
               type="date"
               value={departureDate}
               onChange={(e) => setDepartureDate(e.target.value)}
-              className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+              className="mt-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
             />
           </div>
-          <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">
             Convert to booking
           </button>
         </form>
@@ -316,7 +316,7 @@ export default function QuotationDetailPage() {
 
       {isDraft && (
         <div className="mt-4 space-y-3">
-          <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <button onClick={() => setShowHotelSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
               {showHotelSearch ? 'Hide hotel search' : '+ Search hotels (live)'}
             </button>
@@ -325,29 +325,29 @@ export default function QuotationDetailPage() {
                 <form onSubmit={handleSearchHotels} className="mt-3 flex flex-wrap items-end gap-3">
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Destination</label>
-                    <input required value={hotelForm.destination} onChange={(e) => setHotelForm({ ...hotelForm, destination: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input required value={hotelForm.destination} onChange={(e) => setHotelForm({ ...hotelForm, destination: e.target.value })} className="mt-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Check-in</label>
-                    <input required type="date" value={hotelForm.checkIn} onChange={(e) => setHotelForm({ ...hotelForm, checkIn: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input required type="date" value={hotelForm.checkIn} onChange={(e) => setHotelForm({ ...hotelForm, checkIn: e.target.value })} className="mt-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Check-out</label>
-                    <input required type="date" value={hotelForm.checkOut} onChange={(e) => setHotelForm({ ...hotelForm, checkOut: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input required type="date" value={hotelForm.checkOut} onChange={(e) => setHotelForm({ ...hotelForm, checkOut: e.target.value })} className="mt-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Guests</label>
-                    <input type="number" min={1} value={hotelForm.guests} onChange={(e) => setHotelForm({ ...hotelForm, guests: Number(e.target.value) })} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input type="number" min={1} value={hotelForm.guests} onChange={(e) => setHotelForm({ ...hotelForm, guests: Number(e.target.value) })} className="mt-1 w-20 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Markup %</label>
-                    <input type="number" min={0} value={hotelMarkup} onChange={(e) => setHotelMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input type="number" min={0} value={hotelMarkup} onChange={(e) => setHotelMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
-                  <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
+                  <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
                 </form>
                 <div className="mt-3 space-y-3">
                   {hotelResults.map((hotel, hi) => (
-                    <div key={hi} className="rounded-md border border-slate-100 dark:border-slate-800 p-3">
+                    <div key={hi} className="rounded-lg border border-slate-100 dark:border-slate-800 p-3">
                       <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{hotel.hotelName} · {'★'.repeat(hotel.starRating)}</p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">{hotel.address} · {hotel.nights} night(s)</p>
                       <table className="mt-2 w-full text-xs">
@@ -371,7 +371,7 @@ export default function QuotationDetailPage() {
             )}
           </div>
 
-          <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <button onClick={() => setShowFlightSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
               {showFlightSearch ? 'Hide flight search' : '+ Search flights (live)'}
             </button>
@@ -380,25 +380,25 @@ export default function QuotationDetailPage() {
                 <form onSubmit={handleSearchFlights} className="mt-3 flex flex-wrap items-end gap-3">
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Origin</label>
-                    <input required value={flightForm.origin} onChange={(e) => setFlightForm({ ...flightForm, origin: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input required value={flightForm.origin} onChange={(e) => setFlightForm({ ...flightForm, origin: e.target.value })} className="mt-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Destination</label>
-                    <input required value={flightForm.destination} onChange={(e) => setFlightForm({ ...flightForm, destination: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input required value={flightForm.destination} onChange={(e) => setFlightForm({ ...flightForm, destination: e.target.value })} className="mt-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Date</label>
-                    <input required type="date" value={flightForm.date} onChange={(e) => setFlightForm({ ...flightForm, date: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input required type="date" value={flightForm.date} onChange={(e) => setFlightForm({ ...flightForm, date: e.target.value })} className="mt-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Pax</label>
-                    <input type="number" min={1} value={flightForm.pax} onChange={(e) => setFlightForm({ ...flightForm, pax: Number(e.target.value) })} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input type="number" min={1} value={flightForm.pax} onChange={(e) => setFlightForm({ ...flightForm, pax: Number(e.target.value) })} className="mt-1 w-20 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Markup %</label>
-                    <input type="number" min={0} value={flightMarkup} onChange={(e) => setFlightMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input type="number" min={0} value={flightMarkup} onChange={(e) => setFlightMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
-                  <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
+                  <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
                 </form>
                 <table className="mt-3 w-full text-xs">
                   <thead className="text-left text-slate-500 dark:text-slate-400"><tr><th className="py-1">Airline</th><th>Flight</th><th>Depart</th><th>Arrive</th><th>Class</th><th>Fare (marked up, x{flightForm.pax} pax)</th><th></th></tr></thead>
@@ -420,7 +420,7 @@ export default function QuotationDetailPage() {
             )}
           </div>
 
-          <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <button onClick={() => setShowTransferSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
               {showTransferSearch ? 'Hide transfer search' : '+ Search transfers (live)'}
             </button>
@@ -429,25 +429,25 @@ export default function QuotationDetailPage() {
                 <form onSubmit={handleSearchTransfers} className="mt-3 flex flex-wrap items-end gap-3">
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Pickup</label>
-                    <input required value={transferForm.pickup} onChange={(e) => setTransferForm({ ...transferForm, pickup: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input required value={transferForm.pickup} onChange={(e) => setTransferForm({ ...transferForm, pickup: e.target.value })} className="mt-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Drop</label>
-                    <input required value={transferForm.drop} onChange={(e) => setTransferForm({ ...transferForm, drop: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input required value={transferForm.drop} onChange={(e) => setTransferForm({ ...transferForm, drop: e.target.value })} className="mt-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Date</label>
-                    <input required type="date" value={transferForm.date} onChange={(e) => setTransferForm({ ...transferForm, date: e.target.value })} className="mt-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input required type="date" value={transferForm.date} onChange={(e) => setTransferForm({ ...transferForm, date: e.target.value })} className="mt-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Pax</label>
-                    <input type="number" min={1} value={transferForm.pax} onChange={(e) => setTransferForm({ ...transferForm, pax: Number(e.target.value) })} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input type="number" min={1} value={transferForm.pax} onChange={(e) => setTransferForm({ ...transferForm, pax: Number(e.target.value) })} className="mt-1 w-20 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="block text-xs text-slate-500 dark:text-slate-400">Markup %</label>
-                    <input type="number" min={0} value={transferMarkup} onChange={(e) => setTransferMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input type="number" min={0} value={transferMarkup} onChange={(e) => setTransferMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
                   </div>
-                  <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
+                  <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
                 </form>
                 <table className="mt-3 w-full text-xs">
                   <thead className="text-left text-slate-500 dark:text-slate-400"><tr><th className="py-1">Vehicle</th><th>Capacity</th><th>Distance</th><th>Fare (marked up)</th><th></th></tr></thead>
@@ -470,10 +470,10 @@ export default function QuotationDetailPage() {
       )}
 
       {isDraft && (
-        <form onSubmit={handleAddItem} className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+        <form onSubmit={handleAddItem} className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <div className="flex-1 min-w-[220px]">
             <label className="block text-xs text-slate-500 dark:text-slate-400">Rate card</label>
-            <select value={selectedRate} onChange={(e) => setSelectedRate(e.target.value)} className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+            <select value={selectedRate} onChange={(e) => setSelectedRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
               {rateCards.map((r) => (
                 <option key={r.id} value={r.id}>{r.type} · {r.name} ({r.destination}) — {r.currency} {Number(r.baseCost).toLocaleString('en-IN')}</option>
               ))}
@@ -481,15 +481,15 @@ export default function QuotationDetailPage() {
           </div>
           <div>
             <label className="block text-xs text-slate-500 dark:text-slate-400">Qty</label>
-            <input type="number" min={1} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="mt-1 w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+            <input type="number" min={1} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="mt-1 w-20 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
           </div>
-          <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">
             + Add to quotation
           </button>
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr>

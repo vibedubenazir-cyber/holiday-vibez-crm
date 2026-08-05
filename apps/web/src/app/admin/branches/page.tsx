@@ -48,11 +48,11 @@ export default function BranchesPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Branches</h1>
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Branches</h1>
         {isAdmin && (
           <button
             onClick={() => setShowForm((s) => !s)}
-            className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark"
+            className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105"
           >
             {showForm ? 'Cancel' : 'Add branch'}
           </button>
@@ -62,12 +62,12 @@ export default function BranchesPage() {
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {isAdmin && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <input required placeholder="Branch name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input required placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input placeholder="Monthly target" type="number" value={form.monthlyTarget} onChange={(e) => setForm({ ...form, monthlyTarget: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input placeholder="Quarterly target" type="number" value={form.quarterlyTarget} onChange={(e) => setForm({ ...form, quarterlyTarget: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-4">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <input required placeholder="Branch name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input required placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input placeholder="Monthly target" type="number" value={form.monthlyTarget} onChange={(e) => setForm({ ...form, monthlyTarget: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input placeholder="Quarterly target" type="number" value={form.quarterlyTarget} onChange={(e) => setForm({ ...form, quarterlyTarget: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-4">
             Create branch
           </button>
         </form>
@@ -75,7 +75,7 @@ export default function BranchesPage() {
 
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {branches.map((b) => (
-          <div key={b.id} className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+          <div key={b.id} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <p className="text-base font-medium text-slate-800 dark:text-slate-100">{b.name}</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">{b.city}</p>
             <div className="mt-3 flex justify-between text-xs text-slate-500 dark:text-slate-400">

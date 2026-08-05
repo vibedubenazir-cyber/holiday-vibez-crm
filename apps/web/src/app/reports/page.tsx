@@ -63,7 +63,7 @@ export default function ReportsPage() {
 
   return (
     <AppShell>
-      <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Reports</h1>
+      <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Reports</h1>
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {dashboard && (
@@ -89,7 +89,7 @@ export default function ReportsPage() {
           </div>
 
           <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Branch target vs. achieved</h2>
-          <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 <tr><th className="px-4 py-2">Branch</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Achieved</th></tr>
@@ -117,7 +117,7 @@ export default function ReportsPage() {
                 <select
                   value={pnlBranchId}
                   onChange={(e) => setPnlBranchId(e.target.value)}
-                  className="rounded-md border border-slate-300 dark:border-slate-600 px-2 py-1 text-sm"
+                  className="rounded-lg border border-slate-300 dark:border-slate-600 px-2 py-1 text-sm"
                 >
                   <option value="">All branches</option>
                   {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -126,7 +126,7 @@ export default function ReportsPage() {
               <select
                 value={pnlYear}
                 onChange={(e) => setPnlYear(Number(e.target.value))}
-                className="rounded-md border border-slate-300 dark:border-slate-600 px-2 py-1 text-sm"
+                className="rounded-lg border border-slate-300 dark:border-slate-600 px-2 py-1 text-sm"
               >
                 {Array.from({ length: 4 }, (_, i) => new Date().getFullYear() - i).map((y) => (
                   <option key={y} value={y}>{y}</option>
@@ -138,7 +138,7 @@ export default function ReportsPage() {
             Revenue and payment costs bucket by when client/DMC payments were actually recorded; expenses bucket by their own date. Net margin = revenue − payment costs − expenses.
           </p>
           {pnlError && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{pnlError}</p>}
-          <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 <tr>
@@ -169,7 +169,7 @@ export default function ReportsPage() {
 
       <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Passport/visa expiry compliance</h2>
       <p className="text-xs text-slate-500 dark:text-slate-400">Travelers on an upcoming booking with a passport expiring within 6 months of departure, or no visa status on file.</p>
-      <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+      <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr><th className="px-4 py-2">Traveler</th><th className="px-4 py-2">Departure</th><th className="px-4 py-2">Passport expiry</th><th className="px-4 py-2">Reason</th></tr>
@@ -193,9 +193,9 @@ export default function ReportsPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
       <p className="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-slate-800 dark:text-slate-100">{value}</p>
+      <p className="mt-1 text-xl font-bold tracking-tight text-slate-900 dark:text-white">{value}</p>
     </div>
   );
 }

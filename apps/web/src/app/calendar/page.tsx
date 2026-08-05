@@ -32,8 +32,8 @@ export default function CalendarPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Departure Calendar</h1>
-        <select value={range} onChange={(e) => setRange(e.target.value)} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Departure Calendar</h1>
+        <select value={range} onChange={(e) => setRange(e.target.value)} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
           <option value="7">Next 7 days</option>
           <option value="14">Next 14 days</option>
           <option value="30">Next 30 days</option>
@@ -44,7 +44,7 @@ export default function CalendarPage() {
 
       <div className="mt-4 space-y-2">
         {entries.map((e) => (
-          <div key={e.bookingId} className={`flex items-center justify-between rounded-md p-3 ${READINESS_STYLE[e.readiness]}`}>
+          <div key={e.bookingId} className={`flex items-center justify-between rounded-lg p-3 ${READINESS_STYLE[e.readiness]}`}>
             <div>
               <p className="font-medium text-slate-800 dark:text-slate-100">{e.clientName} → {e.destination}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400">

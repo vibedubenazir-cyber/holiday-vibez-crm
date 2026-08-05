@@ -102,10 +102,10 @@ export default function LeadDetailPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{lead.clientName}</h1>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">{lead.clientName}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">{lead.destination} · {lead.phone} · {lead.status}</p>
         </div>
-        <button onClick={handleCreateQuotation} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">
+        <button onClick={handleCreateQuotation} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
           Create quotation
         </button>
       </div>
@@ -121,15 +121,15 @@ export default function LeadDetailPage() {
             </button>
           </div>
           {showForm && (
-            <form onSubmit={handleAddTraveler} className="mt-2 grid grid-cols-1 gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3">
-              <input required placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-              <input placeholder="Passport number" value={form.passportNumber} onChange={(e) => setForm({ ...form, passportNumber: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-              <input type="date" placeholder="Passport expiry" value={form.passportExpiry} onChange={(e) => setForm({ ...form, passportExpiry: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-              <input placeholder="Visa status" value={form.visaStatus} onChange={(e) => setForm({ ...form, visaStatus: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-              <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Save traveler</button>
+            <form onSubmit={handleAddTraveler} className="mt-2 grid grid-cols-1 gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-3">
+              <input required placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+              <input placeholder="Passport number" value={form.passportNumber} onChange={(e) => setForm({ ...form, passportNumber: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+              <input type="date" placeholder="Passport expiry" value={form.passportExpiry} onChange={(e) => setForm({ ...form, passportExpiry: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+              <input placeholder="Visa status" value={form.visaStatus} onChange={(e) => setForm({ ...form, visaStatus: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+              <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Save traveler</button>
             </form>
           )}
-          <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 <tr><th className="px-3 py-2">Name</th><th className="px-3 py-2">Passport</th><th className="px-3 py-2">Expiry</th><th className="px-3 py-2">Visa</th></tr>
@@ -151,7 +151,7 @@ export default function LeadDetailPage() {
 
         <div>
           <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Quotations</h2>
-          <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 <tr><th className="px-3 py-2">Ref</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Total</th><th></th></tr>
@@ -175,7 +175,7 @@ export default function LeadDetailPage() {
       {customFieldDefs.length > 0 && (
         <div className="mt-6">
           <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Custom Fields</h2>
-          <form onSubmit={handleSaveCustomFields} className="mt-2 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <form onSubmit={handleSaveCustomFields} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
             {customFieldDefs.map((d) => (
               <div key={d.id}>
                 <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -192,7 +192,7 @@ export default function LeadDetailPage() {
                     required={d.required}
                     value={customFieldValues[d.id] ?? ''}
                     onChange={(e) => setCustomFieldValues({ ...customFieldValues, [d.id]: e.target.value })}
-                    className="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
                   >
                     <option value="">Select...</option>
                     {d.options.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -203,12 +203,12 @@ export default function LeadDetailPage() {
                     type={d.fieldType === CustomFieldType.NUMBER ? 'number' : d.fieldType === CustomFieldType.DATE ? 'date' : 'text'}
                     value={customFieldValues[d.id] ?? ''}
                     onChange={(e) => setCustomFieldValues({ ...customFieldValues, [d.id]: e.target.value })}
-                    className="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
                   />
                 )}
               </div>
             ))}
-            <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
+            <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
               Save custom fields
             </button>
           </form>

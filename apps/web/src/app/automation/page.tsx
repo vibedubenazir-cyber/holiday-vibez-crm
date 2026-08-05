@@ -79,8 +79,8 @@ export default function AutomationPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Automation</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Automation</h1>
+        <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
           {showForm ? 'Cancel' : 'New rule'}
         </button>
       </div>
@@ -90,32 +90,32 @@ export default function AutomationPage() {
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:grid-cols-2 lg:grid-cols-3">
-          <input required placeholder="Rule name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <select value={form.trigger} onChange={(e) => setForm({ ...form, trigger: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <input required placeholder="Rule name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <select value={form.trigger} onChange={(e) => setForm({ ...form, trigger: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
             {Object.entries(TRIGGER_LABELS).map(([v, label]) => <option key={v} value={v}>{label}</option>)}
           </select>
           {form.trigger === AutomationTrigger.LEAD_STATUS_CHANGED && (
-            <select value={form.targetLeadStatus} onChange={(e) => setForm({ ...form, targetLeadStatus: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+            <select value={form.targetLeadStatus} onChange={(e) => setForm({ ...form, targetLeadStatus: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
               {Object.values(LeadStatus).map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           )}
-          <input required type="number" min={0} placeholder="Delay (minutes)" value={form.delayMinutes} onChange={(e) => setForm({ ...form, delayMinutes: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <select value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+          <input required type="number" min={0} placeholder="Delay (minutes)" value={form.delayMinutes} onChange={(e) => setForm({ ...form, delayMinutes: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <select value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
             <option value={NotificationChannel.WHATSAPP}>WhatsApp</option>
             <option value={NotificationChannel.EMAIL}>Email</option>
           </select>
-          <select value={form.templateId} onChange={(e) => setForm({ ...form, templateId: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+          <select value={form.templateId} onChange={(e) => setForm({ ...form, templateId: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
             <option value="">No template</option>
             {templates.filter((t) => t.channel === form.channel).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
-          <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
+          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
             Create rule
           </button>
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <div className="border-b border-slate-100 dark:border-slate-800 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Rules</div>
         <table className="w-full text-sm">
           <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -152,7 +152,7 @@ export default function AutomationPage() {
         </table>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <div className="border-b border-slate-100 dark:border-slate-800 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Recent fires</div>
         <table className="w-full text-sm">
           <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">

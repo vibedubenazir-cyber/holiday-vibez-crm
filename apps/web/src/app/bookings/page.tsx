@@ -104,7 +104,7 @@ export default function BookingsPage() {
 
   return (
     <AppShell>
-      <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Bookings & Payments</h1>
+      <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Bookings & Payments</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Bookings are created from approved (SENT) quotations. Generate a payment link to send the customer a real hosted-checkout
         page (Razorpay), or use "Mark paid" for offline/cash payments already received — either way, payments feed branch P&L
@@ -114,7 +114,7 @@ export default function BookingsPage() {
 
       <div className="mt-4 space-y-3">
         {bookings.map((b) => (
-          <div key={b.id} className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+          <div key={b.id} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-slate-800 dark:text-slate-100">{b.quotation?.lead?.clientName} · {b.quotation?.lead?.destination}</p>
@@ -167,14 +167,14 @@ export default function BookingsPage() {
                   </tbody>
                 </table>
                 <div className="mt-3 flex items-end gap-2">
-                  <select value={paymentForm.type} onChange={(e) => setPaymentForm({ ...paymentForm, type: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+                  <select value={paymentForm.type} onChange={(e) => setPaymentForm({ ...paymentForm, type: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
                     <option value="CLIENT_RECEIPT">Client receipt</option>
                     <option value="DMC_PAYABLE">DMC payable</option>
                     <option value="COMMISSION">Commission</option>
                     <option value="REFUND">Refund</option>
                   </select>
-                  <input type="number" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} className="w-32 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-                  <button onClick={() => handleAddPayment(b.id)} className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add payment</button>
+                  <input type="number" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} className="w-32 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                  <button onClick={() => handleAddPayment(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add payment</button>
                 </div>
 
                 <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-3">
@@ -188,7 +188,7 @@ export default function BookingsPage() {
                     ))}
                     {(!vouchers[b.id] || vouchers[b.id].length === 0) && <li className="text-sm text-slate-400 dark:text-slate-500">None generated yet.</li>}
                   </ul>
-                  <button onClick={() => handleGenerateVoucher(b.id)} className="mt-2 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                  <button onClick={() => handleGenerateVoucher(b.id)} className="mt-2 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
                     Generate voucher
                   </button>
                 </div>
@@ -204,7 +204,7 @@ export default function BookingsPage() {
                     ))}
                     {(!invoices[b.id] || invoices[b.id].length === 0) && <li className="text-sm text-slate-400 dark:text-slate-500">None generated yet.</li>}
                   </ul>
-                  <button onClick={() => handleGenerateInvoice(b.id)} className="mt-2 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                  <button onClick={() => handleGenerateInvoice(b.id)} className="mt-2 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
                     Generate invoice
                   </button>
                 </div>

@@ -94,9 +94,9 @@ export default function PackagesPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Packages</h1>
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Packages</h1>
         {canManage && (
-          <button onClick={() => setShowForm((s) => !s)} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">
+          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
             {showForm ? 'Cancel' : 'Add package'}
           </button>
         )}
@@ -108,14 +108,14 @@ export default function PackagesPage() {
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {canManage && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:grid-cols-2 lg:grid-cols-3">
-          <input required placeholder="Package name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input required placeholder="Destination" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input placeholder="Theme (e.g. Honeymoon)" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input required type="number" min={1} placeholder="Duration (days)" value={form.durationDays} onChange={(e) => setForm({ ...form, durationDays: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input type="number" placeholder="Base price (indicative)" value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input placeholder="Currency" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <input required placeholder="Package name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input required placeholder="Destination" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input placeholder="Theme (e.g. Honeymoon)" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input required type="number" min={1} placeholder="Duration (days)" value={form.durationDays} onChange={(e) => setForm({ ...form, durationDays: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input type="number" placeholder="Base price (indicative)" value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input placeholder="Currency" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
             Create package
           </button>
         </form>
@@ -123,7 +123,7 @@ export default function PackagesPage() {
 
       <div className="mt-4 space-y-3">
         {packages.map((p) => (
-          <div key={p.id} className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+          <div key={p.id} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-slate-800 dark:text-slate-100">{p.name} · {p.destination}</p>
@@ -159,14 +159,14 @@ export default function PackagesPage() {
 
                 {canManage && (
                   <div className="mt-3 flex flex-wrap items-end gap-2">
-                    <select value={itemForm.rateCardId} onChange={(e) => setItemForm({ ...itemForm, rateCardId: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+                    <select value={itemForm.rateCardId} onChange={(e) => setItemForm({ ...itemForm, rateCardId: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
                       <option value="">Rate card...</option>
                       {rates.map((r) => <option key={r.id} value={r.id}>{r.name} ({r.destination})</option>)}
                     </select>
-                    <input type="number" min={1} placeholder="Day #" value={itemForm.dayNumber} onChange={(e) => setItemForm({ ...itemForm, dayNumber: e.target.value })} className="w-20 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-                    <input placeholder="Description" value={itemForm.description} onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-                    <input type="number" min={1} placeholder="Qty" value={itemForm.quantity} onChange={(e) => setItemForm({ ...itemForm, quantity: e.target.value })} className="w-16 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-                    <button onClick={() => handleAddItem(p.id)} className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add item</button>
+                    <input type="number" min={1} placeholder="Day #" value={itemForm.dayNumber} onChange={(e) => setItemForm({ ...itemForm, dayNumber: e.target.value })} className="w-20 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input placeholder="Description" value={itemForm.description} onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input type="number" min={1} placeholder="Qty" value={itemForm.quantity} onChange={(e) => setItemForm({ ...itemForm, quantity: e.target.value })} className="w-16 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <button onClick={() => handleAddItem(p.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add item</button>
                   </div>
                 )}
 
@@ -175,12 +175,12 @@ export default function PackagesPage() {
                     <select
                       value={leadPick[p.id] ?? ''}
                       onChange={(e) => setLeadPick({ ...leadPick, [p.id]: e.target.value })}
-                      className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+                      className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
                     >
                       <option value="">Pick a lead...</option>
                       {leads.map((l) => <option key={l.id} value={l.id}>{l.clientName} · {l.destination}</option>)}
                     </select>
-                    <button onClick={() => handleBuildQuotation(p.id)} className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+                    <button onClick={() => handleBuildQuotation(p.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">
                       Build quotation from package
                     </button>
                   </div>

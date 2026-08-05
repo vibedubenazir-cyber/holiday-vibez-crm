@@ -69,9 +69,9 @@ export default function CurrencyPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Currency Exchange</h1>
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Currency Exchange</h1>
         {isAdmin && (
-          <button onClick={() => setShowForm((s) => !s)} className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">
+          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
             {showForm ? 'Cancel' : 'Add currency'}
           </button>
         )}
@@ -84,14 +84,14 @@ export default function CurrencyPage() {
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {isAdmin && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 flex gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-          <input required placeholder="Code (e.g. CAD)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="w-32 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" maxLength={3} />
-          <input required type="number" step="0.0001" placeholder="Rate to INR" value={form.rateToInr} onChange={(e) => setForm({ ...form, rateToInr: e.target.value })} className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <button type="submit" className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add</button>
+        <form onSubmit={handleCreate} className="mt-4 flex gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <input required placeholder="Code (e.g. CAD)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="w-32 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" maxLength={3} />
+          <input required type="number" step="0.0001" placeholder="Rate to INR" value={form.rateToInr} onChange={(e) => setForm({ ...form, rateToInr: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add</button>
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr>
@@ -114,7 +114,7 @@ export default function CurrencyPage() {
                       step="0.0001"
                       value={editing[r.id] ?? r.rateToInr}
                       onChange={(e) => setEditing({ ...editing, [r.id]: e.target.value })}
-                      className="w-24 rounded-md border border-slate-300 dark:border-slate-600 px-2 py-1 text-sm"
+                      className="w-24 rounded-lg border border-slate-300 dark:border-slate-600 px-2 py-1 text-sm"
                     />
                   ) : (
                     `₹${Number(r.rateToInr).toFixed(4)}`

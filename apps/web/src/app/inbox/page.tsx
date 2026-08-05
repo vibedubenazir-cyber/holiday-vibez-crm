@@ -112,8 +112,8 @@ export default function InboxPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Inbox</h1>
-        <div className="flex rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 text-sm">
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Inbox</h1>
+        <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 text-sm">
           {[NotificationChannel.WHATSAPP, NotificationChannel.EMAIL].map((c) => (
             <button
               key={c}
@@ -128,7 +128,7 @@ export default function InboxPage() {
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 lg:col-span-1">
+        <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover lg:col-span-1">
           <div className="border-b border-slate-100 dark:border-slate-800 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Conversations</div>
           <ul className="max-h-[520px] divide-y divide-slate-100 overflow-y-auto">
             {leads.map((l) => {
@@ -150,7 +150,7 @@ export default function InboxPage() {
           </ul>
         </div>
 
-        <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 lg:col-span-2">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover lg:col-span-2">
           {!activeConversation ? (
             <div className="flex h-full items-center justify-center p-10 text-sm text-slate-400 dark:text-slate-500">
               Select a conversation to view messages.
@@ -189,7 +189,7 @@ export default function InboxPage() {
                   <select
                     value={templateId}
                     onChange={(e) => applyTemplate(e.target.value)}
-                    className="mb-2 w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+                    className="mb-2 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
                   >
                     <option value="">Use a template...</option>
                     {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -201,9 +201,9 @@ export default function InboxPage() {
                     onChange={(e) => setComposeBody(e.target.value)}
                     placeholder="Type a message..."
                     rows={2}
-                    className="flex-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+                    className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
                   />
-                  <button type="submit" className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+                  <button type="submit" className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
                     Send
                   </button>
                 </div>
@@ -218,9 +218,9 @@ export default function InboxPage() {
                     value={simulateBody}
                     onChange={(e) => setSimulateBody(e.target.value)}
                     placeholder="e.g. What's the price for Bali?"
-                    className="flex-1 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+                    className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
                   />
-                  <button type="submit" className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                  <button type="submit" className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
                     Simulate
                   </button>
                 </div>

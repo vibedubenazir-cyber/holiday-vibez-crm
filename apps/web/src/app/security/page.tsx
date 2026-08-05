@@ -97,9 +97,9 @@ export default function SecurityPage() {
 
   return (
     <AppShell>
-      <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Security</h1>
+      <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Security</h1>
 
-      <section className="mt-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+      <section className="mt-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-5">
         <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Two-Factor Authentication</h2>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Require a 6-digit authenticator app code in addition to your password when signing in.
@@ -112,14 +112,14 @@ export default function SecurityPage() {
             <button
               onClick={handleDisable}
               disabled={twoFactorBusy}
-              className="rounded-md border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 disabled:opacity-60"
+              className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 disabled:opacity-60"
             >
               Disable 2FA
             </button>
           </div>
         ) : setupData ? (
           <div className="mt-4 space-y-3">
-            <img src={setupData.qrCodeDataUrl} alt="2FA QR code" className="h-40 w-40 rounded-md border border-slate-200 dark:border-slate-700" />
+            <img src={setupData.qrCodeDataUrl} alt="2FA QR code" className="h-40 w-40 rounded-lg border border-slate-200 dark:border-slate-700" />
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Scan with an authenticator app (Google Authenticator, Authy, etc.), or enter this secret manually:{' '}
               <code className="rounded bg-slate-100 dark:bg-slate-700 px-1 py-0.5">{setupData.secret}</code>
@@ -132,12 +132,12 @@ export default function SecurityPage() {
                 value={confirmCode}
                 onChange={(e) => setConfirmCode(e.target.value)}
                 placeholder="000000"
-                className="w-32 rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-center text-sm tracking-widest focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                className="w-32 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-center text-sm tracking-widest focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
               <button
                 onClick={handleConfirmSetup}
                 disabled={twoFactorBusy || confirmCode.length !== 6}
-                className="rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+                className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
               >
                 Confirm & Enable
               </button>
@@ -156,14 +156,14 @@ export default function SecurityPage() {
           <button
             onClick={handleStartSetup}
             disabled={twoFactorBusy}
-            className="mt-4 rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+            className="mt-4 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
           >
             Enable 2FA
           </button>
         )}
       </section>
 
-      <section className="mt-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+      <section className="mt-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-5">
         <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Push Notifications</h2>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Get a browser notification for lead assignments, SLA breaches, and quotation approvals.
@@ -183,7 +183,7 @@ export default function SecurityPage() {
             <button
               onClick={handleEnablePush}
               disabled={pushBusy}
-              className="mt-4 rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+              className="mt-4 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
             >
               {pushBusy ? 'Requesting…' : 'Enable push notifications'}
             </button>
@@ -204,7 +204,7 @@ export default function SecurityPage() {
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Devices currently signed in to your account. Revoke any you don't recognize.</p>
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
             <tr><th className="px-4 py-2">Device</th><th className="px-4 py-2">IP</th><th className="px-4 py-2">Since</th><th className="px-4 py-2"></th></tr>
