@@ -15,7 +15,7 @@ import type {
 
 interface QuotationDetail extends Omit<QuotationSummaryDTO, 'lead'> {
   items: QuotationItemDTO[];
-  lead: { clientName: string; destination: string };
+  lead: { clientName: string; destination: string; phone: string; email: string | null };
 }
 
 export default function QuotationDetailPage() {
@@ -213,7 +213,7 @@ export default function QuotationDetailPage() {
     if (sendingRef.current) return;
     if (!quotation) return;
     const confirmed = window.confirm(
-      `Send quotation ${quotation.refNo} to ${quotation.lead.clientName} via WhatsApp and email now?`,
+      `Send quotation ${quotation.refNo} to ${quotation.lead.clientName}?\n\nWhatsApp: ${quotation.lead.phone}\nEmail: ${quotation.lead.email ?? '(none on file — WhatsApp only)'}\n\nDouble-check these are correct before sending.`,
     );
     if (!confirmed) return;
     sendingRef.current = true;
