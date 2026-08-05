@@ -29,6 +29,10 @@ import { StorageModule } from './storage/storage.module';
 import { DataAdminModule } from './data-admin/data-admin.module';
 import { JobsModule } from './jobs/jobs.module';
 import { ClientsModule } from './clients/clients.module';
+import { HotelsModule } from './hotels/hotels.module';
+import { RoomTypesModule } from './room-types/room-types.module';
+import { MealPlansModule } from './meal-plans/meal-plans.module';
+import { DayItinerariesModule } from './day-itineraries/day-itineraries.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -63,6 +67,10 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     DataAdminModule,
     JobsModule,
     ClientsModule,
+    HotelsModule,
+    RoomTypesModule,
+    MealPlansModule,
+    DayItinerariesModule,
   ],
   providers: [
     PrismaService,

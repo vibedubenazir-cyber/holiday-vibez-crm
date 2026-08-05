@@ -735,3 +735,39 @@ model Session {
 
   @@map("sessions")
 }
+
+model Hotel {
+  id          String   @id @default(uuid())
+  name        String
+  category    Int // star rating, 1-5
+  destination String
+  price       Decimal  @default(0) @db.Decimal(14, 2)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RoomType {
+  id        String   @id @default(uuid())
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MealPlan {
+  id        String   @id @default(uuid())
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DayItinerary {
+  id        String   @id @default(uuid())
+  title     String
+  detail    String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

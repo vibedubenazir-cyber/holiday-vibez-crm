@@ -315,6 +315,20 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   `Authorization` header, `x-amz-content-sha256`, path, body) is correct by
   pointing the same `S3Client`/`PutObjectCommand` calls at a local mock
   server (no real AWS account exists in this sandbox to upload against).
+- **Day Itinerary and Hotel/Room Type/Meal Plan masters**: four new admin-managed
+  masters (`apps/api/src/day-itineraries/`, `apps/api/src/hotels/`,
+  `apps/api/src/room-types/`, `apps/api/src/meal-plans/`), each a simple CRUD
+  module mirroring the existing Suppliers/Clients pattern (Admin/Director write,
+  all four roles read). Day Itinerary is a Title/Detail pair for building reusable
+  day-by-day itinerary blocks. Hotel carries name/star-category/destination/price;
+  Room Type and Meal Plan are simple name+status lists. Surfaced at
+  `/day-itineraries` and a tabbed `/hotel-masters` page (Hotel / Room Type / Meal
+  Plan tabs in one screen rather than three separate nav entries). These are
+  standalone masters today — not yet wired into the Package/Quotation builder or
+  `travel-search`'s mock Hotel search, which is a natural follow-up. Verified:
+  migrated and built clean; created one record in each of the four masters
+  through the actual UI (not just the API) and confirmed each round-tripped
+  through create → list → deactivate in the browser.
 
 ### What's intentionally stubbed or out of scope
 

@@ -138,6 +138,34 @@ export interface SupplierDTO {
   active: boolean;
 }
 
+export interface HotelDTO {
+  id: string;
+  name: string;
+  category: number;
+  destination: string;
+  price: number;
+  active: boolean;
+}
+
+export interface RoomTypeDTO {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
+export interface MealPlanDTO {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
+export interface DayItineraryDTO {
+  id: string;
+  title: string;
+  detail: string;
+  active: boolean;
+}
+
 export interface PackageItemDTO {
   id: string;
   rateCardId: string;
