@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma.service';
 import { normalizePhone } from './phone.util';
 
 const WHATSAPP_API_VERSION = 'v20.0';
+const SENDGRID_API_URL = 'https://api.sendgrid.com/v3/mail/send';
 
 export interface SendNotificationInput {
   channel: NotificationChannel | 'WHATSAPP' | 'EMAIL' | 'PUSH';
@@ -15,16 +16,20 @@ export interface SendNotificationInput {
   // need customer-facing copy — only WhatsApp/email sends require it to
   // actually transmit something.
   body?: string;
+  // Email-only. Falls back to a generic subject derived from triggerType if
+  // omitted, same as `body`'s fallback.
+  subject?: string;
 }
 
 /**
  * Single service wrapping WhatsApp/email/push (spec Section 13: "never called
  * directly by other modules"). WhatsApp sends via Meta's Cloud API when
- * WHATSAPP_API_KEY + WHATSAPP_PHONE_NUMBER_ID are configured; email/push and
- * WhatsApp-without-credentials still fall back to a console-log + Notification
- * row, so nothing breaks before real credentials exist. Swapping in a real
- * email/push provider (SES, FCM) means extending this class's `deliver`
- * method only, not touching any caller.
+ * WHATSAPP_API_KEY + WHATSAPP_PHONE_NUMBER_ID are configured; email sends via
+ * SendGrid when EMAIL_PROVIDER_KEY + EMAIL_FROM_ADDRESS are configured. Push,
+ * and either channel without credentials, still fall back to a console-log +
+ * Notification row, so nothing breaks before real credentials exist. Swapping
+ * in a real push provider (FCM) means extending this class's `deliver` method
+ * only, not touching any caller.
  *
  * Known limitation: Meta requires a pre-approved message *template* (not free
  * text) for business-initiated messages outside a 24h customer-service window
@@ -32,7 +37,8 @@ export interface SendNotificationInput {
  * from that lead) — mapping this app's Template rows to real Meta-approved
  * template names is a manual approval step at Meta, not something this class
  * can work around. Free text works for Inbox replies (within an active
- * conversation) and any send that follows a recent inbound message.
+ * conversation) and any send that follows a recent inbound message. Email has
+ * no such restriction — SendGrid accepts free text at any time.
  */
 @Injectable()
 export class NotificationsService {
@@ -67,6 +73,12 @@ export class NotificationsService {
   private async deliver(notificationId: string, input: SendNotificationInput) {
     if (input.channel === 'WHATSAPP' && process.env.WHATSAPP_API_KEY && process.env.WHATSAPP_PHONE_NUMBER_ID) {
       await this.sendWhatsApp(notificationId, input);
+      return;
+    }
+    // recipient is `lead.email ?? lead.phone` at every EMAIL call site — only
+    // attempt a real send when it's actually an email address.
+    if (input.channel === 'EMAIL' && process.env.EMAIL_PROVIDER_KEY && process.env.EMAIL_FROM_ADDRESS && input.recipient.includes('@')) {
+      await this.sendEmail(notificationId, input);
       return;
     }
     this.logger.log(`[${input.channel}] ${input.triggerType} -> ${input.recipient} (${input.relatedEntity ?? 'n/a'})`);
@@ -104,6 +116,43 @@ export class NotificationsService {
       }
     } catch (err) {
       this.logger.error(`WhatsApp send threw for notification ${notificationId}`, err as Error);
+      await this.prisma.notification.update({ where: { id: notificationId }, data: { status: 'FAILED' } });
+    }
+  }
+
+  private async sendEmail(notificationId: string, input: SendNotificationInput) {
+    const subject = input.subject ?? `Holiday Vibez: ${input.triggerType.replace(/_/g, ' ')}`;
+    const body = input.body ?? subject;
+
+    try {
+      const res = await fetch(SENDGRID_API_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.EMAIL_PROVIDER_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: input.recipient }] }],
+          from: { email: process.env.EMAIL_FROM_ADDRESS },
+          subject,
+          content: [{ type: 'text/plain', value: body }],
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        this.logger.error(`Email send failed (${res.status}) for notification ${notificationId}: ${text}`);
+        await this.prisma.notification.update({ where: { id: notificationId }, data: { status: 'FAILED' } });
+        return;
+      }
+
+      // SendGrid's mail/send returns 202 with no body and no message id in the
+      // response — it reports one asynchronously via the separate Event Webhook,
+      // which isn't wired up here. Notification stays at its initial SENT status;
+      // there's no externalId to correlate a later delivery/bounce callback to.
+      await this.prisma.notification.update({ where: { id: notificationId }, data: { status: 'SENT' } });
+    } catch (err) {
+      this.logger.error(`Email send threw for notification ${notificationId}`, err as Error);
       await this.prisma.notification.update({ where: { id: notificationId }, data: { status: 'FAILED' } });
     }
   }

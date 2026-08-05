@@ -128,6 +128,8 @@ export class QuotationsService {
       triggerType: 'quotation_sent',
       recipient: quotation.lead.email ?? quotation.lead.phone,
       relatedEntity: `quotation:${id}`,
+      subject: `Your quotation ${quotation.refNo} for ${quotation.lead.destination}`,
+      body: `Hi ${quotation.lead.clientName},\n\nYour quotation ${quotation.refNo} for ${quotation.lead.destination} (${quotation.currency} ${Number(quotation.totalAmount).toLocaleString('en-IN')}) has been sent. Your travel consultant will follow up with the full itinerary shortly.\n\nThank you for choosing Holiday Vibez.`,
     });
 
     return updated;

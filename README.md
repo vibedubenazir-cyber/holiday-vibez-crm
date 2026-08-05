@@ -193,17 +193,34 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   this app's `Template` rows are mapped to actual Meta-approved template
   names, which requires a manual approval step in Meta Business Manager this
   codebase can't do for you.
+- **Real Email (SendGrid)**: `NotificationsService.deliver()` sends real
+  email via `POST https://api.sendgrid.com/v3/mail/send` when
+  `EMAIL_PROVIDER_KEY` + `EMAIL_FROM_ADDRESS` are set and the recipient is
+  actually an email address (every EMAIL-channel call site already falls
+  back to `lead.phone` when a lead has no email on file — that fallback path
+  correctly stays on the console-log mock rather than attempting to email a
+  phone number). Falls back to the original console-log behavior otherwise,
+  so nothing breaks before real credentials exist. All four EMAIL-channel
+  call sites (invoice issuance, quotation sent, marketing campaigns,
+  automation rules) now carry a real subject + body, sourced from the
+  matching `Template` row where one's configured. No inbound-email/two-way
+  path is built — unlike WhatsApp's webhook, that needs a provider inbound-parse
+  webhook plus DNS/MX record changes on a real domain, out of scope here.
+  Verified live: confirmed console-log fallback is unchanged with no
+  credentials configured, and confirmed the outbound request is correctly
+  shaped (Bearer auth, `personalizations`/`from`/`subject`/`content` body)
+  against a local mock server matching SendGrid's API contract.
 
 ### What's intentionally stubbed or out of scope
 
-No credentials exist in this environment for email, push, or a payment
-gateway (WhatsApp is now real — see above) — `NotificationsService` and the
-payment mark-paid flow are real, wired-up abstractions with **console-log/mock
-providers** for these; swapping in SES, FCM, or a real gateway means
-implementing one class, not touching callers. Branded PDF generation for
-quotations/vouchers is a placeholder URL, not real rendering. **Not built at
-all**: WAF/DDoS protection, penetration testing, a native push backend, and
-data migration from the live crm.holidayvibez.com system — these are
+No credentials exist in this environment for push or a payment gateway
+(WhatsApp and Email are now real — see above) — the payment mark-paid flow
+is a real, wired-up abstraction with a **console-log/mock provider**; swapping
+in FCM or a real gateway means implementing one method, not touching
+callers. Branded PDF generation for quotations/vouchers is a placeholder
+URL, not real rendering. **Not built at all**: WAF/DDoS protection,
+penetration testing, a native push backend, and data migration from the
+live crm.holidayvibez.com system — these are
 infra/process work, not application code.
 
 ## Structure

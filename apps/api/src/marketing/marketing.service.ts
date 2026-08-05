@@ -59,6 +59,7 @@ export class MarketingService {
         recipient,
         relatedEntity: `campaign:${id}`,
         body: campaign.template?.body,
+        subject: campaign.template?.subject ?? campaign.name,
       });
     }
 

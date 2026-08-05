@@ -45,6 +45,8 @@ export class InvoicesService {
       triggerType: 'invoice_issued',
       recipient: booking.quotation.lead.email ?? booking.quotation.lead.phone,
       relatedEntity: `booking:${bookingId}`,
+      subject: `Your invoice ${invoiceNo} from Holiday Vibez`,
+      body: `Hi ${booking.quotation.lead.clientName},\n\nYour invoice ${invoiceNo} for ${booking.quotation.currency} ${amount.toLocaleString('en-IN')} is ready: ${invoice.pdfUrl}\n\nThank you for booking with Holiday Vibez.`,
     });
 
     return invoice;

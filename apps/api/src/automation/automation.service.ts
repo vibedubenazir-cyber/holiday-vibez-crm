@@ -102,6 +102,7 @@ export class AutomationService {
         recipient,
         relatedEntity: `lead:${lead.id}`,
         body: template?.body ?? `Hi ${lead.clientName}, following up on your ${lead.destination} trip — let us know if you have any questions!`,
+        subject: template?.subject ?? `Following up on your ${lead.destination} trip`,
       });
       await this.prisma.automationLog.create({ data: { ruleId: rule.id, leadId: lead.id, status: 'SENT' } });
       this.logger.log(`Rule "${rule.name}" fired for lead ${lead.id}${template ? ` (template: ${template.name})` : ''}`);
