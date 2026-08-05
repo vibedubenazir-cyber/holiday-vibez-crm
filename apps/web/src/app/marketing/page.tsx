@@ -79,23 +79,23 @@ export default function MarketingPage() {
       {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
+        <div className="rounded-xl border-t-4 border-t-brand border-x border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">Campaigns sent this month</p>
           <p className="mt-1 text-2xl font-semibold text-slate-800 dark:text-slate-100">{dashboard?.campaignsSentThisMonth ?? 0}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:col-span-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">Leads by source</p>
+        <div className="rounded-xl border-t-4 border-t-purple-500 border-x border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:col-span-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-purple-600 dark:text-purple-300">Leads by source</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {dashboard?.leadsBySource.map((s) => (
-              <span key={s.source} className="rounded-full bg-brand-50 dark:bg-brand-900/30 px-2 py-1 text-xs text-brand-700 dark:text-brand-200">
+              <span key={s.source} className="rounded-full bg-purple-50 dark:bg-purple-900/30 px-2 py-1 text-xs text-purple-700 dark:text-purple-200">
                 {s.source}: {s.count}
               </span>
             ))}
             {(!dashboard || dashboard.leadsBySource.length === 0) && <span className="text-sm text-slate-400 dark:text-slate-500">No leads yet.</span>}
           </div>
         </div>
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:col-span-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">Upcoming birthdays &amp; anniversaries (next 7 days)</p>
+        <div className="rounded-xl border-t-4 border-t-accent border-x border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:col-span-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-accent-dark dark:text-accent">Upcoming birthdays &amp; anniversaries (next 7 days)</p>
           <div className="mt-2 space-y-1">
             {dashboard?.upcoming.map((u) => (
               <p key={u.travelerId} className="text-sm text-slate-600 dark:text-slate-300">

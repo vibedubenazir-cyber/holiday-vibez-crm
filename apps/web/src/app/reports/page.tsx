@@ -69,10 +69,10 @@ export default function ReportsPage() {
       {dashboard && (
         <>
           <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <Stat label="Total leads" value={dashboard.totalLeads.toString()} />
-            <Stat label="Conversion" value={`${dashboard.conversionPct}%`} />
-            <Stat label="Revenue" value={`₹${dashboard.revenue.toLocaleString('en-IN')}`} />
-            <Stat label="Gross margin" value={`₹${dashboard.grossMargin.toLocaleString('en-IN')}`} />
+            <Stat label="Total leads" value={dashboard.totalLeads.toString()} color="brand" />
+            <Stat label="Conversion" value={`${dashboard.conversionPct}%`} color="purple" />
+            <Stat label="Revenue" value={`₹${dashboard.revenue.toLocaleString('en-IN')}`} color="emerald" />
+            <Stat label="Gross margin" value={`₹${dashboard.grossMargin.toLocaleString('en-IN')}`} color="orange" />
           </div>
 
           <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Leads by status</h2>
@@ -191,10 +191,18 @@ export default function ReportsPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+const STAT_COLORS = {
+  brand: { border: 'border-t-brand', text: 'text-brand dark:text-brand-200' },
+  purple: { border: 'border-t-purple-500', text: 'text-purple-600 dark:text-purple-300' },
+  emerald: { border: 'border-t-emerald-500', text: 'text-emerald-600 dark:text-emerald-300' },
+  orange: { border: 'border-t-accent', text: 'text-accent-dark dark:text-accent' },
+} as const;
+
+function Stat({ label, value, color = 'brand' }: { label: string; value: string; color?: keyof typeof STAT_COLORS }) {
+  const c = STAT_COLORS[color];
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">{label}</p>
+    <div className={`rounded-xl border-t-4 ${c.border} border-x border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4`}>
+      <p className={`text-xs font-semibold uppercase tracking-wide ${c.text}`}>{label}</p>
       <p className="mt-1 text-xl font-bold tracking-tight text-slate-900 dark:text-white">{value}</p>
     </div>
   );

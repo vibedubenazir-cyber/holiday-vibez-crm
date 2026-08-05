@@ -16,6 +16,8 @@ const STAT_LABELS: Record<keyof DataAdminStatsDTO, string> = {
   currencyRates: 'Currency Rates',
 };
 
+const STAT_BORDER_COLORS = ['border-t-brand', 'border-t-purple-500', 'border-t-emerald-500', 'border-t-accent', 'border-t-pink-500', 'border-t-cyan-500', 'border-t-amber-500', 'border-t-indigo-500'];
+
 export default function DataAdminPage() {
   const [stats, setStats] = useState<DataAdminStatsDTO | null>(null);
   const [logs, setLogs] = useState<AuditLogDTO[]>([]);
@@ -56,8 +58,8 @@ export default function DataAdminPage() {
 
       {stats && (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {(Object.keys(STAT_LABELS) as (keyof DataAdminStatsDTO)[]).map((key) => (
-            <div key={key} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
+          {(Object.keys(STAT_LABELS) as (keyof DataAdminStatsDTO)[]).map((key, i) => (
+            <div key={key} className={`rounded-xl border-t-4 ${STAT_BORDER_COLORS[i % STAT_BORDER_COLORS.length]} border-x border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4`}>
               <p className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{stats[key]}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400">{STAT_LABELS[key]}</p>
             </div>

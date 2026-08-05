@@ -14,16 +14,16 @@ export default function DashboardPage() {
         Cards). Leads, Quotations, Bookings, Targets, and the Departure Calendar arrive in later phases.
       </p>
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
+        <div className="rounded-xl border-t-4 border-t-brand border-x border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">Role</p>
           <p className="mt-1 text-base font-medium text-slate-800 dark:text-slate-100">{user?.role}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">Branch</p>
+        <div className="rounded-xl border-t-4 border-t-purple-500 border-x border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-purple-600 dark:text-purple-300">Branch</p>
           <p className="mt-1 text-base font-medium text-slate-800 dark:text-slate-100">{user?.branchId ?? 'All branches'}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand dark:text-brand-200">Status</p>
+        <div className="rounded-xl border-t-4 border-t-emerald-500 border-x border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-300">Status</p>
           <p className="mt-1 text-base font-medium text-slate-800 dark:text-slate-100">{user?.status}</p>
         </div>
       </div>
