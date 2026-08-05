@@ -119,28 +119,49 @@ export class QuotationsService {
       },
     });
 
+    await this.notifyCustomer(quotation);
+
+    return updated;
+  }
+
+  // Shared by approve() (auto-send once) and sendToClient() (staff-triggered
+  // resend, e.g. if the customer lost the message) — kept as one path so the
+  // two never drift on what "notify the customer" actually sends.
+  private async notifyCustomer(quotation: { id: string; refNo: string; currency: string; totalAmount: unknown; lead: { clientName: string; phone: string; email: string | null; destination: string } }) {
     // Real, branded, viewable/printable quotation — no auth needed since the
     // customer has no account (see publicView() below) — replaces the old
     // "PDF not yet generated" placeholder link.
-    const viewUrl = `${process.env.WEB_ORIGIN}/quote/${id}`;
+    const viewUrl = `${process.env.WEB_ORIGIN}/quote/${quotation.id}`;
+    const amount = `${quotation.currency} ${Number(quotation.totalAmount).toLocaleString('en-IN')}`;
 
     await this.notifications.send({
       channel: 'WHATSAPP',
       triggerType: 'quotation_sent',
       recipient: quotation.lead.phone,
-      relatedEntity: `quotation:${id}`,
-      body: `Hi ${quotation.lead.clientName}, your quotation ${quotation.refNo} for ${quotation.lead.destination} (${quotation.currency} ${Number(quotation.totalAmount).toLocaleString('en-IN')}) has been sent. View it here: ${viewUrl}`,
+      relatedEntity: `quotation:${quotation.id}`,
+      body: `Hi ${quotation.lead.clientName}, your quotation ${quotation.refNo} for ${quotation.lead.destination} (${amount}) has been sent. View it here: ${viewUrl}`,
     });
     await this.notifications.send({
       channel: 'EMAIL',
       triggerType: 'quotation_sent',
       recipient: quotation.lead.email ?? quotation.lead.phone,
-      relatedEntity: `quotation:${id}`,
+      relatedEntity: `quotation:${quotation.id}`,
       subject: `Your quotation ${quotation.refNo} for ${quotation.lead.destination}`,
-      body: `Hi ${quotation.lead.clientName},\n\nYour quotation ${quotation.refNo} for ${quotation.lead.destination} (${quotation.currency} ${Number(quotation.totalAmount).toLocaleString('en-IN')}) has been sent.\n\nView your quotation: ${viewUrl}\n\nYour travel consultant will follow up shortly.\n\nThank you for choosing Holiday Vibez.`,
+      body: `Hi ${quotation.lead.clientName},\n\nYour quotation ${quotation.refNo} for ${quotation.lead.destination} (${amount}) has been sent.\n\nView your quotation: ${viewUrl}\n\nYour travel consultant will follow up shortly.\n\nThank you for choosing Holiday Vibez.`,
     });
+  }
 
-    return updated;
+  // Staff-triggered resend from the quotation detail page — approve() already
+  // sends once automatically, this lets staff re-send the same WhatsApp/email
+  // on demand (e.g. customer says they never got it) without re-approving.
+  async sendToClient(id: string) {
+    const quotation = await this.prisma.quotation.findUnique({ where: { id }, include: { lead: true } });
+    if (!quotation) throw new NotFoundException('Quotation not found');
+    if (quotation.status !== QuotationStatus.SENT) {
+      throw new BadRequestException('Only sent quotations can be sent to the client');
+    }
+    await this.notifyCustomer(quotation);
+    return { sent: true };
   }
 
   async reject(id: string, approverRole: Role, approverBranchId: string | null, comments?: string) {

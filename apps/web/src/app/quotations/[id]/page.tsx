@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AppShell } from '@/components/AppShell';
 import { api, ApiError } from '@/lib/api';
@@ -28,6 +28,9 @@ export default function QuotationDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [departureDate, setDepartureDate] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const sendingRef = useRef(false);
 
   const [showHotelSearch, setShowHotelSearch] = useState(false);
   const [hotelForm, setHotelForm] = useState({ destination: '', checkIn: '', checkOut: '', guests: 2 });
@@ -202,6 +205,27 @@ export default function QuotationDetailPage() {
     setTimeout(() => setLinkCopied(false), 2000);
   }
 
+  async function handleSendToClient() {
+    // Guard with a ref, not just the `sending` state: state updates commit
+    // after a render, so a second click/tap arriving before that commit
+    // would still see disabled=false and fire a duplicate customer-facing
+    // WhatsApp/email send. The ref is set synchronously, closing that gap.
+    if (sendingRef.current) return;
+    sendingRef.current = true;
+    setError(null);
+    setSending(true);
+    try {
+      await api.post(`/quotations/${id}/send`, {});
+      setSent(true);
+      setTimeout(() => setSent(false), 3000);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to send quotation');
+    } finally {
+      sendingRef.current = false;
+      setSending(false);
+    }
+  }
+
   async function handleCreateBooking(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -247,6 +271,13 @@ export default function QuotationDetailPage() {
                 className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
               >
                 {linkCopied ? 'Copied!' : 'Copy client link'}
+              </button>
+              <button
+                onClick={handleSendToClient}
+                disabled={sending}
+                className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+              >
+                {sending ? 'Sending...' : sent ? 'Sent!' : 'Send to client (WhatsApp + Email)'}
               </button>
             </>
           )}

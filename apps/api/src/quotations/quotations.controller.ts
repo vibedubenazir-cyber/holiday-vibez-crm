@@ -70,4 +70,10 @@ export class QuotationsController {
   pdf(@Param('id') id: string) {
     return this.quotationsService.pdfUrl(id);
   }
+
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Post(':id/send')
+  send(@Param('id') id: string) {
+    return this.quotationsService.sendToClient(id);
+  }
 }
