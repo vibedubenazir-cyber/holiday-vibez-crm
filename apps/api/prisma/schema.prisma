@@ -185,6 +185,8 @@ model User {
   branch       Branch?    @relation("BranchUsers", fields: [branchId], references: [id])
   status       UserStatus @default(ACTIVE)
   lastLoginAt  DateTime?
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean  @default(false)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 

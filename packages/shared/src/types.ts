@@ -9,6 +9,7 @@ export interface UserDTO {
   branchId: string | null;
   status: UserStatus;
   lastLoginAt: string | null;
+  twoFactorEnabled: boolean;
 }
 
 export interface BranchDTO {
@@ -367,7 +368,41 @@ export interface FlightSearchResultDTO {
   baseFare: number;
 }
 
-export interface LoginResponseDTO {
-  accessToken: string;
-  user: UserDTO;
+export interface AuditLogDTO {
+  id: string;
+  userId: string | null;
+  action: string;
+  entity: string;
+  entityId: string | null;
+  beforeValue: unknown;
+  afterValue: unknown;
+  ipAddress: string | null;
+  createdAt: string;
+  user?: UserDTO | null;
 }
+
+export interface DataAdminStatsDTO {
+  users: number;
+  leads: number;
+  quotations: number;
+  bookings: number;
+  payments: number;
+  auditLogs: number;
+  cmsContent: number;
+  currencyRates: number;
+}
+
+export interface UploadResponseDTO {
+  url: string;
+  originalName: string;
+  sizeBytes: number;
+}
+
+export interface TwoFactorSetupDTO {
+  secret: string;
+  qrCodeDataUrl: string;
+}
+
+export type LoginResponseDTO =
+  | { requiresTwoFactor: true; userId: string }
+  | { requiresTwoFactor?: false; accessToken: string; user: UserDTO };

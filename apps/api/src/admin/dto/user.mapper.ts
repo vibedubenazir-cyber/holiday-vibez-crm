@@ -10,5 +10,6 @@ export function toUserDto(user: User) {
     branchId: user.branchId,
     status: user.status,
     lastLoginAt: user.lastLoginAt,
+    twoFactorEnabled: user.twoFactorEnabled,
   };
 }

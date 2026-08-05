@@ -14,6 +14,7 @@ import {
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { ConfirmTwoFactorDto, VerifyTwoFactorDto } from './dto/two-factor.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { toUserDto } from '../admin/dto/user.mapper';
@@ -29,14 +30,13 @@ export class AuthController {
   async login(@Body() dto: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const deviceInfo = req.headers['user-agent'] ?? 'unknown device';
     const ip = req.ip ?? 'unknown';
-    const { user, accessToken, refreshToken } = await this.authService.login(
-      dto.email,
-      dto.password,
-      deviceInfo,
-      ip,
-    );
+    const result = await this.authService.login(dto.email, dto.password, deviceInfo, ip);
 
-    res.cookie(REFRESH_COOKIE, refreshToken, {
+    if (result.requiresTwoFactor) {
+      return { requiresTwoFactor: true, userId: result.userId };
+    }
+
+    res.cookie(REFRESH_COOKIE, result.refreshToken, {
       httpOnly: true,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
@@ -44,7 +44,43 @@ export class AuthController {
       path: '/api/auth',
     });
 
-    return { accessToken, user: toUserDto(user) };
+    return { accessToken: result.accessToken, user: toUserDto(result.user) };
+  }
+
+  @Post('2fa/verify')
+  @HttpCode(200)
+  async verifyTwoFactor(@Body() dto: VerifyTwoFactorDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const deviceInfo = req.headers['user-agent'] ?? 'unknown device';
+    const ip = req.ip ?? 'unknown';
+    const result = await this.authService.verifyTwoFactor(dto.userId, dto.code, deviceInfo, ip);
+
+    res.cookie(REFRESH_COOKIE, result.refreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      path: '/api/auth',
+    });
+
+    return { accessToken: result.accessToken, user: toUserDto(result.user) };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/setup')
+  setupTwoFactor(@CurrentUser() user: { id: string; email: string }) {
+    return this.authService.setupTwoFactor(user.id, user.email);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/confirm')
+  confirmTwoFactor(@CurrentUser() user: { id: string }, @Body() dto: ConfirmTwoFactorDto) {
+    return this.authService.confirmTwoFactor(user.id, dto.code);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/disable')
+  disableTwoFactor(@CurrentUser() user: { id: string }) {
+    return this.authService.disableTwoFactor(user.id);
   }
 
   @Post('refresh')

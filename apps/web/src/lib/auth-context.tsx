@@ -2,13 +2,14 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { UserDTO } from '@holiday-vibez/shared';
+import type { LoginResponseDTO, UserDTO } from '@holiday-vibez/shared';
 import { api, setAccessToken } from './api';
 
 interface AuthContextValue {
   user: UserDTO | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ requiresTwoFactor: true; userId: string } | void>;
+  verifyTwoFactor: (userId: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -43,7 +44,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string) => {
-      const data = await api.post<{ accessToken: string; user: UserDTO }>('/auth/login', { email, password });
+      const data = await api.post<LoginResponseDTO>('/auth/login', { email, password });
+      if (data.requiresTwoFactor) {
+        return { requiresTwoFactor: true as const, userId: data.userId };
+      }
+      setAccessToken(data.accessToken);
+      setUser(data.user);
+      router.push('/dashboard');
+    },
+    [router],
+  );
+
+  const verifyTwoFactor = useCallback(
+    async (userId: string, code: string) => {
+      const data = await api.post<{ accessToken: string; user: UserDTO }>('/auth/2fa/verify', { userId, code });
       setAccessToken(data.accessToken);
       setUser(data.user);
       router.push('/dashboard');
@@ -58,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/login');
   }, [router]);
 
-  return <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, loading, login, verifyTwoFactor, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

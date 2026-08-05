@@ -84,6 +84,29 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   hotel room and a flight (each with markup applied), submitted for approval,
   approved, converted to a booking, and generated a voucher — all through
   already-built modules, no changes needed there.
+- **Storage/Data Admin, Two-Factor Authentication, real job scheduler** (leftovers
+  batch — no external credentials required): a local-disk file upload endpoint
+  (`POST /storage/upload`, Admin/Director/Branch Manager, 5MB limit, image/PDF
+  only) backing a `/storage` utility page — the dev-mode stand-in for real S3, since
+  `OBJECT_STORAGE_KEY` has no credential in this environment; swapping to S3 means
+  replacing this one upload method, not any caller. A `/data-admin` page finally
+  gives the `AuditLog` table (populated by `AuditLogInterceptor` since Phase 1) a
+  UI — filterable audit log + row-count stats for key tables, Admin/Director only.
+  TOTP-based 2FA (`otplib` + `qrcode`, no external service — pure crypto against a
+  shared secret): enable from `/security` (scan a QR code, confirm with a code),
+  and `AuthService.login()` now returns `{ requiresTwoFactor: true, userId }`
+  instead of tokens for a 2FA-enabled account, with a new `/auth/2fa/verify`
+  endpoint completing the session after the TOTP code checks out — verified live
+  end-to-end (enabled 2FA on the Admin account, confirmed plain-password login now
+  stops at a code prompt, verified with a server-generated TOTP code, then
+  disabled it and confirmed normal login returns). The four in-process
+  `setInterval` background jobs (SLA escalation, birthday/anniversary check,
+  automation sweep, currency refresh) in `apps/api/src/main.ts` were replaced with
+  `node-cron` scheduled tasks using real cron expressions — a genuine correctness
+  improvement, but still in-process: it doesn't survive restarts or coordinate
+  across instances. `infra/docker-compose.yml` already provisions Redis but
+  nothing uses it yet; BullMQ+Redis is the honest next step for true job
+  durability, not part of this pass.
 
 ### What's intentionally stubbed or out of scope
 
@@ -92,10 +115,12 @@ gateway — `NotificationsService` and the payment mark-paid flow are real, wire
 abstractions with **console-log/mock providers**; swapping in Twilio/WhatsApp Cloud
 API, SES, FCM, or a real gateway means implementing one class, not touching callers.
 Branded PDF generation for quotations/vouchers is a placeholder URL, not real
-rendering. SLA escalation and the compliance job run as in-process intervals, not a
-production job scheduler. **Not built at all**: WAF/DDoS protection, penetration
-testing, a native push backend, and data migration from the live
-crm.holidayvibez.com system — these are infra/process work, not application code.
+rendering. Background jobs (SLA escalation, birthday/anniversary check, automation
+sweep, currency refresh) run as in-process `node-cron` tasks, not a durable job
+queue (BullMQ+Redis) — correct schedules, but no multi-instance/restart guarantee.
+**Not built at all**: WAF/DDoS protection, penetration testing, a native push
+backend, and data migration from the live crm.holidayvibez.com system — these are
+infra/process work, not application code.
 
 ## Structure
 
