@@ -91,7 +91,7 @@ export default function ReportsPage() {
           <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Branch target vs. achieved</h2>
           <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
                 <tr><th className="px-4 py-2">Branch</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Achieved</th></tr>
               </thead>
               <tbody>
@@ -140,7 +140,7 @@ export default function ReportsPage() {
           {pnlError && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{pnlError}</p>}
           <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
                 <tr>
                   <th className="px-4 py-2">Month</th>
                   <th className="px-4 py-2">Revenue</th>
@@ -171,7 +171,7 @@ export default function ReportsPage() {
       <p className="text-xs text-slate-500 dark:text-slate-400">Travelers on an upcoming booking with a passport expiring within 6 months of departure, or no visa status on file.</p>
       <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
             <tr><th className="px-4 py-2">Traveler</th><th className="px-4 py-2">Departure</th><th className="px-4 py-2">Passport expiry</th><th className="px-4 py-2">Reason</th></tr>
           </thead>
           <tbody>

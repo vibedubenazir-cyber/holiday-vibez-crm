@@ -91,21 +91,21 @@ export default function AutomationPage() {
 
       {showForm && (
         <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
-          <input required placeholder="Rule name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <select value={form.trigger} onChange={(e) => setForm({ ...form, trigger: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+          <input required placeholder="Rule name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+          <select value={form.trigger} onChange={(e) => setForm({ ...form, trigger: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
             {Object.entries(TRIGGER_LABELS).map(([v, label]) => <option key={v} value={v}>{label}</option>)}
           </select>
           {form.trigger === AutomationTrigger.LEAD_STATUS_CHANGED && (
-            <select value={form.targetLeadStatus} onChange={(e) => setForm({ ...form, targetLeadStatus: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+            <select value={form.targetLeadStatus} onChange={(e) => setForm({ ...form, targetLeadStatus: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
               {Object.values(LeadStatus).map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           )}
-          <input required type="number" min={0} placeholder="Delay (minutes)" value={form.delayMinutes} onChange={(e) => setForm({ ...form, delayMinutes: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <select value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+          <input required type="number" min={0} placeholder="Delay (minutes)" value={form.delayMinutes} onChange={(e) => setForm({ ...form, delayMinutes: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+          <select value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
             <option value={NotificationChannel.WHATSAPP}>WhatsApp</option>
             <option value={NotificationChannel.EMAIL}>Email</option>
           </select>
-          <select value={form.templateId} onChange={(e) => setForm({ ...form, templateId: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+          <select value={form.templateId} onChange={(e) => setForm({ ...form, templateId: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
             <option value="">No template</option>
             {templates.filter((t) => t.channel === form.channel).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
@@ -118,7 +118,7 @@ export default function AutomationPage() {
       <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <div className="border-b border-slate-100 dark:border-slate-800 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Rules</div>
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
             <tr>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Trigger</th>
@@ -155,7 +155,7 @@ export default function AutomationPage() {
       <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <div className="border-b border-slate-100 dark:border-slate-800 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Recent fires</div>
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
             <tr>
               <th className="px-4 py-2">Rule</th>
               <th className="px-4 py-2">Lead</th>

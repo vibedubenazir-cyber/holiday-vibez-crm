@@ -109,12 +109,12 @@ export default function PackagesPage() {
 
       {canManage && showForm && (
         <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
-          <input required placeholder="Package name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input required placeholder="Destination" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input placeholder="Theme (e.g. Honeymoon)" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input required type="number" min={1} placeholder="Duration (days)" value={form.durationDays} onChange={(e) => setForm({ ...form, durationDays: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input type="number" placeholder="Base price (indicative)" value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input placeholder="Currency" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+          <input required placeholder="Package name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+          <input required placeholder="Destination" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+          <input placeholder="Theme (e.g. Honeymoon)" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+          <input required type="number" min={1} placeholder="Duration (days)" value={form.durationDays} onChange={(e) => setForm({ ...form, durationDays: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+          <input type="number" placeholder="Base price (indicative)" value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+          <input placeholder="Currency" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
           <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
             Create package
           </button>
@@ -159,13 +159,13 @@ export default function PackagesPage() {
 
                 {canManage && (
                   <div className="mt-3 flex flex-wrap items-end gap-2">
-                    <select value={itemForm.rateCardId} onChange={(e) => setItemForm({ ...itemForm, rateCardId: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+                    <select value={itemForm.rateCardId} onChange={(e) => setItemForm({ ...itemForm, rateCardId: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
                       <option value="">Rate card...</option>
                       {rates.map((r) => <option key={r.id} value={r.id}>{r.name} ({r.destination})</option>)}
                     </select>
-                    <input type="number" min={1} placeholder="Day #" value={itemForm.dayNumber} onChange={(e) => setItemForm({ ...itemForm, dayNumber: e.target.value })} className="w-20 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-                    <input placeholder="Description" value={itemForm.description} onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-                    <input type="number" min={1} placeholder="Qty" value={itemForm.quantity} onChange={(e) => setItemForm({ ...itemForm, quantity: e.target.value })} className="w-16 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                    <input type="number" min={1} placeholder="Day #" value={itemForm.dayNumber} onChange={(e) => setItemForm({ ...itemForm, dayNumber: e.target.value })} className="w-20 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+                    <input placeholder="Description" value={itemForm.description} onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+                    <input type="number" min={1} placeholder="Qty" value={itemForm.quantity} onChange={(e) => setItemForm({ ...itemForm, quantity: e.target.value })} className="w-16 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
                     <button onClick={() => handleAddItem(p.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add item</button>
                   </div>
                 )}
@@ -175,7 +175,7 @@ export default function PackagesPage() {
                     <select
                       value={leadPick[p.id] ?? ''}
                       onChange={(e) => setLeadPick({ ...leadPick, [p.id]: e.target.value })}
-                      className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+                      className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
                     >
                       <option value="">Pick a lead...</option>
                       {leads.map((l) => <option key={l.id} value={l.id}>{l.clientName} · {l.destination}</option>)}

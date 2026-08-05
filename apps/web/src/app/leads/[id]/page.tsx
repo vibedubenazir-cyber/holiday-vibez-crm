@@ -122,16 +122,16 @@ export default function LeadDetailPage() {
           </div>
           {showForm && (
             <form onSubmit={handleAddTraveler} className="mt-2 grid grid-cols-1 gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-3">
-              <input required placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-              <input placeholder="Passport number" value={form.passportNumber} onChange={(e) => setForm({ ...form, passportNumber: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-              <input type="date" placeholder="Passport expiry" value={form.passportExpiry} onChange={(e) => setForm({ ...form, passportExpiry: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-              <input placeholder="Visa status" value={form.visaStatus} onChange={(e) => setForm({ ...form, visaStatus: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+              <input required placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+              <input placeholder="Passport number" value={form.passportNumber} onChange={(e) => setForm({ ...form, passportNumber: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+              <input type="date" placeholder="Passport expiry" value={form.passportExpiry} onChange={(e) => setForm({ ...form, passportExpiry: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+              <input placeholder="Visa status" value={form.visaStatus} onChange={(e) => setForm({ ...form, visaStatus: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
               <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Save traveler</button>
             </form>
           )}
           <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
                 <tr><th className="px-3 py-2">Name</th><th className="px-3 py-2">Passport</th><th className="px-3 py-2">Expiry</th><th className="px-3 py-2">Visa</th></tr>
               </thead>
               <tbody>
@@ -153,7 +153,7 @@ export default function LeadDetailPage() {
           <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Quotations</h2>
           <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
                 <tr><th className="px-3 py-2">Ref</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Total</th><th></th></tr>
               </thead>
               <tbody>
@@ -192,7 +192,7 @@ export default function LeadDetailPage() {
                     required={d.required}
                     value={customFieldValues[d.id] ?? ''}
                     onChange={(e) => setCustomFieldValues({ ...customFieldValues, [d.id]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
                   >
                     <option value="">Select...</option>
                     {d.options.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -203,7 +203,7 @@ export default function LeadDetailPage() {
                     type={d.fieldType === CustomFieldType.NUMBER ? 'number' : d.fieldType === CustomFieldType.DATE ? 'date' : 'text'}
                     value={customFieldValues[d.id] ?? ''}
                     onChange={(e) => setCustomFieldValues({ ...customFieldValues, [d.id]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
                   />
                 )}
               </div>

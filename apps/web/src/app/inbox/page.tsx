@@ -189,7 +189,7 @@ export default function InboxPage() {
                   <select
                     value={templateId}
                     onChange={(e) => applyTemplate(e.target.value)}
-                    className="mb-2 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+                    className="mb-2 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
                   >
                     <option value="">Use a template...</option>
                     {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -201,7 +201,7 @@ export default function InboxPage() {
                     onChange={(e) => setComposeBody(e.target.value)}
                     placeholder="Type a message..."
                     rows={2}
-                    className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+                    className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
                   />
                   <button type="submit" className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
                     Send
@@ -218,9 +218,9 @@ export default function InboxPage() {
                     value={simulateBody}
                     onChange={(e) => setSimulateBody(e.target.value)}
                     placeholder="e.g. What's the price for Bali?"
-                    className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
+                    className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
                   />
-                  <button type="submit" className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                  <button type="submit" className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
                     Simulate
                   </button>
                 </div>

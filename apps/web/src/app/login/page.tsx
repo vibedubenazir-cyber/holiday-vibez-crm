@@ -65,7 +65,7 @@ export default function LoginPage() {
                 maxLength={6}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-center text-lg tracking-widest focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-center text-lg tracking-widest focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
                 placeholder="000000"
                 autoFocus
               />
@@ -113,7 +113,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
               placeholder="you@holidayvibez.com"
             />
           </div>
@@ -127,7 +127,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
               placeholder="••••••••"
             />
           </div>

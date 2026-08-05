@@ -167,13 +167,13 @@ export default function BookingsPage() {
                   </tbody>
                 </table>
                 <div className="mt-3 flex items-end gap-2">
-                  <select value={paymentForm.type} onChange={(e) => setPaymentForm({ ...paymentForm, type: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+                  <select value={paymentForm.type} onChange={(e) => setPaymentForm({ ...paymentForm, type: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
                     <option value="CLIENT_RECEIPT">Client receipt</option>
                     <option value="DMC_PAYABLE">DMC payable</option>
                     <option value="COMMISSION">Commission</option>
                     <option value="REFUND">Refund</option>
                   </select>
-                  <input type="number" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} className="w-32 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
+                  <input type="number" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} className="w-32 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
                   <button onClick={() => handleAddPayment(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add payment</button>
                 </div>
 

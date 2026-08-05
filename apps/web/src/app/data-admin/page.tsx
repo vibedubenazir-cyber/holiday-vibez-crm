@@ -71,13 +71,13 @@ export default function DataAdminPage() {
           value={entityFilter}
           onChange={(e) => setEntityFilter(e.target.value)}
           placeholder="Filter by entity (e.g. leads, bookings)"
-          className="w-64 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          className="w-64 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
         />
       </div>
 
       <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
             <tr>
               <th className="px-4 py-2">When</th>
               <th className="px-4 py-2">User</th>

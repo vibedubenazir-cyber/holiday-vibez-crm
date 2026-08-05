@@ -33,7 +33,7 @@ export default function CalendarPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Departure Calendar</h1>
-        <select value={range} onChange={(e) => setRange(e.target.value)} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+        <select value={range} onChange={(e) => setRange(e.target.value)} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
           <option value="7">Next 7 days</option>
           <option value="14">Next 14 days</option>
           <option value="30">Next 30 days</option>

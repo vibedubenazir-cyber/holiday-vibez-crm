@@ -91,13 +91,13 @@ export default function CustomFieldsPage() {
 
       {showForm && (
         <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
-          <input required placeholder="Label (e.g. Referred By)" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <input placeholder="Field key (auto from label if blank)" value={form.fieldKey} onChange={(e) => setForm({ ...form, fieldKey: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm" />
-          <select value={form.fieldType} onChange={(e) => setForm({ ...form, fieldType: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm">
+          <input required placeholder="Label (e.g. Referred By)" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+          <input placeholder="Field key (auto from label if blank)" value={form.fieldKey} onChange={(e) => setForm({ ...form, fieldKey: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+          <select value={form.fieldType} onChange={(e) => setForm({ ...form, fieldType: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
             {FIELD_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
           {form.fieldType === CustomFieldType.SELECT && (
-            <input placeholder="Options, comma-separated" value={form.options} onChange={(e) => setForm({ ...form, options: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm sm:col-span-2 lg:col-span-2" />
+            <input placeholder="Options, comma-separated" value={form.options} onChange={(e) => setForm({ ...form, options: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors sm:col-span-2 lg:col-span-2" />
           )}
           <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
             <input type="checkbox" checked={form.required} onChange={(e) => setForm({ ...form, required: e.target.checked })} />
@@ -111,7 +111,7 @@ export default function CustomFieldsPage() {
 
       <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-900 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
             <tr>
               <th className="px-4 py-2">Label</th>
               <th className="px-4 py-2">Key</th>
