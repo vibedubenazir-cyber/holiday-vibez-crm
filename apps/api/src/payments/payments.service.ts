@@ -10,8 +10,11 @@ export class PaymentsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(bookingId?: string) {
-    return this.prisma.payment.findMany({ where: { bookingId }, orderBy: { createdAt: 'desc' } });
+  findAll(bookingId?: string, branchId?: string) {
+    return this.prisma.payment.findMany({
+      where: { bookingId, booking: branchId ? { quotation: { lead: { branchId } } } : undefined },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   create(dto: CreatePaymentDto) {

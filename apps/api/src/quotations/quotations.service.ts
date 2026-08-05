@@ -68,7 +68,8 @@ export class QuotationsService {
 
   async removeItem(quotationId: string, itemId: string) {
     await this.ensureDraft(quotationId);
-    await this.prisma.quotationItem.delete({ where: { id: itemId } });
+    const { count } = await this.prisma.quotationItem.deleteMany({ where: { id: itemId, quotationId } });
+    if (count === 0) throw new NotFoundException('Item not found on this quotation');
     return this.recalculateTotal(quotationId);
   }
 

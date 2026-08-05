@@ -1,8 +1,10 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { LeadStatus } from '@prisma/client';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { LeadStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateLeadDto, PublicCreateLeadDto, UpdateLeadDto } from './dto/lead.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+
+type Actor = { id: string; role: Role; branchId: string | null };
 
 const OPEN_STATUSES: LeadStatus[] = [
   LeadStatus.NEW,
@@ -143,8 +145,9 @@ export class LeadsService {
     return this.prisma.lead.update({ where: { id: leadId }, data: { assignedConsultantId: consultantId } });
   }
 
-  async update(id: string, dto: UpdateLeadDto) {
+  async update(id: string, dto: UpdateLeadDto, actor: Actor) {
     const lead = await this.ensureExists(id);
+    this.assertScope(actor, lead.assignedConsultantId, lead.branchId);
     return this.prisma.lead.update({
       where: { id },
       data: {
@@ -152,6 +155,15 @@ export class LeadsService {
         firstContactedAt: lead.firstContactedAt ?? (dto.status && dto.status !== LeadStatus.NEW ? new Date() : undefined),
       },
     });
+  }
+
+  private assertScope(actor: Actor, consultantId: string | null, leadBranchId: string) {
+    if (actor.role === Role.TRAVEL_CONSULTANT && actor.id !== consultantId) {
+      throw new ForbiddenException('You can only modify your own leads');
+    }
+    if (actor.role === Role.BRANCH_MANAGER && actor.branchId !== leadBranchId) {
+      throw new ForbiddenException("You can only modify your own branch's leads");
+    }
   }
 
   // Called periodically (see main.ts) and on-demand; flags + escalates leads not

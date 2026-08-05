@@ -39,8 +39,8 @@ export class LeadsController {
 
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateLeadDto) {
-    return this.leadsService.update(id, dto);
+  update(@Param('id') id: string, @Body() dto: UpdateLeadDto, @CurrentUser() user: { id: string; role: Role; branchId: string | null }) {
+    return this.leadsService.update(id, dto, user);
   }
 
   @Roles(Role.ADMIN, Role.BRANCH_MANAGER)
