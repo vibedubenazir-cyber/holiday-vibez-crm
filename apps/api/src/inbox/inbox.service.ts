@@ -102,13 +102,31 @@ export class InboxService {
   // no actor to scope against, this is an unauthenticated request from Meta.
   async receiveInboundWhatsApp(fromPhone: string, body: string) {
     const normalized = normalizePhone(fromPhone);
-    const leads = await this.prisma.lead.findMany();
-    const lead = leads.find((l) => normalizePhone(l.phone).endsWith(normalized.slice(-10)));
-    if (!lead) {
+    const last10 = normalized.slice(-10);
+    // Phone isn't stored normalized (dashes/spaces/+ vary), so a raw `contains`
+    // prefilter on the stored text can't reliably narrow this — e.g.
+    // "+1-999-999-9999" has no 6 consecutive raw digits despite matching after
+    // normalization. Selecting just id/phone (not full lead rows) keeps the
+    // full-table read cheap without sacrificing correctness.
+    const candidates = await this.prisma.lead.findMany({ select: { id: true, phone: true } });
+    const matchIds = candidates.filter((l) => normalizePhone(l.phone).endsWith(last10)).map((l) => l.id);
+    const matches = matchIds.length > 0 ? await this.prisma.lead.findMany({ where: { id: { in: matchIds } } }) : [];
+
+    if (matches.length === 0) {
       this.logger.warn(`Inbound WhatsApp message from unrecognized number ${fromPhone} — no matching lead`);
       return null;
     }
+    if (matches.length > 1) {
+      // Ambiguous — e.g. two leads whose numbers share the same last-10-digit
+      // local number under different country codes. Refuse rather than guess
+      // and risk leaking one customer's message into a different lead's thread.
+      this.logger.warn(
+        `Inbound WhatsApp message from ${fromPhone} matched ${matches.length} leads (${matches.map((l) => l.id).join(', ')}) — refusing to guess`,
+      );
+      return null;
+    }
 
+    const lead = matches[0];
     const conversation = await this.ensureForLead(lead.id, 'WHATSAPP');
     return this.processInbound({ ...conversation, lead }, body, 'DELIVERED', true);
   }

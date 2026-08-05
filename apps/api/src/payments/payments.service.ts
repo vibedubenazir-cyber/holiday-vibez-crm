@@ -33,6 +33,7 @@ export class PaymentsService {
   async markPaid(id: string) {
     const payment = await this.prisma.payment.findUnique({ where: { id } });
     if (!payment) throw new NotFoundException('Payment not found');
+    if (payment.paidAt) return payment;
     return this.confirmPaid(payment, `MOCK-${Date.now()}`);
   }
 

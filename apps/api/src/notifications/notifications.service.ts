@@ -1,8 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { NotificationChannel } from '@prisma/client';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { NotificationChannel, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { normalizePhone } from './phone.util';
 import { getFcmAccessToken } from './fcm.util';
+
+type Actor = { id: string; role: Role; branchId: string | null };
 
 const WHATSAPP_API_VERSION = 'v20.0';
 const SENDGRID_API_URL = 'https://api.sendgrid.com/v3/mail/send';
@@ -64,11 +66,59 @@ export class NotificationsService {
     return notification;
   }
 
-  async log(leadOrEntityId: string) {
+  async log(leadOrEntityId: string, actor: Actor) {
+    await this.assertEntityScope(leadOrEntityId, actor);
     return this.prisma.notification.findMany({
       where: { relatedEntity: { contains: leadOrEntityId } },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  // relatedEntity is stored as "<type>:<id>" (lead/quotation/booking/conversation/
+  // traveler/campaign — see every notifications.send() call site) but log()'s
+  // caller only supplies the bare id, so the type has to be resolved by trying
+  // each model in turn. Admin/Director always pass; every other role is scoped
+  // to their own leads (directly, or transitively via the lead each entity
+  // belongs to) the same way leads/travelers/inbox already scope access.
+  private async assertEntityScope(entityId: string, actor: Actor) {
+    if (actor.role === Role.ADMIN || actor.role === Role.DIRECTOR) return;
+
+    const lead = await this.prisma.lead.findUnique({ where: { id: entityId } });
+    if (lead) return this.assertLeadScope(actor, lead.assignedConsultantId, lead.branchId);
+
+    const quotation = await this.prisma.quotation.findUnique({ where: { id: entityId }, include: { lead: true } });
+    if (quotation) return this.assertLeadScope(actor, quotation.consultantId, quotation.lead.branchId);
+
+    const booking = await this.prisma.booking.findUnique({
+      where: { id: entityId },
+      include: { quotation: { include: { lead: true } } },
+    });
+    if (booking) return this.assertLeadScope(actor, booking.quotation.consultantId, booking.quotation.lead.branchId);
+
+    const conversation = await this.prisma.conversation.findUnique({ where: { id: entityId }, include: { lead: true } });
+    if (conversation) return this.assertLeadScope(actor, conversation.lead.assignedConsultantId, conversation.lead.branchId);
+
+    const traveler = await this.prisma.traveler.findUnique({ where: { id: entityId }, include: { lead: true } });
+    if (traveler) return this.assertLeadScope(actor, traveler.lead.assignedConsultantId, traveler.lead.branchId);
+
+    const campaign = await this.prisma.campaign.findUnique({ where: { id: entityId } });
+    if (campaign) {
+      // Org-wide marketing sends have no single owning consultant/branch to scope against.
+      throw new ForbiddenException('Only Admin/Director can view campaign notification logs');
+    }
+
+    // Unrecognized id — nothing to scope against, so deny by default rather than
+    // risk exposing a log entry this actor shouldn't see.
+    throw new ForbiddenException('You do not have access to this notification log');
+  }
+
+  private assertLeadScope(actor: Actor, consultantId: string | null, leadBranchId: string) {
+    if (actor.role === Role.TRAVEL_CONSULTANT && actor.id !== consultantId) {
+      throw new ForbiddenException('You can only view notification logs for your own leads');
+    }
+    if (actor.role === Role.BRANCH_MANAGER && actor.branchId !== leadBranchId) {
+      throw new ForbiddenException("You can only view notification logs for your own branch's leads");
+    }
   }
 
   private async deliver(notificationId: string, input: SendNotificationInput) {

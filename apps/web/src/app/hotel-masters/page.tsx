@@ -98,7 +98,7 @@ function HotelsTab({ canManage }: { canManage: boolean }) {
                 <td className="px-4 py-2 font-medium text-slate-800 dark:text-slate-100">{item.name}</td>
                 <td className="px-4 py-2">{'★'.repeat(item.category)}</td>
                 <td className="px-4 py-2">{item.destination}</td>
-                <td className="px-4 py-2">₹{item.price.toLocaleString('en-IN')}</td>
+                <td className="px-4 py-2">₹{Number(item.price).toLocaleString('en-IN')}</td>
                 <td className="px-4 py-2"><StatusBadge active={item.active} /></td>
                 {canManage && (
                   <td className="px-4 py-2 text-right">

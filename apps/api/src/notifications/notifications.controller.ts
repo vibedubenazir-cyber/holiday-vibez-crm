@@ -12,15 +12,14 @@ import { RegisterPushTokenDto } from './dto/push-token.dto';
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
-  // relatedEntity can point at a lead, quotation, or conversation, so per-entity
-  // ownership scoping would need to resolve the entity type first — out of scope
-  // here. This at minimum closes the gap where any authenticated account of any
-  // role (not just staff who'd plausibly need it) could read it.
+  // NotificationsService.log() resolves entityId against every entity type
+  // relatedEntity can point at (lead/quotation/booking/conversation/traveler/
+  // campaign) and scopes access the same way leads/travelers do.
   @UseGuards(RolesGuard)
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
   @Get(':entityId/log')
-  log(@Param('entityId') entityId: string) {
-    return this.notificationsService.log(entityId);
+  log(@Param('entityId') entityId: string, @CurrentUser() user: { id: string; role: Role; branchId: string | null }) {
+    return this.notificationsService.log(entityId, user);
   }
 
   @Post('push-token')
