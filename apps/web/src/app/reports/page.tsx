@@ -8,6 +8,7 @@ import { Role, type BranchDTO, type MonthlyPnLRowDTO } from '@holiday-vibez/shar
 
 interface DirectorDashboard {
   totalLeads: number;
+  leadsByStatus: { status: string; _count: number }[];
   conversionPct: number;
   revenue: number;
   costs: number;
@@ -72,6 +73,19 @@ export default function ReportsPage() {
             <Stat label="Conversion" value={`${dashboard.conversionPct}%`} />
             <Stat label="Revenue" value={`₹${dashboard.revenue.toLocaleString('en-IN')}`} />
             <Stat label="Gross margin" value={`₹${dashboard.grossMargin.toLocaleString('en-IN')}`} />
+          </div>
+
+          <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Leads by status</h2>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {dashboard.leadsByStatus.map((row) => (
+              <span
+                key={row.status}
+                className="rounded-full bg-slate-100 dark:bg-slate-700 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-200"
+              >
+                {row.status.replaceAll('_', ' ')}: {row._count}
+              </span>
+            ))}
+            {dashboard.leadsByStatus.length === 0 && <p className="text-xs text-slate-400 dark:text-slate-500">No leads yet.</p>}
           </div>
 
           <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Branch target vs. achieved</h2>
