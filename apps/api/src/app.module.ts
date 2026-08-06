@@ -19,6 +19,7 @@ import { ExpensesModule } from './expenses/expenses.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { LeaveModule } from './leave/leave.module';
 import { PayrollModule } from './payroll/payroll.module';
+import { LoyaltyModule } from './loyalty/loyalty.module';
 import { InboxModule } from './inbox/inbox.module';
 import { TemplatesModule } from './templates/templates.module';
 import { CmsModule } from './cms/cms.module';
@@ -59,6 +60,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     AttendanceModule,
     LeaveModule,
     PayrollModule,
+    LoyaltyModule,
     InboxModule,
     TemplatesModule,
     CmsModule,

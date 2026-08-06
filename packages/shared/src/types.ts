@@ -540,3 +540,23 @@ export interface PayslipDTO {
   generatedAt: string;
   user?: UserDTO;
 }
+
+export interface LoyaltyTransactionDTO {
+  id: string;
+  accountId: string;
+  type: 'EARNED' | 'REDEEMED' | 'REFERRAL_BONUS' | 'ADJUSTMENT';
+  points: number;
+  bookingId: string | null;
+  description: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface LoyaltyAccountDTO {
+  id: string;
+  clientId: string;
+  points: number;
+  lifetimePoints: number;
+  tier: 'SILVER' | 'GOLD' | 'PLATINUM';
+  transactions: LoyaltyTransactionDTO[];
+}

@@ -302,8 +302,44 @@ model Client {
   createdAt     DateTime   @default(now())
 
   leads Lead[]
+  loyaltyAccount LoyaltyAccount?
 
   @@map("clients")
+}
+
+enum LoyaltyTxnType {
+  EARNED
+  REDEEMED
+  REFERRAL_BONUS
+  ADJUSTMENT
+}
+
+model LoyaltyAccount {
+  id             String   @id @default(uuid())
+  clientId       String   @unique
+  client         Client   @relation(fields: [clientId], references: [id])
+  points         Int      @default(0)
+  lifetimePoints Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  transactions LoyaltyTransaction[]
+
+  @@map("loyalty_accounts")
+}
+
+model LoyaltyTransaction {
+  id          String         @id @default(uuid())
+  accountId   String
+  account     LoyaltyAccount @relation(fields: [accountId], references: [id])
+  type        LoyaltyTxnType
+  points      Int
+  bookingId   String?
+  description String?
+  createdBy   String
+  createdAt   DateTime       @default(now())
+
+  @@map("loyalty_transactions")
 }
 
 model Traveler {
