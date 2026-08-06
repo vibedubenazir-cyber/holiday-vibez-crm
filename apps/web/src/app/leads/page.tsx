@@ -163,6 +163,9 @@ export default function LeadsPage() {
           CSV columns: source,clientName,phone,email,destination,branch — source must be one of {SOURCE_OPTIONS.join(', ')}; branch must match an existing branch name.
         </p>
       )}
+      <p className="mt-1 text-xs text-blue-100">
+        SLA: whether this lead was contacted within the required response-time window. "Breached" means it wasn't — follow up as soon as possible.
+      </p>
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       {importError && <p className="mt-3 text-sm text-red-600">{importError}</p>}
@@ -209,7 +212,7 @@ export default function LeadsPage() {
               <th className="px-4 py-2">Destination</th>
               <th className="px-4 py-2">Branch</th>
               <th className="px-4 py-2">Source</th>
-              <th className="px-4 py-2">SLA</th>
+              <th className="px-4 py-2" title="Whether this lead was contacted within the required response-time window">SLA</th>
               <th className="px-4 py-2">Status</th>
               <th className="px-4 py-2 text-right">Quotation</th>
             </tr>
@@ -222,7 +225,11 @@ export default function LeadsPage() {
                 <td className="px-4 py-2">{branchName(l.branchId)}</td>
                 <td className="px-4 py-2">{l.source}</td>
                 <td className="px-4 py-2">
-                  {l.slaBreached ? <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Breached</span> : <span className="text-xs text-slate-400">OK</span>}
+                  {l.slaBreached ? (
+                    <span title="Not contacted within the required response-time window" className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Breached</span>
+                  ) : (
+                    <span title="Contacted within the required response-time window" className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">On time</span>
+                  )}
                 </td>
                 <td className="px-4 py-2">
                   <select
