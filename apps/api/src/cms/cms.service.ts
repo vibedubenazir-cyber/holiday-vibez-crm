@@ -37,6 +37,15 @@ export class CmsService {
     return this.prisma.siteSetting.findMany({ orderBy: { key: 'asc' } });
   }
 
+  // SiteSetting is a generic free-text key/value store an Admin/Director can
+  // add any key to — allowlist what the public site is actually meant to see
+  // (contact/branding info, the same fields already shown on public
+  // quotation/voucher/invoice pages) rather than exposing the whole table.
+  findPublicSettings() {
+    const PUBLIC_KEYS = ['contact_email', 'contact_phone', 'instagram_url', 'company_name', 'company_address', 'gst_number', 'company_logo_url'];
+    return this.prisma.siteSetting.findMany({ where: { key: { in: PUBLIC_KEYS } }, orderBy: { key: 'asc' } });
+  }
+
   async upsertSetting(dto: UpsertSiteSettingDto) {
     return this.prisma.siteSetting.upsert({
       where: { key: dto.key },

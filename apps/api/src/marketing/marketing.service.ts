@@ -32,7 +32,7 @@ export class MarketingService {
     });
   }
 
-  // Mock send — resolves the audience from Leads matching the stored filters and
+  // Resolves the audience from Leads matching the stored filters and
   // calls the same NotificationsService every other messaging feature uses (Inbox,
   // Quotation approval, Voucher/Invoice issuance) — real for WhatsApp when
   // WHATSAPP_API_KEY is configured (see notifications.service.ts), console-log

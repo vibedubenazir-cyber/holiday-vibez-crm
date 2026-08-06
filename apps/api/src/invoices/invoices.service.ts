@@ -3,6 +3,7 @@ import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateInvoiceDto } from './dto/invoice.dto';
+import { getPublicCompanyInfo } from '../common/company-info.util';
 
 @Injectable()
 export class InvoicesService {
@@ -35,10 +36,14 @@ export class InvoicesService {
         amount,
         taxAmount: dto.taxAmount ?? 0,
         currency: booking.quotation.currency,
-        pdfUrl: dto.pdfUrl ?? `/invoices/${invoiceNo}/pdf-not-yet-generated`,
         issuedBy,
       },
     });
+
+    // Real, viewable page — id-keyed, set after creation since the URL
+    // needs the generated id (same pattern as vouchers/quotations).
+    const pdfUrl = dto.pdfUrl ?? `${process.env.WEB_ORIGIN}/invoice/${invoice.id}`;
+    const updated = await this.prisma.invoice.update({ where: { id: invoice.id }, data: { pdfUrl } });
 
     await this.notifications.send({
       channel: 'EMAIL',
@@ -46,10 +51,33 @@ export class InvoicesService {
       recipient: booking.quotation.lead.email ?? booking.quotation.lead.phone,
       relatedEntity: `booking:${bookingId}`,
       subject: `Your invoice ${invoiceNo} from Holiday Vibez`,
-      body: `Hi ${booking.quotation.lead.clientName},\n\nYour invoice ${invoiceNo} for ${booking.quotation.currency} ${amount.toLocaleString('en-IN')} is ready: ${invoice.pdfUrl}\n\nThank you for booking with Holiday Vibez.`,
+      body: `Hi ${booking.quotation.lead.clientName},\n\nYour invoice ${invoiceNo} for ${booking.quotation.currency} ${amount.toLocaleString('en-IN')} is ready: ${pdfUrl}\n\nThank you for booking with Holiday Vibez.`,
     });
 
-    return invoice;
+    return updated;
+  }
+
+  // Called by the unauthenticated public controller — no actor, so this
+  // must never return anything beyond what a customer holding this exact
+  // link should see.
+  async publicView(id: string) {
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id },
+      include: { booking: { include: { quotation: { include: { lead: true } } } } },
+    });
+    if (!invoice) throw new NotFoundException('Invoice not found');
+
+    const lead = invoice.booking.quotation.lead;
+    return {
+      invoiceNo: invoice.invoiceNo,
+      type: invoice.type,
+      issuedAt: invoice.issuedAt,
+      amount: Number(invoice.amount),
+      taxAmount: Number(invoice.taxAmount),
+      currency: invoice.currency,
+      client: { name: lead.clientName, phone: lead.phone, email: lead.email, destination: lead.destination },
+      company: await getPublicCompanyInfo(this.prisma),
+    };
   }
 
   private assertScope(actor: { role: Role; branchId: string | null; id: string }, consultantId: string, leadBranchId: string) {

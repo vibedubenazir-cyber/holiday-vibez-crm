@@ -22,6 +22,6 @@ export class PublicCmsController {
 
   @Get('settings')
   findSettings() {
-    return this.cmsService.findAllSettings();
+    return this.cmsService.findPublicSettings();
   }
 }

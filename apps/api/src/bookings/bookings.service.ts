@@ -37,14 +37,16 @@ export class BookingsService {
       throw new BadRequestException('Only an approved & sent quotation can be converted into a booking');
     }
 
+    // Booking.voucherUrl/invoiceUrl are unused legacy columns from before the
+    // real Voucher/Invoice models existed — the real documents (with real
+    // viewable pdfUrl links) are created separately via VouchersService/
+    // InvoicesService, not stamped here.
     return this.prisma.booking.create({
       data: {
         quotationId: dto.quotationId,
         status: 'CONFIRMED',
         departureDate: new Date(dto.departureDate),
         returnDate: dto.returnDate ? new Date(dto.returnDate) : undefined,
-        voucherUrl: `/bookings/placeholder-voucher`,
-        invoiceUrl: `/bookings/placeholder-invoice`,
       },
     });
   }
