@@ -135,7 +135,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen overflow-hidden">
       <aside className="flex w-64 shrink-0 flex-col overflow-y-auto bg-brand-700">
         <div className="px-5 py-5">
-          <Image src="/logo-white.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-full" priority />
+          <Image src="/logo-white.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-28" priority />
         </div>
         <nav className="flex flex-1 flex-col gap-0.5 p-3">
           {visibleGroups.map((group, i) => (
