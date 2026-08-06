@@ -93,7 +93,7 @@ export default function LeadDetailPage() {
   if (!lead) {
     return (
       <AppShell>
-        <p className="text-sm text-slate-500 dark:text-slate-400">{error ?? 'Loading...'}</p>
+        <p className="text-sm text-slate-500">{error ?? 'Loading...'}</p>
       </AppShell>
     );
   }
@@ -102,70 +102,70 @@ export default function LeadDetailPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">{lead.clientName}</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{lead.destination} · {lead.phone} · {lead.status}</p>
+          <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">{lead.clientName}</h1>
+          <p className="text-sm text-slate-500">{lead.destination} · {lead.phone} · {lead.status}</p>
         </div>
         <button onClick={handleCreateQuotation} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
           Create quotation
         </button>
       </div>
 
-      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div>
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Travelers</h2>
+            <h2 className="text-sm font-semibold text-slate-700">Travelers</h2>
             <button onClick={() => setShowForm((s) => !s)} className="text-sm text-brand hover:underline">
               {showForm ? 'Cancel' : '+ Add traveler'}
             </button>
           </div>
           {showForm && (
-            <form onSubmit={handleAddTraveler} className="mt-2 grid grid-cols-1 gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-3">
-              <input required placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
-              <input placeholder="Passport number" value={form.passportNumber} onChange={(e) => setForm({ ...form, passportNumber: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
-              <input type="date" placeholder="Passport expiry" value={form.passportExpiry} onChange={(e) => setForm({ ...form, passportExpiry: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
-              <input placeholder="Visa status" value={form.visaStatus} onChange={(e) => setForm({ ...form, visaStatus: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+            <form onSubmit={handleAddTraveler} className="mt-2 grid grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-3">
+              <input required placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+              <input placeholder="Passport number" value={form.passportNumber} onChange={(e) => setForm({ ...form, passportNumber: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+              <input type="date" placeholder="Passport expiry" value={form.passportExpiry} onChange={(e) => setForm({ ...form, passportExpiry: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+              <input placeholder="Visa status" value={form.visaStatus} onChange={(e) => setForm({ ...form, visaStatus: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
               <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Save traveler</button>
             </form>
           )}
-          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
+          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
-              <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
+              <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
                 <tr><th className="px-3 py-2">Name</th><th className="px-3 py-2">Passport</th><th className="px-3 py-2">Expiry</th><th className="px-3 py-2">Visa</th></tr>
               </thead>
               <tbody>
                 {travelers.map((t) => (
-                  <tr key={t.id} className="border-t border-slate-100 dark:border-slate-800">
+                  <tr key={t.id} className="border-t border-slate-100">
                     <td className="px-3 py-2">{t.name}</td>
-                    <td className="px-3 py-2 text-slate-500 dark:text-slate-400">{t.passportNumber ?? '—'}</td>
-                    <td className="px-3 py-2 text-slate-500 dark:text-slate-400">{t.passportExpiry ? new Date(t.passportExpiry).toLocaleDateString() : '—'}</td>
-                    <td className="px-3 py-2 text-slate-500 dark:text-slate-400">{t.visaStatus ?? '—'}</td>
+                    <td className="px-3 py-2 text-slate-500">{t.passportNumber ?? '—'}</td>
+                    <td className="px-3 py-2 text-slate-500">{t.passportExpiry ? new Date(t.passportExpiry).toLocaleDateString() : '—'}</td>
+                    <td className="px-3 py-2 text-slate-500">{t.visaStatus ?? '—'}</td>
                   </tr>
                 ))}
-                {travelers.length === 0 && <tr><td colSpan={4} className="px-3 py-4 text-center text-slate-400 dark:text-slate-500">No travelers added yet.</td></tr>}
+                {travelers.length === 0 && <tr><td colSpan={4} className="px-3 py-4 text-center text-slate-400">No travelers added yet.</td></tr>}
               </tbody>
             </table>
           </div>
         </div>
 
         <div>
-          <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Quotations</h2>
-          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
+          <h2 className="text-sm font-semibold text-slate-700">Quotations</h2>
+          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
-              <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
+              <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
                 <tr><th className="px-3 py-2">Ref</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Total</th><th></th></tr>
               </thead>
               <tbody>
                 {quotations.map((q) => (
-                  <tr key={q.id} className="border-t border-slate-100 dark:border-slate-800">
+                  <tr key={q.id} className="border-t border-slate-100">
                     <td className="px-3 py-2">{q.refNo}</td>
                     <td className="px-3 py-2">{q.status}</td>
                     <td className="px-3 py-2">₹{Number(q.totalAmount).toLocaleString('en-IN')}</td>
                     <td className="px-3 py-2 text-right"><a href={`/quotations/${q.id}`} className="text-brand hover:underline">Open</a></td>
                   </tr>
                 ))}
-                {quotations.length === 0 && <tr><td colSpan={4} className="px-3 py-4 text-center text-slate-400 dark:text-slate-500">No quotations yet.</td></tr>}
+                {quotations.length === 0 && <tr><td colSpan={4} className="px-3 py-4 text-center text-slate-400">No quotations yet.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -174,11 +174,11 @@ export default function LeadDetailPage() {
 
       {customFieldDefs.length > 0 && (
         <div className="mt-6">
-          <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Custom Fields</h2>
-          <form onSubmit={handleSaveCustomFields} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <h2 className="text-sm font-semibold text-slate-700">Custom Fields</h2>
+          <form onSubmit={handleSaveCustomFields} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
             {customFieldDefs.map((d) => (
               <div key={d.id}>
-                <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">
+                <label className="mb-1 block text-xs font-medium text-slate-600">
                   {d.label}{d.required ? ' *' : ''}
                 </label>
                 {d.fieldType === CustomFieldType.BOOLEAN ? (
@@ -192,7 +192,7 @@ export default function LeadDetailPage() {
                     required={d.required}
                     value={customFieldValues[d.id] ?? ''}
                     onChange={(e) => setCustomFieldValues({ ...customFieldValues, [d.id]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors"
                   >
                     <option value="">Select...</option>
                     {d.options.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -203,7 +203,7 @@ export default function LeadDetailPage() {
                     type={d.fieldType === CustomFieldType.NUMBER ? 'number' : d.fieldType === CustomFieldType.DATE ? 'date' : 'text'}
                     value={customFieldValues[d.id] ?? ''}
                     onChange={(e) => setCustomFieldValues({ ...customFieldValues, [d.id]: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors"
                   />
                 )}
               </div>

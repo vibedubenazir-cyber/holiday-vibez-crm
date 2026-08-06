@@ -20,16 +20,16 @@ const SOURCE_OPTIONS = [LeadSource.GOOGLE, LeadSource.META, LeadSource.WEBSITE, 
 const STATUS_OPTIONS = Object.values(LeadStatus);
 
 const STATUS_COLORS: Record<string, string> = {
-  NEW: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
-  PROPOSAL_SENT: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
-  NO_CONNECT: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
-  HOT_LEAD: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400',
-  PROPOSAL_CONFIRMED: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400',
-  PLAN_DROPPED: 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400',
-  FOLLOW_UP: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400',
-  CONFIRMED: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',
-  POSTPONED: 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400',
-  JUNK_NOT_INTERESTED: 'bg-slate-200 text-slate-600 dark:text-slate-300',
+  NEW: 'bg-blue-100 text-blue-700',
+  PROPOSAL_SENT: 'bg-blue-100 text-blue-700',
+  NO_CONNECT: 'bg-blue-100 text-blue-700',
+  HOT_LEAD: 'bg-blue-100 text-blue-700',
+  PROPOSAL_CONFIRMED: 'bg-blue-100 text-blue-700',
+  PLAN_DROPPED: 'bg-blue-100 text-blue-700',
+  FOLLOW_UP: 'bg-blue-100 text-blue-700',
+  CONFIRMED: 'bg-blue-100 text-blue-700',
+  POSTPONED: 'bg-blue-100 text-blue-700',
+  JUNK_NOT_INTERESTED: 'bg-slate-200 text-slate-600',
 };
 
 export default function LeadsPage() {
@@ -141,13 +141,13 @@ export default function LeadsPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Leads</h1>
+        <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Leads</h1>
         {canCreate && (
           <div className="flex items-center gap-2">
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={importing}
-              className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50"
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
             >
               {importing ? 'Importing…' : 'Bulk import (CSV)'}
             </button>
@@ -159,51 +159,51 @@ export default function LeadsPage() {
         )}
       </div>
       {canCreate && (
-        <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+        <p className="mt-1 text-xs text-slate-400">
           CSV columns: source,clientName,phone,email,destination,branch — source must be one of {SOURCE_OPTIONS.join(', ')}; branch must match an existing branch name.
         </p>
       )}
 
-      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
-      {importError && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{importError}</p>}
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {importError && <p className="mt-3 text-sm text-red-600">{importError}</p>}
       {importResults && (
-        <div className="mt-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-3 text-sm">
-          <p className="font-medium text-slate-700 dark:text-slate-200">
+        <div className="mt-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-3 text-sm">
+          <p className="font-medium text-slate-700">
             Imported {importResults.filter((r) => r.success).length} of {importResults.length} rows
           </p>
           <ul className="mt-2 space-y-1">
             {importResults.filter((r) => !r.success).map((r) => (
-              <li key={r.row} className="text-red-600 dark:text-red-400">Row {r.row}: {r.error}</li>
+              <li key={r.row} className="text-red-600">Row {r.row}: {r.error}</li>
             ))}
           </ul>
         </div>
       )}
 
       {canCreate && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
-          <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             {SOURCE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
-          <select value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
+          <select value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
-          <select value={form.clientId} onChange={(e) => handleClientSelect(e.target.value)} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
+          <select value={form.clientId} onChange={(e) => handleClientSelect(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             <option value="">Link to existing client (optional)</option>
             {clients.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.type})</option>)}
           </select>
-          <input required placeholder="Client name" value={form.clientName} onChange={(e) => setForm({ ...form, clientName: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
-          <input required placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
-          <input type="email" placeholder="Email (optional)" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
-          <input required placeholder="Destination" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+          <input required placeholder="Client name" value={form.clientName} onChange={(e) => setForm({ ...form, clientName: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <input required placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <input type="email" placeholder="Email (optional)" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <input required placeholder="Destination" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
             Create lead (auto-assigns via round-robin)
           </button>
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>
               <th className="px-4 py-2">Client</th>
               <th className="px-4 py-2">Destination</th>
@@ -216,19 +216,19 @@ export default function LeadsPage() {
           </thead>
           <tbody>
             {leads.map((l) => (
-              <tr key={l.id} className="border-t border-slate-100 dark:border-slate-800">
-                <td className="px-4 py-2 font-medium text-slate-800 dark:text-slate-100">{l.clientName}<div className="text-xs text-slate-400 dark:text-slate-500">{l.phone}</div></td>
+              <tr key={l.id} className="border-t border-slate-100">
+                <td className="px-4 py-2 font-medium text-slate-800">{l.clientName}<div className="text-xs text-slate-400">{l.phone}</div></td>
                 <td className="px-4 py-2">{l.destination}</td>
                 <td className="px-4 py-2">{branchName(l.branchId)}</td>
                 <td className="px-4 py-2">{l.source}</td>
                 <td className="px-4 py-2">
-                  {l.slaBreached ? <span className="rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">Breached</span> : <span className="text-xs text-slate-400 dark:text-slate-500">OK</span>}
+                  {l.slaBreached ? <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Breached</span> : <span className="text-xs text-slate-400">OK</span>}
                 </td>
                 <td className="px-4 py-2">
                   <select
                     value={l.status}
                     onChange={(e) => handleStatusChange(l.id, e.target.value)}
-                    className={`rounded-full border-none px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[l.status] ?? 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}
+                    className={`rounded-full border-none px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[l.status] ?? 'bg-slate-100 text-slate-600'}`}
                   >
                     {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -239,7 +239,7 @@ export default function LeadsPage() {
               </tr>
             ))}
             {leads.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">No leads yet.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">No leads yet.</td></tr>
             )}
           </tbody>
         </table>

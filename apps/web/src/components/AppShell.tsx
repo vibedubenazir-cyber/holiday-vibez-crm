@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useTheme } from 'next-themes';
 import { Role } from '@holiday-vibez/shared';
 import { useAuth } from '@/lib/auth-context';
 
@@ -81,27 +80,6 @@ const ROLE_LABELS: Record<string, string> = {
   TRAVEL_CONSULTANT: 'Travel Consultant',
 };
 
-function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) return <div className="h-8 w-8" />;
-
-  const isDark = resolvedTheme === 'dark';
-
-  return (
-    <button
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      aria-label="Toggle dark mode"
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-    >
-      {isDark ? '☀️' : '🌙'}
-    </button>
-  );
-}
-
 function initials(name: string) {
   return name
     .split(' ')
@@ -126,7 +104,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-slate-500 dark:text-slate-400">Loading...</p>
+        <p className="text-slate-500">Loading...</p>
       </div>
     );
   }
@@ -145,7 +123,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-all ${
           active
             ? 'bg-gradient-to-r from-brand to-brand-500 text-white shadow-card'
-            : 'text-slate-600 hover:translate-x-0.5 hover:bg-brand-50 hover:text-brand dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-brand-200'
+            : 'text-slate-600 hover:translate-x-0.5 hover:bg-brand-50 hover:text-brand'
         }`}
       >
         {item.label}
@@ -155,15 +133,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-        <div className="border-b border-slate-100 bg-gradient-to-br from-brand-50 to-white px-5 py-5 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900">
+      <aside className="flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
+        <div className="border-b border-slate-100 bg-gradient-to-br from-brand-50 to-white px-5 py-5">
           <Image src="/logo.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-36" priority />
         </div>
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
           {visibleGroups.map((group, i) => (
             <div key={group.title ?? 'top'} className={i > 0 ? 'mt-4' : undefined}>
               {group.title && (
-                <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{group.title}</p>
+                <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">{group.title}</p>
               )}
               <div className="flex flex-col gap-0.5">{group.items.map(navLink)}</div>
             </div>
@@ -171,21 +149,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </aside>
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white/80 px-6 py-3 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+        <header className="flex items-center justify-between border-b border-slate-200 bg-white/80 px-6 py-3 backdrop-blur">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand to-accent text-xs font-semibold text-white shadow-card">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-700 text-xs font-semibold text-white shadow-card">
               {initials(user.name)}
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{user.name}</p>
-              <p className="text-xs font-medium text-brand dark:text-brand-200">{ROLE_LABELS[user.role] ?? user.role}</p>
+              <p className="text-sm font-semibold text-slate-800">{user.name}</p>
+              <p className="text-xs font-medium text-brand">{ROLE_LABELS[user.role] ?? user.role}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <button
               onClick={() => logout()}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
             >
               Sign out
             </button>

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { ThemeProvider } from 'next-themes';
 import { AuthProvider } from '@/lib/auth-context';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import './globals.css';
@@ -15,14 +14,16 @@ export const viewport: Viewport = {
   themeColor: '#005aaa',
 };
 
+// Single fixed light theme (blue/white/black) — no dark mode toggle, no
+// next-themes. The dark: Tailwind variants left in existing class strings
+// are inert now (no "dark" class is ever added to <html>), harmless dead
+// weight rather than something worth stripping line-by-line everywhere.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>{children}</AuthProvider>
-          <ServiceWorkerRegister />
-        </ThemeProvider>
+        <AuthProvider>{children}</AuthProvider>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

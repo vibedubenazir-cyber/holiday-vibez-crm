@@ -43,15 +43,15 @@ export default function ApprovalsPage() {
 
   return (
     <AppShell>
-      <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Approval Queue</h1>
-      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+      <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Approval Queue</h1>
+      <p className="mt-1 text-sm text-slate-500">
         Hard gate — no quotation reaches a customer until a Branch Manager approves it here.
       </p>
-      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>
               <th className="px-4 py-2">Ref No</th>
               <th className="px-4 py-2">Client</th>
@@ -61,17 +61,17 @@ export default function ApprovalsPage() {
           </thead>
           <tbody>
             {quotations.map((q) => (
-              <tr key={q.id} className="border-t border-slate-100 dark:border-slate-800">
-                <td className="px-4 py-2 font-medium text-slate-800 dark:text-slate-100">{q.refNo}</td>
+              <tr key={q.id} className="border-t border-slate-100">
+                <td className="px-4 py-2 font-medium text-slate-800">{q.refNo}</td>
                 <td className="px-4 py-2">{q.lead?.clientName ?? '—'}</td>
                 <td className="px-4 py-2">₹{Number(q.totalAmount).toLocaleString('en-IN')}</td>
                 <td className="px-4 py-2 text-right">
-                  <button onClick={() => handleApprove(q.id)} className="mr-3 text-emerald-600 hover:underline">Approve & send</button>
-                  <button onClick={() => handleReject(q.id)} className="text-red-600 dark:text-red-400 hover:underline">Reject</button>
+                  <button onClick={() => handleApprove(q.id)} className="mr-3 text-blue-600 hover:underline">Approve & send</button>
+                  <button onClick={() => handleReject(q.id)} className="text-red-600 hover:underline">Reject</button>
                 </td>
               </tr>
             ))}
-            {quotations.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">Nothing pending approval.</td></tr>}
+            {quotations.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400">Nothing pending approval.</td></tr>}
           </tbody>
         </table>
       </div>

@@ -25,8 +25,8 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Welcome, {user?.name}</h1>
-      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Here&apos;s what&apos;s happening across your workspace right now.</p>
+      <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Welcome, {user?.name}</h1>
+      <p className="mt-1 text-sm text-slate-500">Here&apos;s what&apos;s happening across your workspace right now.</p>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <DashCard color="brand" label="Role" value={user?.role ?? '—'} />
@@ -34,7 +34,7 @@ export default function DashboardPage() {
         <DashCard color="emerald" label="Status" value={user?.status ?? '—'} />
       </div>
 
-      <h2 className="mt-8 text-sm font-semibold text-slate-700 dark:text-slate-200">Your workspace at a glance</h2>
+      <h2 className="mt-8 text-sm font-semibold text-slate-700">Your workspace at a glance</h2>
       <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Link href="/leads">
           <DashCard color="cyan" label="Leads" value={leadCount === null ? '—' : leadCount.toString()} />
@@ -47,7 +47,7 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      <p className="mt-8 text-xs text-slate-400 dark:text-slate-500">
+      <p className="mt-8 text-xs text-slate-400">
         Looking for revenue, margin, and branch targets? Head to <Link href="/reports" className="text-brand hover:underline">Reports</Link>.
       </p>
     </AppShell>
@@ -55,20 +55,20 @@ export default function DashboardPage() {
 }
 
 const COLORS = {
-  brand: { border: 'border-t-brand', text: 'text-brand dark:text-brand-200' },
-  purple: { border: 'border-t-purple-500', text: 'text-purple-600 dark:text-purple-300' },
-  emerald: { border: 'border-t-emerald-500', text: 'text-emerald-600 dark:text-emerald-300' },
-  cyan: { border: 'border-t-cyan-500', text: 'text-cyan-600 dark:text-cyan-300' },
-  orange: { border: 'border-t-accent', text: 'text-accent-dark dark:text-accent' },
-  pink: { border: 'border-t-pink-500', text: 'text-pink-600 dark:text-pink-300' },
+  brand: { border: 'border-t-brand', text: 'text-brand' },
+  purple: { border: 'border-t-blue-500', text: 'text-blue-600' },
+  emerald: { border: 'border-t-blue-500', text: 'text-blue-600' },
+  cyan: { border: 'border-t-blue-500', text: 'text-blue-600' },
+  orange: { border: 'border-t-brand-500', text: 'text-brand-700' },
+  pink: { border: 'border-t-blue-500', text: 'text-blue-600' },
 } as const;
 
 function DashCard({ label, value, color }: { label: string; value: string; color: keyof typeof COLORS }) {
   const c = COLORS[color];
   return (
-    <div className={`rounded-xl border-t-4 ${c.border} border-x border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4`}>
+    <div className={`rounded-xl border-t-4 ${c.border} border-x border-b border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4`}>
       <p className={`text-xs font-semibold uppercase tracking-wide ${c.text}`}>{label}</p>
-      <p className="mt-1 text-base font-medium text-slate-800 dark:text-slate-100">{value}</p>
+      <p className="mt-1 text-base font-medium text-slate-800">{value}</p>
     </div>
   );
 }

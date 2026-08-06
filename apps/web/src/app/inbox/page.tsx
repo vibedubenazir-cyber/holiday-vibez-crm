@@ -112,24 +112,24 @@ export default function InboxPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Inbox</h1>
-        <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1 text-sm">
+        <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Inbox</h1>
+        <div className="flex rounded-lg border border-slate-200 bg-white p-1 text-sm">
           {[NotificationChannel.WHATSAPP, NotificationChannel.EMAIL].map((c) => (
             <button
               key={c}
               onClick={() => setChannel(c)}
-              className={`rounded px-3 py-1 font-medium ${channel === c ? 'bg-brand text-white' : 'text-slate-600 dark:text-slate-300'}`}
+              className={`rounded px-3 py-1 font-medium ${channel === c ? 'bg-brand text-white' : 'text-slate-600'}`}
             >
               {c === NotificationChannel.WHATSAPP ? 'WhatsApp' : 'Email'}
             </button>
           ))}
         </div>
       </div>
-      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover lg:col-span-1">
-          <div className="border-b border-slate-100 dark:border-slate-800 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Conversations</div>
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover lg:col-span-1">
+          <div className="border-b border-slate-100 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500">Conversations</div>
           <ul className="max-h-[520px] divide-y divide-slate-100 overflow-y-auto">
             {leads.map((l) => {
               const conv = conversationForLead(l.id);
@@ -138,28 +138,28 @@ export default function InboxPage() {
                 <li key={l.id}>
                   <button
                     onClick={() => openLead(l.id)}
-                    className={`block w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 ${selectedLeadId === l.id ? 'bg-brand-light' : ''}`}
+                    className={`block w-full px-4 py-3 text-left hover:bg-slate-50 ${selectedLeadId === l.id ? 'bg-brand-light' : ''}`}
                   >
-                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{l.clientName}</p>
-                    <p className="truncate text-xs text-slate-500 dark:text-slate-400">{lastMsg?.body ?? 'No messages yet'}</p>
+                    <p className="text-sm font-medium text-slate-800">{l.clientName}</p>
+                    <p className="truncate text-xs text-slate-500">{lastMsg?.body ?? 'No messages yet'}</p>
                   </button>
                 </li>
               );
             })}
-            {leads.length === 0 && <li className="px-4 py-6 text-center text-sm text-slate-400 dark:text-slate-500">No leads yet.</li>}
+            {leads.length === 0 && <li className="px-4 py-6 text-center text-sm text-slate-400">No leads yet.</li>}
           </ul>
         </div>
 
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover lg:col-span-2">
+        <div className="rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover lg:col-span-2">
           {!activeConversation ? (
-            <div className="flex h-full items-center justify-center p-10 text-sm text-slate-400 dark:text-slate-500">
+            <div className="flex h-full items-center justify-center p-10 text-sm text-slate-400">
               Select a conversation to view messages.
             </div>
           ) : (
             <div className="flex h-full flex-col">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 py-3">
-                <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{selectedLead?.clientName}</p>
-                <label className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                <p className="text-sm font-medium text-slate-800">{selectedLead?.clientName}</p>
+                <label className="flex items-center gap-2 text-xs text-slate-500">
                   <input type="checkbox" checked={activeConversation.botEnabled} onChange={handleToggleBot} />
                   AI bot auto-reply
                 </label>
@@ -170,26 +170,26 @@ export default function InboxPage() {
                   <div key={m.id} className={`flex ${m.direction === 'OUTBOUND' ? 'justify-end' : 'justify-start'}`}>
                     <div
                       className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
-                        m.direction === 'OUTBOUND' ? 'bg-brand text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-100'
+                        m.direction === 'OUTBOUND' ? 'bg-brand text-white' : 'bg-slate-100 text-slate-800'
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{m.body}</p>
-                      <p className={`mt-1 text-[10px] ${m.direction === 'OUTBOUND' ? 'text-blue-100' : 'text-slate-400 dark:text-slate-500'}`}>
+                      <p className={`mt-1 text-[10px] ${m.direction === 'OUTBOUND' ? 'text-blue-100' : 'text-slate-400'}`}>
                         {m.sentBy === null && m.direction === 'OUTBOUND' ? 'Bot · ' : ''}
                         {new Date(m.createdAt).toLocaleString()}
                       </p>
                     </div>
                   </div>
                 ))}
-                {messages.length === 0 && <p className="text-center text-sm text-slate-400 dark:text-slate-500">No messages yet.</p>}
+                {messages.length === 0 && <p className="text-center text-sm text-slate-400">No messages yet.</p>}
               </div>
 
-              <form onSubmit={handleSend} className="border-t border-slate-100 dark:border-slate-800 p-3">
+              <form onSubmit={handleSend} className="border-t border-slate-100 p-3">
                 {templates.length > 0 && (
                   <select
                     value={templateId}
                     onChange={(e) => applyTemplate(e.target.value)}
-                    className="mb-2 w-full rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
+                    className="mb-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors"
                   >
                     <option value="">Use a template...</option>
                     {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -201,7 +201,7 @@ export default function InboxPage() {
                     onChange={(e) => setComposeBody(e.target.value)}
                     placeholder="Type a message..."
                     rows={2}
-                    className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
+                    className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors"
                   />
                   <button type="submit" className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
                     Send
@@ -209,8 +209,8 @@ export default function InboxPage() {
                 </div>
               </form>
 
-              <form onSubmit={handleSimulateInbound} className="border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3">
-                <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+              <form onSubmit={handleSimulateInbound} className="border-t border-slate-100 bg-slate-50 p-3">
+                <p className="mb-1 text-xs font-medium text-slate-500">
                   Simulate customer reply (dev tool — stands in for a real WhatsApp/email webhook)
                 </p>
                 <div className="flex gap-2">
@@ -218,9 +218,9 @@ export default function InboxPage() {
                     value={simulateBody}
                     onChange={(e) => setSimulateBody(e.target.value)}
                     placeholder="e.g. What's the price for Bali?"
-                    className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors"
+                    className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors"
                   />
-                  <button type="submit" className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors text-slate-700 dark:text-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand dark:hover:bg-slate-700 dark:hover:text-brand-200">
+                  <button type="submit" className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors text-slate-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand">
                     Simulate
                   </button>
                 </div>

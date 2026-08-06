@@ -73,8 +73,8 @@ export default function ReportsPage() {
 
   return (
     <AppShell>
-      <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Reports</h1>
-      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Reports</h1>
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {dashboard && (
         <>
@@ -87,12 +87,12 @@ export default function ReportsPage() {
 
           {dashboard.costsByCategory.length > 0 && (
             <>
-              <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">All-time spend by category</h2>
+              <h2 className="mt-6 text-sm font-semibold text-slate-700">All-time spend by category</h2>
               <div className="mt-2 flex flex-wrap gap-2">
                 {dashboard.costsByCategory.map((row) => (
                   <span
                     key={row.category}
-                    className="rounded-full bg-brand-50 dark:bg-brand-900/30 px-3 py-1 text-xs font-medium text-brand-700 dark:text-brand-200"
+                    className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700"
                   >
                     {row.category}: ₹{row.total.toLocaleString('en-IN')}
                   </span>
@@ -101,28 +101,28 @@ export default function ReportsPage() {
             </>
           )}
 
-          <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Leads by status</h2>
+          <h2 className="mt-6 text-sm font-semibold text-slate-700">Leads by status</h2>
           <div className="mt-2 flex flex-wrap gap-2">
             {dashboard.leadsByStatus.map((row) => (
               <span
                 key={row.status}
-                className="rounded-full bg-brand-50 dark:bg-brand-900/30 px-3 py-1 text-xs font-medium text-brand-700 dark:text-brand-200"
+                className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700"
               >
                 {row.status.replaceAll('_', ' ')}: {row._count}
               </span>
             ))}
-            {dashboard.leadsByStatus.length === 0 && <p className="text-xs text-slate-400 dark:text-slate-500">No leads yet.</p>}
+            {dashboard.leadsByStatus.length === 0 && <p className="text-xs text-slate-400">No leads yet.</p>}
           </div>
 
-          <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Branch target vs. achieved</h2>
-          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
+          <h2 className="mt-6 text-sm font-semibold text-slate-700">Branch target vs. achieved</h2>
+          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
-              <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
+              <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
                 <tr><th className="px-4 py-2">Branch</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Achieved</th></tr>
               </thead>
               <tbody>
                 {dashboard.branches.map((b) => (
-                  <tr key={b.branchId} className="border-t border-slate-100 dark:border-slate-800">
+                  <tr key={b.branchId} className="border-t border-slate-100">
                     <td className="px-4 py-2">{b.name}</td>
                     <td className="px-4 py-2">₹{b.revenueTarget.toLocaleString('en-IN')}</td>
                     <td className="px-4 py-2">₹{b.revenueAchieved.toLocaleString('en-IN')}</td>
@@ -137,13 +137,13 @@ export default function ReportsPage() {
       {canViewPnL && (
         <>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Monthly P&amp;L</h2>
+            <h2 className="text-sm font-semibold text-slate-700">Monthly P&amp;L</h2>
             <div className="flex items-center gap-2">
               {me?.role !== Role.BRANCH_MANAGER && (
                 <select
                   value={pnlBranchId}
                   onChange={(e) => setPnlBranchId(e.target.value)}
-                  className="rounded-lg border border-slate-300 dark:border-slate-600 px-2 py-1 text-sm"
+                  className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
                 >
                   <option value="">All branches</option>
                   {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -152,7 +152,7 @@ export default function ReportsPage() {
               <select
                 value={pnlYear}
                 onChange={(e) => setPnlYear(Number(e.target.value))}
-                className="rounded-lg border border-slate-300 dark:border-slate-600 px-2 py-1 text-sm"
+                className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
               >
                 {Array.from({ length: 4 }, (_, i) => new Date().getFullYear() - i).map((y) => (
                   <option key={y} value={y}>{y}</option>
@@ -160,13 +160,13 @@ export default function ReportsPage() {
               </select>
             </div>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500">
             Revenue and payment costs bucket by when client/DMC payments were actually recorded; expenses bucket by their own date. Net margin = revenue − payment costs − expenses.
           </p>
-          {pnlError && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{pnlError}</p>}
-          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
+          {pnlError && <p className="mt-2 text-sm text-red-600">{pnlError}</p>}
+          <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover">
             <table className="w-full text-sm">
-              <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
+              <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
                 <tr>
                   <th className="px-4 py-2">Month</th>
                   <th className="px-4 py-2">Revenue</th>
@@ -177,12 +177,12 @@ export default function ReportsPage() {
               </thead>
               <tbody>
                 {pnlRows.map((row) => (
-                  <tr key={row.month} className="border-t border-slate-100 dark:border-slate-800">
+                  <tr key={row.month} className="border-t border-slate-100">
                     <td className="px-4 py-2">{row.month}</td>
                     <td className="px-4 py-2">₹{row.revenue.toLocaleString('en-IN')}</td>
                     <td className="px-4 py-2">₹{row.paymentCosts.toLocaleString('en-IN')}</td>
                     <td className="px-4 py-2">₹{row.expenses.toLocaleString('en-IN')}</td>
-                    <td className={`px-4 py-2 font-medium ${row.netMargin < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
+                    <td className={`px-4 py-2 font-medium ${row.netMargin < 0 ? 'text-red-600' : 'text-blue-700'}`}>
                       ₹{row.netMargin.toLocaleString('en-IN')}
                     </td>
                   </tr>
@@ -191,10 +191,10 @@ export default function ReportsPage() {
             </table>
           </div>
 
-          <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">
+          <h2 className="mt-6 text-sm font-semibold text-slate-700">
             What we paid out, by category ({pnlYear}{pnlBranchId ? ` · ${branches.find((b) => b.id === pnlBranchId)?.name ?? ''}` : ''})
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500">
             Exact totals paid to DMCs, flights, hotels, and activities — set when staff record a DMC-payable/commission/refund payment on the Bookings page.
           </p>
           <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -203,30 +203,30 @@ export default function ReportsPage() {
             ))}
           </div>
           {pnlCostsByCategory.some((c) => c.category === 'UNCATEGORIZED') && (
-            <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
+            <p className="mt-2 text-xs text-slate-400">
               ₹{(pnlCostsByCategory.find((c) => c.category === 'UNCATEGORIZED')?.total ?? 0).toLocaleString('en-IN')} in payments have no category set (recorded before this feature, or via the API directly).
             </p>
           )}
         </>
       )}
 
-      <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Passport/visa expiry compliance</h2>
-      <p className="text-xs text-slate-500 dark:text-slate-400">Travelers on an upcoming booking with a passport expiring within 6 months of departure, or no visa status on file.</p>
-      <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
+      <h2 className="mt-6 text-sm font-semibold text-slate-700">Passport/visa expiry compliance</h2>
+      <p className="text-xs text-slate-500">Travelers on an upcoming booking with a passport expiring within 6 months of departure, or no visa status on file.</p>
+      <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr><th className="px-4 py-2">Traveler</th><th className="px-4 py-2">Departure</th><th className="px-4 py-2">Passport expiry</th><th className="px-4 py-2">Reason</th></tr>
           </thead>
           <tbody>
             {compliance.map((c) => (
-              <tr key={c.travelerId} className="border-t border-slate-100 dark:border-slate-800">
+              <tr key={c.travelerId} className="border-t border-slate-100">
                 <td className="px-4 py-2">{c.name}</td>
                 <td className="px-4 py-2">{new Date(c.departureDate).toLocaleDateString()}</td>
                 <td className="px-4 py-2">{c.passportExpiry ? new Date(c.passportExpiry).toLocaleDateString() : '—'}</td>
-                <td className="px-4 py-2 text-red-600 dark:text-red-400">{c.reason}</td>
+                <td className="px-4 py-2 text-red-600">{c.reason}</td>
               </tr>
             ))}
-            {compliance.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">Nothing flagged.</td></tr>}
+            {compliance.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400">Nothing flagged.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -235,20 +235,20 @@ export default function ReportsPage() {
 }
 
 const STAT_COLORS = {
-  brand: { border: 'border-t-brand', text: 'text-brand dark:text-brand-200' },
-  purple: { border: 'border-t-purple-500', text: 'text-purple-600 dark:text-purple-300' },
-  emerald: { border: 'border-t-emerald-500', text: 'text-emerald-600 dark:text-emerald-300' },
-  orange: { border: 'border-t-accent', text: 'text-accent-dark dark:text-accent' },
-  cyan: { border: 'border-t-cyan-500', text: 'text-cyan-600 dark:text-cyan-300' },
-  pink: { border: 'border-t-pink-500', text: 'text-pink-600 dark:text-pink-300' },
+  brand: { border: 'border-t-brand', text: 'text-brand' },
+  purple: { border: 'border-t-blue-500', text: 'text-blue-600' },
+  emerald: { border: 'border-t-blue-500', text: 'text-blue-600' },
+  orange: { border: 'border-t-brand-500', text: 'text-brand-700' },
+  cyan: { border: 'border-t-blue-500', text: 'text-blue-600' },
+  pink: { border: 'border-t-blue-500', text: 'text-blue-600' },
 } as const;
 
 function Stat({ label, value, color = 'brand' }: { label: string; value: string; color?: keyof typeof STAT_COLORS }) {
   const c = STAT_COLORS[color];
   return (
-    <div className={`rounded-xl border-t-4 ${c.border} border-x border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4`}>
+    <div className={`rounded-xl border-t-4 ${c.border} border-x border-b border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4`}>
       <p className={`text-xs font-semibold uppercase tracking-wide ${c.text}`}>{label}</p>
-      <p className="mt-1 text-xl font-bold tracking-tight text-slate-900 dark:text-white">{value}</p>
+      <p className="mt-1 inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">{value}</p>
     </div>
   );
 }

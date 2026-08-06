@@ -48,7 +48,7 @@ export default function BranchesPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Branches</h1>
+        <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Branches</h1>
         {isAdmin && (
           <button
             onClick={() => setShowForm((s) => !s)}
@@ -59,14 +59,14 @@ export default function BranchesPage() {
         )}
       </div>
 
-      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {isAdmin && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <input required placeholder="Branch name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
-          <input required placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
-          <input placeholder="Monthly target" type="number" value={form.monthlyTarget} onChange={(e) => setForm({ ...form, monthlyTarget: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
-          <input placeholder="Quarterly target" type="number" value={form.quarterlyTarget} onChange={(e) => setForm({ ...form, quarterlyTarget: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <input required placeholder="Branch name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <input required placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <input placeholder="Monthly target" type="number" value={form.monthlyTarget} onChange={(e) => setForm({ ...form, monthlyTarget: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <input placeholder="Quarterly target" type="number" value={form.quarterlyTarget} onChange={(e) => setForm({ ...form, quarterlyTarget: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-4">
             Create branch
           </button>
@@ -75,16 +75,16 @@ export default function BranchesPage() {
 
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {branches.map((b) => (
-          <div key={b.id} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
-            <p className="text-base font-medium text-slate-800 dark:text-slate-100">{b.name}</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{b.city}</p>
-            <div className="mt-3 flex justify-between text-xs text-slate-500 dark:text-slate-400">
+          <div key={b.id} className="rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+            <p className="text-base font-medium text-slate-800">{b.name}</p>
+            <p className="text-sm text-slate-500">{b.city}</p>
+            <div className="mt-3 flex justify-between text-xs text-slate-500">
               <span>Monthly target</span>
-              <span className="font-medium text-slate-700 dark:text-slate-200">₹{Number(b.monthlyTarget).toLocaleString('en-IN')}</span>
+              <span className="font-medium text-slate-700">₹{Number(b.monthlyTarget).toLocaleString('en-IN')}</span>
             </div>
-            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex justify-between text-xs text-slate-500">
               <span>Quarterly target</span>
-              <span className="font-medium text-slate-700 dark:text-slate-200">₹{Number(b.quarterlyTarget).toLocaleString('en-IN')}</span>
+              <span className="font-medium text-slate-700">₹{Number(b.quarterlyTarget).toLocaleString('en-IN')}</span>
             </div>
           </div>
         ))}

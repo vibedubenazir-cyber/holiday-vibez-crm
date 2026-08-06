@@ -52,30 +52,30 @@ export default function DayItinerariesPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Day Itinerary</h1>
+        <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Day Itinerary</h1>
         {canManage && (
           <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
             {showForm ? 'Cancel' : 'Add New'}
           </button>
         )}
       </div>
-      {!canManage && <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Read-only — only Admin/Director can manage day itineraries.</p>}
+      {!canManage && <p className="mt-1 text-xs text-slate-400">Read-only — only Admin/Director can manage day itineraries.</p>}
 
-      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {canManage && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
-          <input required placeholder="Title (e.g. Thekkady – Kochi Drop: (170KM – HRS))" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
-          <textarea required placeholder="Detail" rows={4} value={form.detail} onChange={(e) => setForm({ ...form, detail: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <input required placeholder="Title (e.g. Thekkady – Kochi Drop: (170KM – HRS))" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <textarea required placeholder="Detail" rows={4} value={form.detail} onChange={(e) => setForm({ ...form, detail: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">
             Create
           </button>
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>
               <th className="px-4 py-2">Title</th>
               <th className="px-4 py-2">Detail</th>
@@ -85,11 +85,11 @@ export default function DayItinerariesPage() {
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id} className="border-t border-slate-100 dark:border-slate-800">
-                <td className="px-4 py-2 font-medium text-slate-800 dark:text-slate-100">{item.title}</td>
-                <td className="px-4 py-2 max-w-xl truncate text-slate-500 dark:text-slate-400">{item.detail}</td>
+              <tr key={item.id} className="border-t border-slate-100">
+                <td className="px-4 py-2 font-medium text-slate-800">{item.title}</td>
+                <td className="px-4 py-2 max-w-xl truncate text-slate-500">{item.detail}</td>
                 <td className="px-4 py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${item.active ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-slate-200 text-slate-600 dark:text-slate-300'}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${item.active ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>
                     {item.active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
@@ -103,7 +103,7 @@ export default function DayItinerariesPage() {
               </tr>
             ))}
             {items.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">No day itineraries yet.</td></tr>
+              <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400">No day itineraries yet.</td></tr>
             )}
           </tbody>
         </table>

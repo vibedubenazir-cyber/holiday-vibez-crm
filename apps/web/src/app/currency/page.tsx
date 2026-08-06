@@ -69,31 +69,31 @@ export default function CurrencyPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Currency Exchange</h1>
+        <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Currency Exchange</h1>
         {isAdmin && (
           <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
             {showForm ? 'Cancel' : 'Add currency'}
           </button>
         )}
       </div>
-      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+      <p className="mt-1 text-sm text-slate-500">
         Rates against INR. API-sourced rates refresh automatically; manually-edited rates are never overwritten by the automatic feed.
       </p>
-      {!isAdmin && <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Read-only — only Admin can manage currency rates.</p>}
+      {!isAdmin && <p className="mt-1 text-xs text-slate-400">Read-only — only Admin can manage currency rates.</p>}
 
-      {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {isAdmin && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 flex gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
-          <input required placeholder="Code (e.g. CAD)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="w-32 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" maxLength={3} />
-          <input required type="number" step="0.0001" placeholder="Rate to INR" value={form.rateToInr} onChange={(e) => setForm({ ...form, rateToInr: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
+        <form onSubmit={handleCreate} className="mt-4 flex gap-2 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <input required placeholder="Code (e.g. CAD)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" maxLength={3} />
+          <input required type="number" step="0.0001" placeholder="Rate to INR" value={form.rateToInr} onChange={(e) => setForm({ ...form, rateToInr: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add</button>
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover">
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 dark:bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-slate-400">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>
               <th className="px-4 py-2">Currency</th>
               <th className="px-4 py-2">Rate to INR</th>
@@ -105,8 +105,8 @@ export default function CurrencyPage() {
           </thead>
           <tbody>
             {rates.map((r) => (
-              <tr key={r.id} className="border-t border-slate-100 dark:border-slate-800">
-                <td className="px-4 py-2 font-medium text-slate-800 dark:text-slate-100">{r.code}</td>
+              <tr key={r.id} className="border-t border-slate-100">
+                <td className="px-4 py-2 font-medium text-slate-800">{r.code}</td>
                 <td className="px-4 py-2">
                   {isAdmin ? (
                     <input
@@ -114,27 +114,27 @@ export default function CurrencyPage() {
                       step="0.0001"
                       value={editing[r.id] ?? r.rateToInr}
                       onChange={(e) => setEditing({ ...editing, [r.id]: e.target.value })}
-                      className="w-24 rounded-lg border border-slate-300 dark:border-slate-600 px-2 py-1 text-sm"
+                      className="w-24 rounded-lg border border-slate-300 px-2 py-1 text-sm"
                     />
                   ) : (
                     `₹${Number(r.rateToInr).toFixed(4)}`
                   )}
                 </td>
                 <td className="px-4 py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.source === 'API' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.source === 'API' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
                     {r.source}
                   </span>
                 </td>
-                <td className="px-4 py-2 text-slate-500 dark:text-slate-400">{new Date(r.lastUpdatedAt).toLocaleTimeString()}</td>
+                <td className="px-4 py-2 text-slate-500">{new Date(r.lastUpdatedAt).toLocaleTimeString()}</td>
                 <td className="px-4 py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.active ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-slate-200 text-slate-600 dark:text-slate-300'}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.active ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>
                     {r.active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
                 {isAdmin && (
                   <td className="px-4 py-2 text-right">
                     {editing[r.id] !== undefined && (
-                      <button onClick={() => handleSaveEdit(r)} className="mr-3 text-emerald-600 hover:underline">Save</button>
+                      <button onClick={() => handleSaveEdit(r)} className="mr-3 text-blue-600 hover:underline">Save</button>
                     )}
                     <button onClick={() => handleToggleActive(r)} className="text-brand hover:underline">
                       {r.active ? 'Deactivate' : 'Activate'}
@@ -144,7 +144,7 @@ export default function CurrencyPage() {
               </tr>
             ))}
             {rates.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400 dark:text-slate-500">No currency rates yet.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">No currency rates yet.</td></tr>
             )}
           </tbody>
         </table>
