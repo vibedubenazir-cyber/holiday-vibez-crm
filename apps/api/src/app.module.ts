@@ -17,6 +17,7 @@ import { VouchersModule } from './vouchers/vouchers.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { AttendanceModule } from './attendance/attendance.module';
+import { LeaveModule } from './leave/leave.module';
 import { InboxModule } from './inbox/inbox.module';
 import { TemplatesModule } from './templates/templates.module';
 import { CmsModule } from './cms/cms.module';
@@ -55,6 +56,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     InvoicesModule,
     ExpensesModule,
     AttendanceModule,
+    LeaveModule,
     InboxModule,
     TemplatesModule,
     CmsModule,

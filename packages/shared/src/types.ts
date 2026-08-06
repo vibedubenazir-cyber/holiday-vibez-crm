@@ -1,4 +1,4 @@
-import { BookingStatus, LeadSource, LeadStatus, QuotationStatus, Role, UserStatus } from './enums';
+import { BookingStatus, LeadSource, LeadStatus, LeaveStatus, LeaveType, QuotationStatus, Role, UserStatus } from './enums';
 
 export interface UserDTO {
   id: string;
@@ -490,4 +490,26 @@ export interface TransferSearchResultDTO {
   date: string;
   distanceKm: number;
   baseFare: number;
+}
+
+export interface LeaveRequestDTO {
+  id: string;
+  userId: string;
+  type: LeaveType;
+  startDate: string;
+  endDate: string;
+  reason: string | null;
+  status: LeaveStatus;
+  reviewedById: string | null;
+  reviewedAt: string | null;
+  reviewComment: string | null;
+  createdAt: string;
+  user?: UserDTO;
+}
+
+export interface LeaveBalanceDTO {
+  type: string;
+  quota: number;
+  used: number;
+  remaining: number;
 }

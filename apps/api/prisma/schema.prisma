@@ -229,6 +229,8 @@ model User {
   auditLogs         AuditLog[]
   attendance        Attendance[]
   messagesSent      Message[]
+  leaveRequests     LeaveRequest[] @relation("LeaveRequests")
+  leaveReviews      LeaveRequest[] @relation("LeaveReviews")
 
   @@map("users")
 }
@@ -534,6 +536,39 @@ model Attendance {
 
   @@unique([userId, date])
   @@map("attendance")
+}
+
+enum LeaveType {
+  SICK
+  CASUAL
+  ANNUAL
+  UNPAID
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model LeaveRequest {
+  id             String      @id @default(uuid())
+  userId         String
+  user           User        @relation("LeaveRequests", fields: [userId], references: [id])
+  type           LeaveType
+  startDate      DateTime    @db.Date
+  endDate        DateTime    @db.Date
+  reason         String?
+  status         LeaveStatus @default(PENDING)
+  reviewedById   String?
+  reviewedBy     User?       @relation("LeaveReviews", fields: [reviewedById], references: [id])
+  reviewedAt     DateTime?
+  reviewComment  String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@map("leave_requests")
 }
 
 model Target {

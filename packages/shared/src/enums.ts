@@ -180,3 +180,17 @@ export enum CustomFieldType {
   BOOLEAN = 'BOOLEAN',
   SELECT = 'SELECT',
 }
+
+export enum LeaveType {
+  SICK = 'SICK',
+  CASUAL = 'CASUAL',
+  ANNUAL = 'ANNUAL',
+  UNPAID = 'UNPAID',
+}
+
+export enum LeaveStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  CANCELLED = 'CANCELLED',
+}
