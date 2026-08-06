@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { AttendanceService } from './attendance.service';
+import { PunchDto } from './dto/punch.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -22,14 +23,14 @@ export class AttendanceController {
 
   @Roles(...ALL_ROLES)
   @Post('clock-in')
-  clockIn(@CurrentUser() user: AuthUser) {
-    return this.attendanceService.clockIn(user.id);
+  clockIn(@CurrentUser() user: AuthUser, @Body() dto: PunchDto) {
+    return this.attendanceService.clockIn(user.id, dto.lat, dto.lng);
   }
 
   @Roles(...ALL_ROLES)
   @Post('clock-out')
-  clockOut(@CurrentUser() user: AuthUser) {
-    return this.attendanceService.clockOut(user.id);
+  clockOut(@CurrentUser() user: AuthUser, @Body() dto: PunchDto) {
+    return this.attendanceService.clockOut(user.id, dto.lat, dto.lng);
   }
 
   @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER)

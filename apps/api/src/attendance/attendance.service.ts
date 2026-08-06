@@ -16,23 +16,23 @@ export class AttendanceService {
     });
   }
 
-  async clockIn(userId: string) {
+  async clockIn(userId: string, lat?: number, lng?: number) {
     const date = startOfToday();
     const existing = await this.prisma.attendance.findUnique({ where: { userId_date: { userId, date } } });
     if (existing) throw new BadRequestException('Already clocked in today');
     return this.prisma.attendance.create({
-      data: { userId, date, checkInAt: new Date(), status: 'PRESENT' },
+      data: { userId, date, checkInAt: new Date(), checkInLat: lat, checkInLng: lng, status: 'PRESENT' },
     });
   }
 
-  async clockOut(userId: string) {
+  async clockOut(userId: string, lat?: number, lng?: number) {
     const date = startOfToday();
     const existing = await this.prisma.attendance.findUnique({ where: { userId_date: { userId, date } } });
     if (!existing) throw new BadRequestException('Clock in before clocking out');
     if (existing.checkOutAt) throw new BadRequestException('Already clocked out today');
     return this.prisma.attendance.update({
       where: { id: existing.id },
-      data: { checkOutAt: new Date() },
+      data: { checkOutAt: new Date(), checkOutLat: lat, checkOutLng: lng },
     });
   }
 

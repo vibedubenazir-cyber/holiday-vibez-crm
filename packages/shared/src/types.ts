@@ -230,6 +230,10 @@ export interface AttendanceDTO {
   date: string;
   checkInAt: string | null;
   checkOutAt: string | null;
+  checkInLat: number | null;
+  checkInLng: number | null;
+  checkOutLat: number | null;
+  checkOutLng: number | null;
   status: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'ON_LEAVE';
   user?: UserDTO;
 }
