@@ -132,12 +132,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="flex w-64 shrink-0 flex-col bg-gradient-to-b from-brand-700 to-brand-800">
+    <div className="flex h-screen overflow-hidden">
+      <aside className="flex w-64 shrink-0 flex-col overflow-y-auto bg-brand-700">
         <div className="px-5 py-5">
           <Image src="/logo-white.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-full" priority />
         </div>
-        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
+        <nav className="flex flex-1 flex-col gap-0.5 p-3">
           {visibleGroups.map((group, i) => (
             <div key={group.title ?? 'top'} className={i > 0 ? 'mt-4' : undefined}>
               {group.title && (
@@ -148,8 +148,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
       </aside>
-      <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between bg-brand-700 px-6 py-3">
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <header className="flex shrink-0 items-center justify-between bg-brand-700 px-6 py-3">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-semibold text-brand shadow-card">
               {initials(user.name)}
@@ -168,7 +168,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </button>
           </div>
         </header>
-        <main className="flex-1 bg-gradient-to-br from-brand-700 via-brand to-brand-600 p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-brand-700 via-brand to-brand-600 p-6">{children}</main>
       </div>
     </div>
   );
