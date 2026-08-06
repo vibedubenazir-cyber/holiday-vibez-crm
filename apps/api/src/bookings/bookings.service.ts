@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BookingStatus } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateBookingDto } from './dto/booking.dto';
 
@@ -44,10 +45,15 @@ export class BookingsService {
     return this.prisma.booking.create({
       data: {
         quotationId: dto.quotationId,
-        status: 'CONFIRMED',
+        status: 'PENDING',
         departureDate: new Date(dto.departureDate),
         returnDate: dto.returnDate ? new Date(dto.returnDate) : undefined,
       },
     });
+  }
+
+  async updateStatus(id: string, status: BookingStatus) {
+    await this.findOne(id);
+    return this.prisma.booking.update({ where: { id }, data: { status } });
   }
 }

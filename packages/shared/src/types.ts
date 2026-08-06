@@ -1,4 +1,4 @@
-import { LeadSource, LeadStatus, QuotationStatus, Role, UserStatus } from './enums';
+import { BookingStatus, LeadSource, LeadStatus, QuotationStatus, Role, UserStatus } from './enums';
 
 export interface UserDTO {
   id: string;
@@ -74,7 +74,7 @@ export interface QuotationSummaryDTO {
 export interface BookingDTO {
   id: string;
   quotationId: string;
-  status: string;
+  status: BookingStatus;
   departureDate: string;
   returnDate: string | null;
   voucherUrl: string | null;

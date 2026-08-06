@@ -33,6 +33,13 @@ export enum LeadStatus {
   JUNK_NOT_INTERESTED = 'JUNK_NOT_INTERESTED',
 }
 
+export enum BookingStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+}
+
 export enum RateCardType {
   ACTIVITY = 'ACTIVITY',
   FLIGHT = 'FLIGHT',

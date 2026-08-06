@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { api, ApiError } from '@/lib/api';
+import { BookingStatus } from '@holiday-vibez/shared';
 import type { BookingDTO, InvoiceDTO, VoucherDTO } from '@holiday-vibez/shared';
 
 const PAYMENT_TYPE_COLORS: Record<string, string> = {
@@ -10,6 +11,15 @@ const PAYMENT_TYPE_COLORS: Record<string, string> = {
   DMC_PAYABLE: 'bg-blue-100 text-blue-700',
   COMMISSION: 'bg-blue-100 text-blue-700',
   REFUND: 'bg-blue-100 text-blue-700',
+};
+
+const BOOKING_STATUS_OPTIONS = [BookingStatus.PENDING, BookingStatus.CONFIRMED, BookingStatus.CANCELLED, BookingStatus.COMPLETED];
+
+const BOOKING_STATUS_COLORS: Record<string, string> = {
+  PENDING: 'bg-slate-200 text-slate-700',
+  CONFIRMED: 'bg-blue-100 text-blue-700',
+  CANCELLED: 'bg-red-100 text-red-700',
+  COMPLETED: 'bg-blue-700 text-white',
 };
 
 export default function BookingsPage() {
@@ -108,6 +118,15 @@ export default function BookingsPage() {
     }
   }
 
+  async function handleStatusChange(bookingId: string, status: string) {
+    try {
+      await api.patch(`/bookings/${bookingId}/status`, { status });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to update booking status');
+    }
+  }
+
   function toggleExpanded(bookingId: string) {
     const next = expanded === bookingId ? null : bookingId;
     setExpanded(next);
@@ -130,9 +149,15 @@ export default function BookingsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-slate-800">{b.quotation?.lead?.clientName} · {b.quotation?.lead?.destination}</p>
-                <p className="mt-1 text-xs text-blue-100">
-                  Departs {new Date(b.departureDate).toLocaleDateString()} ·{' '}
-                  <span className="rounded-full bg-blue-100 px-2 py-0.5 font-medium text-blue-700">{b.status}</span>{' '}
+                <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+                  Departs {new Date(b.departureDate).toLocaleDateString()} ·
+                  <select
+                    value={b.status}
+                    onChange={(e) => handleStatusChange(b.id, e.target.value)}
+                    className={`rounded-full border-none px-2 py-0.5 text-xs font-medium ${BOOKING_STATUS_COLORS[b.status] ?? 'bg-slate-100 text-slate-600'}`}
+                  >
+                    {BOOKING_STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
                   · Total ₹{Number(b.quotation?.totalAmount ?? 0).toLocaleString('en-IN')}
                 </p>
               </div>

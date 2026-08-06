@@ -49,6 +49,13 @@ enum LeadStatus {
   JUNK_NOT_INTERESTED
 }
 
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
 enum RateCardType {
   ACTIVITY
   FLIGHT
@@ -429,7 +436,7 @@ model Booking {
   id            String    @id @default(uuid())
   quotationId   String
   quotation     Quotation @relation(fields: [quotationId], references: [id])
-  status        String    @default("CONFIRMED")
+  status        BookingStatus @default(PENDING)
   departureDate DateTime
   returnDate    DateTime?
   voucherUrl    String?
