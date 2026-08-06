@@ -41,13 +41,16 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   `GET /public/cms/settings` endpoints. A 6-hour in-process interval checks
   `Traveler.dateOfBirth`/`anniversaryDate` and fires the spec's birthday/
   anniversary greeting automation.
-- **Public marketing site** (`/holidays`, `/holidays/[id]`): the actual
-  www.holidayvibez.com pages, built into this same Next.js app rather than a
-  separate project. Reads live `Package` data through a no-auth
-  `GET /public/packages` / `GET /public/packages/:id` API (only active
-  packages, customer-facing fields only — no RateCard cost internals). Any
-  package an Admin/Director creates or edits from the CRM's `/packages`
-  screen shows up here immediately, same Postgres row, no sync step.
+- **Public packages API for www.holidayvibez.com** (an existing, separate
+  website this repo doesn't own): no-auth `GET /public/packages` and
+  `GET /public/packages/:id` endpoints exposing only active packages and only
+  customer-facing fields (name, destination, price, itinerary description —
+  never RateCard cost internals). Point the website's package-listing code at
+  these; any package an Admin/Director creates or edits from the CRM's
+  `/packages` screen shows up in the API response immediately, same Postgres
+  row, no sync step. Response shapes: `PublicPackageDTO` (list) and
+  `PublicPackageDetailDTO` (single package, includes `items`) in
+  `packages/shared/src/types.ts`.
 - **Automation** (priority batch 4): Admin-configurable rules (trigger + delay +
   channel + optional template) evaluated by a single 5-minute sweep against Leads —
   the general-purpose successor to the two hardcoded intervals above, so adding a
