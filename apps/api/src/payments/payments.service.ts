@@ -22,6 +22,7 @@ export class PaymentsService {
       data: {
         bookingId: dto.bookingId,
         type: dto.type,
+        category: dto.category,
         amount: dto.amount,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
       },
@@ -157,15 +158,27 @@ export class PaymentsService {
 
     let revenue = 0;
     let costs = 0;
+    const costsByCategory: Record<string, number> = {};
     for (const booking of bookings) {
       for (const payment of booking.payments) {
         if (!payment.paidAt) continue;
         const amt = Number(payment.amount);
         if (payment.type === 'CLIENT_RECEIPT') revenue += amt;
-        if (payment.type === 'DMC_PAYABLE' || payment.type === 'COMMISSION' || payment.type === 'REFUND') costs += amt;
+        if (payment.type === 'DMC_PAYABLE' || payment.type === 'COMMISSION' || payment.type === 'REFUND') {
+          costs += amt;
+          const key = payment.category ?? 'UNCATEGORIZED';
+          costsByCategory[key] = (costsByCategory[key] ?? 0) + amt;
+        }
       }
     }
 
-    return { branchId, bookingCount: bookings.length, revenue, costs, grossProfit: revenue - costs };
+    return {
+      branchId,
+      bookingCount: bookings.length,
+      revenue,
+      costs,
+      grossProfit: revenue - costs,
+      costsByCategory: Object.entries(costsByCategory).map(([category, total]) => ({ category, total })),
+    };
   }
 }

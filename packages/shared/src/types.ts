@@ -87,6 +87,7 @@ export interface PaymentDTO {
   id: string;
   bookingId: string;
   type: 'CLIENT_RECEIPT' | 'DMC_PAYABLE' | 'COMMISSION' | 'REFUND';
+  category: 'DMC' | 'FLIGHT' | 'HOTEL' | 'ACTIVITY' | 'OTHER' | null;
   amount: number;
   dueDate: string | null;
   paidAt: string | null;
@@ -455,6 +456,26 @@ export interface MonthlyPnLRowDTO {
   paymentCosts: number;
   expenses: number;
   netMargin: number;
+}
+
+export interface CostByCategoryDTO {
+  category: 'DMC' | 'FLIGHT' | 'HOTEL' | 'ACTIVITY' | 'OTHER' | 'UNCATEGORIZED';
+  total: number;
+}
+
+export interface PublicPackageDTO {
+  id: string;
+  name: string;
+  destination: string;
+  theme: string | null;
+  durationDays: number;
+  basePrice: number;
+  currency: string;
+  coverImageUrl: string | null;
+}
+
+export interface PublicPackageDetailDTO extends PublicPackageDTO {
+  items: { dayNumber: number; description: string }[];
 }
 
 export interface TransferSearchResultDTO {

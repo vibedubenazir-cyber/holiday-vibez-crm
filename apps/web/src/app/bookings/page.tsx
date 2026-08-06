@@ -16,7 +16,7 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState<BookingDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [paymentForm, setPaymentForm] = useState({ type: 'CLIENT_RECEIPT', amount: '' });
+  const [paymentForm, setPaymentForm] = useState({ type: 'CLIENT_RECEIPT', category: 'DMC', amount: '' });
   const [vouchers, setVouchers] = useState<Record<string, VoucherDTO[]>>({});
   const [invoices, setInvoices] = useState<Record<string, InvoiceDTO[]>>({});
   const [linkBusy, setLinkBusy] = useState<string | null>(null);
@@ -36,8 +36,13 @@ export default function BookingsPage() {
 
   async function handleAddPayment(bookingId: string) {
     try {
-      await api.post('/payments', { bookingId, type: paymentForm.type, amount: Number(paymentForm.amount) });
-      setPaymentForm({ type: 'CLIENT_RECEIPT', amount: '' });
+      await api.post('/payments', {
+        bookingId,
+        type: paymentForm.type,
+        category: paymentForm.type === 'CLIENT_RECEIPT' ? undefined : paymentForm.category,
+        amount: Number(paymentForm.amount),
+      });
+      setPaymentForm({ type: 'CLIENT_RECEIPT', category: 'DMC', amount: '' });
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to add payment');
@@ -149,6 +154,7 @@ export default function BookingsPage() {
                           <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PAYMENT_TYPE_COLORS[p.type] ?? 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
                             {p.type.replaceAll('_', ' ')}
                           </span>
+                          {p.category && <span className="ml-1.5 text-xs text-slate-400 dark:text-slate-500">{p.category}</span>}
                         </td>
                         <td className="py-1">₹{Number(p.amount).toLocaleString('en-IN')}</td>
                         <td className="py-1">
@@ -194,6 +200,15 @@ export default function BookingsPage() {
                     <option value="COMMISSION">Commission</option>
                     <option value="REFUND">Refund</option>
                   </select>
+                  {paymentForm.type !== 'CLIENT_RECEIPT' && (
+                    <select value={paymentForm.category} onChange={(e) => setPaymentForm({ ...paymentForm, category: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
+                      <option value="DMC">DMC</option>
+                      <option value="FLIGHT">Flight</option>
+                      <option value="HOTEL">Hotel</option>
+                      <option value="ACTIVITY">Activity</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  )}
                   <input type="number" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} className="w-32 rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors" />
                   <button onClick={() => handleAddPayment(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add payment</button>
                 </div>

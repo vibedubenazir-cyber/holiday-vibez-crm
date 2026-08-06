@@ -6,12 +6,18 @@ import { useAuth } from '@/lib/auth-context';
 import { api, ApiError } from '@/lib/api';
 import { Role, type BranchDTO, type MonthlyPnLRowDTO } from '@holiday-vibez/shared';
 
+interface CostByCategory {
+  category: string;
+  total: number;
+}
+
 interface DirectorDashboard {
   totalLeads: number;
   leadsByStatus: { status: string; _count: number }[];
   conversionPct: number;
   revenue: number;
   costs: number;
+  costsByCategory: CostByCategory[];
   grossMargin: number;
   branches: { branchId: string; name: string; revenueTarget: number; revenueAchieved: number }[];
 }
@@ -36,6 +42,7 @@ export default function ReportsPage() {
   const [pnlYear, setPnlYear] = useState(new Date().getFullYear());
   const [pnlBranchId, setPnlBranchId] = useState('');
   const [pnlRows, setPnlRows] = useState<MonthlyPnLRowDTO[]>([]);
+  const [pnlCostsByCategory, setPnlCostsByCategory] = useState<CostByCategory[]>([]);
   const [pnlError, setPnlError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -55,8 +62,11 @@ export default function ReportsPage() {
     const params = new URLSearchParams({ year: String(pnlYear) });
     if (pnlBranchId) params.set('branchId', pnlBranchId);
     api
-      .get<MonthlyPnLRowDTO[]>(`/reports/pnl/monthly?${params}`)
-      .then(setPnlRows)
+      .get<{ rows: MonthlyPnLRowDTO[]; costsByCategory: CostByCategory[] }>(`/reports/pnl/monthly?${params}`)
+      .then((res) => {
+        setPnlRows(res.rows);
+        setPnlCostsByCategory(res.costsByCategory);
+      })
       .catch((err) => setPnlError(err instanceof ApiError ? err.message : 'Failed to load monthly P&L'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canViewPnL, pnlYear, pnlBranchId]);
@@ -74,6 +84,22 @@ export default function ReportsPage() {
             <Stat label="Revenue" value={`₹${dashboard.revenue.toLocaleString('en-IN')}`} color="emerald" />
             <Stat label="Gross margin" value={`₹${dashboard.grossMargin.toLocaleString('en-IN')}`} color="orange" />
           </div>
+
+          {dashboard.costsByCategory.length > 0 && (
+            <>
+              <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">All-time spend by category</h2>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {dashboard.costsByCategory.map((row) => (
+                  <span
+                    key={row.category}
+                    className="rounded-full bg-brand-50 dark:bg-brand-900/30 px-3 py-1 text-xs font-medium text-brand-700 dark:text-brand-200"
+                  >
+                    {row.category}: ₹{row.total.toLocaleString('en-IN')}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
 
           <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">Leads by status</h2>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -164,6 +190,23 @@ export default function ReportsPage() {
               </tbody>
             </table>
           </div>
+
+          <h2 className="mt-6 text-sm font-semibold text-slate-700 dark:text-slate-200">
+            What we paid out, by category ({pnlYear}{pnlBranchId ? ` · ${branches.find((b) => b.id === pnlBranchId)?.name ?? ''}` : ''})
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Exact totals paid to DMCs, flights, hotels, and activities — set when staff record a DMC-payable/commission/refund payment on the Bookings page.
+          </p>
+          <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-5">
+            {(['DMC', 'FLIGHT', 'HOTEL', 'ACTIVITY', 'OTHER'] as const).map((cat) => (
+              <CategoryStat key={cat} category={cat} total={pnlCostsByCategory.find((c) => c.category === cat)?.total ?? 0} />
+            ))}
+          </div>
+          {pnlCostsByCategory.some((c) => c.category === 'UNCATEGORIZED') && (
+            <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
+              ₹{(pnlCostsByCategory.find((c) => c.category === 'UNCATEGORIZED')?.total ?? 0).toLocaleString('en-IN')} in payments have no category set (recorded before this feature, or via the API directly).
+            </p>
+          )}
         </>
       )}
 
@@ -196,6 +239,8 @@ const STAT_COLORS = {
   purple: { border: 'border-t-purple-500', text: 'text-purple-600 dark:text-purple-300' },
   emerald: { border: 'border-t-emerald-500', text: 'text-emerald-600 dark:text-emerald-300' },
   orange: { border: 'border-t-accent', text: 'text-accent-dark dark:text-accent' },
+  cyan: { border: 'border-t-cyan-500', text: 'text-cyan-600 dark:text-cyan-300' },
+  pink: { border: 'border-t-pink-500', text: 'text-pink-600 dark:text-pink-300' },
 } as const;
 
 function Stat({ label, value, color = 'brand' }: { label: string; value: string; color?: keyof typeof STAT_COLORS }) {
@@ -206,4 +251,16 @@ function Stat({ label, value, color = 'brand' }: { label: string; value: string;
       <p className="mt-1 text-xl font-bold tracking-tight text-slate-900 dark:text-white">{value}</p>
     </div>
   );
+}
+
+const CATEGORY_COLORS: Record<string, keyof typeof STAT_COLORS> = {
+  DMC: 'orange',
+  FLIGHT: 'purple',
+  HOTEL: 'cyan',
+  ACTIVITY: 'emerald',
+  OTHER: 'pink',
+};
+
+function CategoryStat({ category, total }: { category: string; total: number }) {
+  return <Stat label={category} value={`₹${total.toLocaleString('en-IN')}`} color={CATEGORY_COLORS[category] ?? 'brand'} />;
 }

@@ -67,6 +67,14 @@ export enum PaymentType {
   REFUND = 'REFUND',
 }
 
+export enum PaymentCategory {
+  DMC = 'DMC',
+  FLIGHT = 'FLIGHT',
+  HOTEL = 'HOTEL',
+  ACTIVITY = 'ACTIVITY',
+  OTHER = 'OTHER',
+}
+
 export enum TargetScope {
   BRANCH = 'BRANCH',
   CONSULTANT = 'CONSULTANT',

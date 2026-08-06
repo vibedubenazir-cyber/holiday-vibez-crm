@@ -20,9 +20,18 @@ export class ReportsService {
     const conversionPct = totalLeads > 0 ? Math.round((confirmed / totalLeads) * 1000) / 10 : 0;
 
     const revenue = payments.filter((p) => p.type === 'CLIENT_RECEIPT').reduce((s, p) => s + Number(p.amount), 0);
-    const costs = payments
-      .filter((p) => p.type === 'DMC_PAYABLE' || p.type === 'COMMISSION' || p.type === 'REFUND')
-      .reduce((s, p) => s + Number(p.amount), 0);
+    const payoutPayments = payments.filter((p) => p.type === 'DMC_PAYABLE' || p.type === 'COMMISSION' || p.type === 'REFUND');
+    const costs = payoutPayments.reduce((s, p) => s + Number(p.amount), 0);
+
+    // Exact spend per category (spec ask: "how much for DMC, flight, hotels,
+    // activities") rather than one lump "costs" number — staff pick a
+    // category when they record a payout (see payments.controller.ts).
+    const costsByCategoryMap: Record<string, number> = {};
+    for (const p of payoutPayments) {
+      const key = p.category ?? 'UNCATEGORIZED';
+      costsByCategoryMap[key] = (costsByCategoryMap[key] ?? 0) + Number(p.amount);
+    }
+    const costsByCategory = Object.entries(costsByCategoryMap).map(([category, total]) => ({ category, total }));
 
     const branchSummaries = await Promise.all(
       branches.map(async (b) => {
@@ -42,6 +51,7 @@ export class ReportsService {
       conversionPct,
       revenue,
       costs,
+      costsByCategory,
       grossMargin: revenue - costs,
       branches: branchSummaries,
     };
@@ -94,6 +104,7 @@ export class ReportsService {
 
     const months = Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`);
     const buckets = new Map(months.map((month) => [month, { revenue: 0, paymentCosts: 0, expenses: 0 }]));
+    const costsByCategoryMap: Record<string, number> = {};
 
     for (const payment of payments) {
       const month = payment.paidAt!.toISOString().slice(0, 7);
@@ -101,7 +112,11 @@ export class ReportsService {
       if (!bucket) continue;
       const amount = Number(payment.amount);
       if (payment.type === 'CLIENT_RECEIPT') bucket.revenue += amount;
-      else if (payment.type === 'DMC_PAYABLE' || payment.type === 'COMMISSION' || payment.type === 'REFUND') bucket.paymentCosts += amount;
+      else if (payment.type === 'DMC_PAYABLE' || payment.type === 'COMMISSION' || payment.type === 'REFUND') {
+        bucket.paymentCosts += amount;
+        const key = payment.category ?? 'UNCATEGORIZED';
+        costsByCategoryMap[key] = (costsByCategoryMap[key] ?? 0) + amount;
+      }
     }
 
     for (const expense of expenses) {
@@ -111,16 +126,19 @@ export class ReportsService {
       bucket.expenses += Number(expense.amount);
     }
 
-    return months.map((month) => {
-      const b = buckets.get(month)!;
-      return {
-        month,
-        revenue: b.revenue,
-        paymentCosts: b.paymentCosts,
-        expenses: b.expenses,
-        netMargin: b.revenue - b.paymentCosts - b.expenses,
-      };
-    });
+    return {
+      rows: months.map((month) => {
+        const b = buckets.get(month)!;
+        return {
+          month,
+          revenue: b.revenue,
+          paymentCosts: b.paymentCosts,
+          expenses: b.expenses,
+          netMargin: b.revenue - b.paymentCosts - b.expenses,
+        };
+      }),
+      costsByCategory: Object.entries(costsByCategoryMap).map(([category, total]) => ({ category, total })),
+    };
   }
 
   // Monthly compliance job surface (spec Section 6 step 11, Section 11) — travelers

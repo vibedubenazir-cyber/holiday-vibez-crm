@@ -8,7 +8,10 @@ import { useTheme } from 'next-themes';
 import { Role } from '@holiday-vibez/shared';
 import { useAuth } from '@/lib/auth-context';
 
-const NAV_ITEMS: { href: string; label: string; roles: Role[] }[] = [
+type NavItem = { href: string; label: string; roles: Role[] };
+
+// Day-to-day operational tools — every role sees a subset of these.
+const WORKSPACE_NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/leads', label: 'Leads', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/inbox', label: 'Inbox', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
@@ -17,26 +20,32 @@ const NAV_ITEMS: { href: string; label: string; roles: Role[] }[] = [
   { href: '/bookings', label: 'Bookings & Payments', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/calendar', label: 'Departure Calendar', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/packages', label: 'Packages', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
+  { href: '/clients', label: 'Clients', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
+  { href: '/attendance', label: 'Attendance', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
+  { href: '/templates', label: 'Templates', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
+  { href: '/targets', label: 'Targets & Leaderboard', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
+  { href: '/reports', label: 'Reports', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER] },
+  { href: '/currency', label: 'Currency Exchange', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
+  { href: '/security', label: 'Security', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
+];
+
+// Master data, website/CMS, and org-configuration tools — kept in their own
+// sidebar section since these are setup/management screens rather than
+// day-to-day operational ones (spec ask: "separate section in admin panel").
+const ADMIN_NAV_ITEMS: NavItem[] = [
   { href: '/suppliers', label: 'Suppliers', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
   { href: '/hotel-masters', label: 'Hotel Masters', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
   { href: '/day-itineraries', label: 'Day Itinerary', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-  { href: '/clients', label: 'Clients', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/expenses', label: 'Accounts & Finance', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-  { href: '/attendance', label: 'Attendance', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-  { href: '/templates', label: 'Templates', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/marketing', label: 'Marketing', roles: [Role.ADMIN, Role.DIRECTOR] },
   { href: '/automation', label: 'Automation', roles: [Role.ADMIN, Role.DIRECTOR] },
   { href: '/custom-fields', label: 'Custom Fields', roles: [Role.ADMIN, Role.DIRECTOR] },
   { href: '/cms', label: 'Website CMS', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-  { href: '/targets', label: 'Targets & Leaderboard', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-  { href: '/reports', label: 'Reports', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER] },
   { href: '/admin/users', label: 'Users', roles: [Role.ADMIN, Role.DIRECTOR] },
   { href: '/admin/branches', label: 'Branches', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/admin/rates', label: 'Rate Cards', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-  { href: '/currency', label: 'Currency Exchange', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
   { href: '/storage', label: 'File Storage', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
   { href: '/data-admin', label: 'Data Admin', roles: [Role.ADMIN, Role.DIRECTOR] },
-  { href: '/security', label: 'Security', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
 ];
 
 const ROLE_LABELS: Record<string, string> = {
@@ -96,7 +105,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const visibleNav = NAV_ITEMS.filter((item) => item.roles.includes(user.role as Role));
+  const visibleWorkspaceNav = WORKSPACE_NAV_ITEMS.filter((item) => item.roles.includes(user.role as Role));
+  const visibleAdminNav = ADMIN_NAV_ITEMS.filter((item) => item.roles.includes(user.role as Role));
+
+  function navLink(item: NavItem) {
+    const active = pathname === item.href;
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+          active
+            ? 'bg-gradient-to-r from-brand to-brand-500 text-white shadow-card'
+            : 'text-slate-600 hover:translate-x-0.5 hover:bg-brand-50 hover:text-brand dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-brand-200'
+        }`}
+      >
+        {item.label}
+      </Link>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -105,22 +132,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Image src="/logo.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-36" priority />
         </div>
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
-          {visibleNav.map((item) => {
-            const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                  active
-                    ? 'bg-gradient-to-r from-brand to-brand-500 text-white shadow-card'
-                    : 'text-slate-600 hover:translate-x-0.5 hover:bg-brand-50 hover:text-brand dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-brand-200'
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
+          {visibleWorkspaceNav.map(navLink)}
+          {visibleAdminNav.length > 0 && (
+            <>
+              <p className="mb-1 mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Admin</p>
+              {visibleAdminNav.map(navLink)}
+            </>
+          )}
         </nav>
       </aside>
       <div className="flex flex-1 flex-col">

@@ -38,10 +38,16 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   Campaign builder that sends to a filtered lead audience via `NotificationsService`,
   and a CMS covering Blog/Banners/Destinations/Testimonials/Gallery through one
   generic content model — plus no-auth `GET /public/cms/content` and
-  `GET /public/cms/settings` endpoints for the real public site
-  (www.holidayvibez.com, a separate system this repo doesn't own) to consume. A
-  6-hour in-process interval checks `Traveler.dateOfBirth`/`anniversaryDate` and
-  fires the spec's birthday/anniversary greeting automation.
+  `GET /public/cms/settings` endpoints. A 6-hour in-process interval checks
+  `Traveler.dateOfBirth`/`anniversaryDate` and fires the spec's birthday/
+  anniversary greeting automation.
+- **Public marketing site** (`/holidays`, `/holidays/[id]`): the actual
+  www.holidayvibez.com pages, built into this same Next.js app rather than a
+  separate project. Reads live `Package` data through a no-auth
+  `GET /public/packages` / `GET /public/packages/:id` API (only active
+  packages, customer-facing fields only — no RateCard cost internals). Any
+  package an Admin/Director creates or edits from the CRM's `/packages`
+  screen shows up here immediately, same Postgres row, no sync step.
 - **Automation** (priority batch 4): Admin-configurable rules (trigger + delay +
   channel + optional template) evaluated by a single 5-minute sweep against Leads —
   the general-purpose successor to the two hardcoded intervals above, so adding a

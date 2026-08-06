@@ -88,6 +88,43 @@ export class PackagesService {
     return this.quotationsService.findOne(quotation.id);
   }
 
+  // Called by the unauthenticated public controller (for the public marketing
+  // pages under apps/web/src/app/holidays) — only ever exposes active
+  // packages, and only customer-facing fields (name/destination/price/
+  // itinerary description), never RateCard internals like baseCost/net rate.
+  async publicList() {
+    const packages = await this.prisma.package.findMany({
+      where: { active: true },
+      orderBy: { name: 'asc' },
+    });
+    return packages.map((p) => this.toPublicSummary(p));
+  }
+
+  async publicFindOne(id: string) {
+    const pkg = await this.prisma.package.findUnique({
+      where: { id },
+      include: { items: { orderBy: { dayNumber: 'asc' } } },
+    });
+    if (!pkg || !pkg.active) throw new NotFoundException('Package not found');
+    return {
+      ...this.toPublicSummary(pkg),
+      items: pkg.items.map((i) => ({ dayNumber: i.dayNumber, description: i.description })),
+    };
+  }
+
+  private toPublicSummary(p: { id: string; name: string; destination: string; theme: string | null; durationDays: number; basePrice: unknown; currency: string; coverImageUrl: string | null }) {
+    return {
+      id: p.id,
+      name: p.name,
+      destination: p.destination,
+      theme: p.theme,
+      durationDays: p.durationDays,
+      basePrice: Number(p.basePrice),
+      currency: p.currency,
+      coverImageUrl: p.coverImageUrl,
+    };
+  }
+
   private async ensureExists(id: string) {
     const pkg = await this.prisma.package.findUnique({ where: { id } });
     if (!pkg) throw new NotFoundException('Package not found');

@@ -83,6 +83,18 @@ enum PaymentType {
   REFUND
 }
 
+// Cost category for outbound payments (DMC_PAYABLE/COMMISSION/REFUND) — lets
+// finance reports break "what we paid out" down by DMC/Flight/Hotel/Activity
+// instead of one lump sum. Left null on CLIENT_RECEIPT rows (money in, no
+// category applies).
+enum PaymentCategory {
+  DMC
+  FLIGHT
+  HOTEL
+  ACTIVITY
+  OTHER
+}
+
 enum TargetScope {
   BRANCH
   CONSULTANT
@@ -437,6 +449,7 @@ model Payment {
   bookingId  String
   booking    Booking     @relation(fields: [bookingId], references: [id])
   type       PaymentType
+  category   PaymentCategory?
   amount     Decimal     @db.Decimal(14, 2)
   dueDate    DateTime?
   paidAt     DateTime?
