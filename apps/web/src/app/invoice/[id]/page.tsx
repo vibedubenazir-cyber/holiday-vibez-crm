@@ -70,7 +70,7 @@ export default function PublicInvoicePage() {
             <div>
               <h1 className="text-xl font-bold text-slate-900">{invoice.company.name}</h1>
               {invoice.company.address && <p className="mt-1 max-w-xs text-xs text-slate-500">{invoice.company.address}</p>}
-              <p className="mt-1 text-xs text-blue-100">
+              <p className="mt-1 text-xs text-slate-500">
                 {invoice.company.gstNumber && <>GSTIN: {invoice.company.gstNumber}<br /></>}
                 {invoice.company.email} {invoice.company.phone && `· ${invoice.company.phone}`}
               </p>
@@ -78,7 +78,7 @@ export default function PublicInvoicePage() {
           </div>
           <div className="text-right">
             <h2 className="text-lg font-semibold uppercase tracking-wide text-slate-700">Tax Invoice</h2>
-            <p className="mt-1 text-sm text-blue-100">No. {invoice.invoiceNo}</p>
+            <p className="mt-1 text-sm text-slate-500">No. {invoice.invoiceNo}</p>
             <p className="text-sm text-slate-500">{new Date(invoice.issuedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
           </div>
         </div>

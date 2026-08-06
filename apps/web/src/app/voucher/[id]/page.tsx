@@ -67,14 +67,14 @@ export default function PublicVoucherPage() {
             <div>
               <h1 className="text-xl font-bold text-slate-900">{voucher.company.name}</h1>
               {voucher.company.address && <p className="mt-1 max-w-xs text-xs text-slate-500">{voucher.company.address}</p>}
-              <p className="mt-1 text-xs text-blue-100">
+              <p className="mt-1 text-xs text-slate-500">
                 {voucher.company.email} {voucher.company.phone && `· ${voucher.company.phone}`}
               </p>
             </div>
           </div>
           <div className="text-right">
             <h2 className="text-lg font-semibold uppercase tracking-wide text-slate-700">{voucher.type.toLowerCase()} voucher</h2>
-            <p className="mt-1 text-sm text-blue-100">No. {voucher.refNo}</p>
+            <p className="mt-1 text-sm text-slate-500">No. {voucher.refNo}</p>
             <p className="text-sm text-slate-500">{new Date(voucher.issuedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
           </div>
         </div>
