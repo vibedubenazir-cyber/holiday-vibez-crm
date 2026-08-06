@@ -2,13 +2,16 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
+import { useAuth } from '@/lib/auth-context';
 import { api, ApiError } from '@/lib/api';
-import { CustomFieldType, type CustomFieldDefinitionDTO } from '@holiday-vibez/shared';
+import { CustomFieldType, Role, type CustomFieldDefinitionDTO } from '@holiday-vibez/shared';
 
 const ENTITY_TYPES = ['LEAD', 'TRAVELER', 'BOOKING'];
 const FIELD_TYPES = [CustomFieldType.TEXT, CustomFieldType.NUMBER, CustomFieldType.DATE, CustomFieldType.BOOLEAN, CustomFieldType.SELECT];
 
 export default function CustomFieldsPage() {
+  const { user: me } = useAuth();
+  const canManage = me?.role === Role.ADMIN || me?.role === Role.DIRECTOR;
   const [entityType, setEntityType] = useState('LEAD');
   const [definitions, setDefinitions] = useState<CustomFieldDefinitionDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -68,13 +71,16 @@ export default function CustomFieldsPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Custom Fields</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
-          {showForm ? 'Cancel' : 'Add field'}
-        </button>
+        {canManage && (
+          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
+            {showForm ? 'Cancel' : 'Add field'}
+          </button>
+        )}
       </div>
       <p className="mt-1 text-sm text-blue-100">
         Add fields to entities without a code change — they render automatically wherever that entity is edited (e.g. the Lead detail page).
       </p>
+      {!canManage && <p className="mt-1 text-xs text-blue-100">Read-only — only Admin/Director can manage custom fields.</p>}
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       <div className="mt-4 flex gap-1 rounded-lg border border-slate-200 bg-white p-1 text-sm">
@@ -89,7 +95,7 @@ export default function CustomFieldsPage() {
         ))}
       </div>
 
-      {showForm && (
+      {canManage && showForm && (
         <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
           <input required placeholder="Label (e.g. Referred By)" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           <input placeholder="Field key (auto from label if blank)" value={form.fieldKey} onChange={(e) => setForm({ ...form, fieldKey: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
@@ -118,7 +124,7 @@ export default function CustomFieldsPage() {
               <th className="px-4 py-2">Type</th>
               <th className="px-4 py-2">Required</th>
               <th className="px-4 py-2">Status</th>
-              <th className="px-4 py-2 text-right">Actions</th>
+              {canManage && <th className="px-4 py-2 text-right">Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -133,15 +139,17 @@ export default function CustomFieldsPage() {
                     {d.active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                <td className="px-4 py-2 text-right">
-                  <button onClick={() => handleToggleActive(d)} className="text-brand hover:underline">
-                    {d.active ? 'Deactivate' : 'Activate'}
-                  </button>
-                </td>
+                {canManage && (
+                  <td className="px-4 py-2 text-right">
+                    <button onClick={() => handleToggleActive(d)} className="text-brand hover:underline">
+                      {d.active ? 'Deactivate' : 'Activate'}
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
             {definitions.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">No custom fields for {entityType.toLowerCase()} yet.</td></tr>
+              <tr><td colSpan={canManage ? 6 : 5} className="px-4 py-6 text-center text-slate-400">No custom fields for {entityType.toLowerCase()} yet.</td></tr>
             )}
           </tbody>
         </table>
