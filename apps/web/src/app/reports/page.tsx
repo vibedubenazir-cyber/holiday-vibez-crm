@@ -73,7 +73,7 @@ export default function ReportsPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Reports</h1>
+      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Reports</h1>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {dashboard && (
@@ -248,7 +248,7 @@ function Stat({ label, value, color = 'brand' }: { label: string; value: string;
   return (
     <div className={`rounded-xl border-t-4 ${c.border} border-x border-b border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4`}>
       <p className={`text-xs font-semibold uppercase tracking-wide ${c.text}`}>{label}</p>
-      <p className="mt-1 inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">{value}</p>
+      <p className="mt-1 inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{value}</p>
     </div>
   );
 }

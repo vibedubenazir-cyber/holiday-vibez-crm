@@ -257,7 +257,7 @@ export default function QuotationDetailPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">{quotation.refNo}</h1>
+          <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{quotation.refNo}</h1>
           <p className="text-sm text-slate-500">{quotation.lead.clientName} · {quotation.lead.destination} · {quotation.status}</p>
         </div>
         <div className="flex gap-2">

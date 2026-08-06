@@ -141,7 +141,7 @@ export default function LeadsPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Leads</h1>
+        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Leads</h1>
         {canCreate && (
           <div className="flex items-center gap-2">
             <button
@@ -159,7 +159,7 @@ export default function LeadsPage() {
         )}
       </div>
       {canCreate && (
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-blue-100">
           CSV columns: source,clientName,phone,email,destination,branch — source must be one of {SOURCE_OPTIONS.join(', ')}; branch must match an existing branch name.
         </p>
       )}

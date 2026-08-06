@@ -56,8 +56,8 @@ export default function StoragePage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">File Storage</h1>
-      <p className="mt-1 text-sm text-slate-500">
+      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">File Storage</h1>
+      <p className="mt-1 text-sm text-blue-100">
         Upload an image or PDF to get back a URL you can paste into CMS content, package cover images, and other fields
         that accept a URL. Max 5MB.
       </p>

@@ -69,14 +69,14 @@ export default function ClientsPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Clients</h1>
+        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Clients</h1>
         {canManage && (
           <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
             {showForm ? 'Cancel' : 'Add client'}
           </button>
         )}
       </div>
-      <p className="mt-1 text-xs text-slate-400">
+      <p className="mt-1 text-xs text-blue-100">
         Individuals, travel agents, corporate accounts, and group bookings — optionally link a Lead to one of these from the Leads page.
         {!canManage && ' Read-only — only Admin/Director can manage clients.'}
       </p>

@@ -101,7 +101,7 @@ export default function LoginPage() {
         <div className="mb-6 text-center">
           <Image src="/logo.png" alt="Holiday Vibez" width={220} height={55} className="mx-auto h-auto w-48" priority />
           <p className="mt-3 text-lg font-bold tracking-tight text-brand">Holiday Vibez CRM</p>
-          <p className="mt-1 text-sm text-slate-500">Sign in to your account</p>
+          <p className="mt-1 text-sm text-blue-100">Sign in to your account</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

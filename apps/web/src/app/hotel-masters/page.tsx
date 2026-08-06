@@ -233,8 +233,8 @@ export default function HotelMastersPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Hotel Masters</h1>
-      {!canManage && <p className="mt-1 text-xs text-slate-400">Read-only — only Admin/Director can manage these masters.</p>}
+      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Hotel Masters</h1>
+      {!canManage && <p className="mt-1 text-xs text-blue-100">Read-only — only Admin/Director can manage these masters.</p>}
 
       <div className="mt-4 flex gap-1 border-b border-slate-200">
         {TABS.map((t) => (

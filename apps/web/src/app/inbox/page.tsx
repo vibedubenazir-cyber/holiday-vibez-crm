@@ -112,7 +112,7 @@ export default function InboxPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Inbox</h1>
+        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Inbox</h1>
         <div className="flex rounded-lg border border-slate-200 bg-white p-1 text-sm">
           {[NotificationChannel.WHATSAPP, NotificationChannel.EMAIL].map((c) => (
             <button

@@ -102,7 +102,7 @@ export default function LeadDetailPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">{lead.clientName}</h1>
+          <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{lead.clientName}</h1>
           <p className="text-sm text-slate-500">{lead.destination} · {lead.phone} · {lead.status}</p>
         </div>
         <button onClick={handleCreateQuotation} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">

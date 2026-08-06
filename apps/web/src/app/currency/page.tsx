@@ -69,17 +69,17 @@ export default function CurrencyPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Currency Exchange</h1>
+        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Currency Exchange</h1>
         {isAdmin && (
           <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
             {showForm ? 'Cancel' : 'Add currency'}
           </button>
         )}
       </div>
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-blue-100">
         Rates against INR. API-sourced rates refresh automatically; manually-edited rates are never overwritten by the automatic feed.
       </p>
-      {!isAdmin && <p className="mt-1 text-xs text-slate-400">Read-only — only Admin can manage currency rates.</p>}
+      {!isAdmin && <p className="mt-1 text-xs text-blue-100">Read-only — only Admin can manage currency rates.</p>}
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 

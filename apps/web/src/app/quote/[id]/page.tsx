@@ -67,7 +67,7 @@ export default function PublicQuotationPage() {
             <div>
               <h1 className="text-xl font-bold text-slate-900">{quotation.company.name}</h1>
               {quotation.company.address && <p className="mt-1 max-w-xs text-xs text-slate-500">{quotation.company.address}</p>}
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-blue-100">
                 {quotation.company.gstNumber && <>GSTIN: {quotation.company.gstNumber}<br /></>}
                 {quotation.company.email} {quotation.company.phone && `· ${quotation.company.phone}`}
               </p>
@@ -75,7 +75,7 @@ export default function PublicQuotationPage() {
           </div>
           <div className="text-right">
             <h2 className="text-lg font-semibold uppercase tracking-wide text-slate-700">Quotation</h2>
-            <p className="mt-1 text-sm text-slate-500">No. {quotation.refNo}</p>
+            <p className="mt-1 text-sm text-blue-100">No. {quotation.refNo}</p>
             <p className="text-sm text-slate-500">{new Date(quotation.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
           </div>
         </div>

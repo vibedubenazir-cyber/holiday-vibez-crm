@@ -25,8 +25,8 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Welcome, {user?.name}</h1>
-      <p className="mt-1 text-sm text-slate-500">Here&apos;s what&apos;s happening across your workspace right now.</p>
+      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Welcome, {user?.name}</h1>
+      <p className="mt-1 text-sm text-blue-100">Here&apos;s what&apos;s happening across your workspace right now.</p>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <DashCard color="brand" label="Role" value={user?.role ?? '—'} />
@@ -34,7 +34,7 @@ export default function DashboardPage() {
         <DashCard color="emerald" label="Status" value={user?.status ?? '—'} />
       </div>
 
-      <h2 className="mt-8 text-sm font-semibold text-slate-700">Your workspace at a glance</h2>
+      <h2 className="mt-8 text-sm font-semibold text-white">Your workspace at a glance</h2>
       <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Link href="/leads">
           <DashCard color="cyan" label="Leads" value={leadCount === null ? '—' : leadCount.toString()} />
@@ -47,8 +47,8 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      <p className="mt-8 text-xs text-slate-400">
-        Looking for revenue, margin, and branch targets? Head to <Link href="/reports" className="text-brand hover:underline">Reports</Link>.
+      <p className="mt-8 text-xs text-blue-100">
+        Looking for revenue, margin, and branch targets? Head to <Link href="/reports" className="font-semibold text-white hover:underline">Reports</Link>.
       </p>
     </AppShell>
   );

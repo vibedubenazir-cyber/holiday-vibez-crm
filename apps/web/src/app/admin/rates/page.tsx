@@ -65,7 +65,7 @@ export default function RatesPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Rate Cards</h1>
+        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Rate Cards</h1>
         {isAdmin && (
           <button
             onClick={() => setShowForm((s) => !s)}
@@ -76,7 +76,7 @@ export default function RatesPage() {
         )}
       </div>
       {!isAdmin && (
-        <p className="mt-1 text-xs text-slate-400">Read-only — only Admin can create or edit rate cards.</p>
+        <p className="mt-1 text-xs text-blue-100">Read-only — only Admin can create or edit rate cards.</p>
       )}
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}

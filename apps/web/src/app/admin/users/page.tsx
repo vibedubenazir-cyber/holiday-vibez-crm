@@ -81,7 +81,7 @@ export default function UsersPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Users</h1>
+        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Users</h1>
         {isAdmin && (
           <button
             onClick={() => setShowForm((s) => !s)}

@@ -43,17 +43,17 @@ export default function TemplatesPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Templates</h1>
+        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Templates</h1>
         {canManage && (
           <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
             {showForm ? 'Cancel' : 'Add template'}
           </button>
         )}
       </div>
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-blue-100">
         Reusable WhatsApp/email message templates, selectable from the Inbox compose box.
       </p>
-      {!canManage && <p className="mt-1 text-xs text-slate-400">Read-only — only Admin/Director can manage templates.</p>}
+      {!canManage && <p className="mt-1 text-xs text-blue-100">Read-only — only Admin/Director can manage templates.</p>}
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
@@ -81,7 +81,7 @@ export default function TemplatesPage() {
               <p className="font-medium text-slate-800">{t.name}</p>
               <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">{t.channel}</span>
             </div>
-            {t.subject && <p className="mt-1 text-xs text-slate-500">Subject: {t.subject}</p>}
+            {t.subject && <p className="mt-1 text-xs text-blue-100">Subject: {t.subject}</p>}
             <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">{t.body}</p>
           </div>
         ))}

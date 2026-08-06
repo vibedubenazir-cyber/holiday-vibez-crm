@@ -122,8 +122,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         href={item.href}
         className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-all ${
           active
-            ? 'bg-gradient-to-r from-brand to-brand-500 text-white shadow-card'
-            : 'text-slate-600 hover:translate-x-0.5 hover:bg-brand-50 hover:text-brand'
+            ? 'bg-white text-brand shadow-card'
+            : 'text-white/80 hover:translate-x-0.5 hover:bg-white/10 hover:text-white'
         }`}
       >
         {item.label}
@@ -133,15 +133,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
-        <div className="border-b border-slate-100 bg-gradient-to-br from-brand-50 to-white px-5 py-5">
-          <Image src="/logo.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-36" priority />
+      <aside className="flex w-64 shrink-0 flex-col bg-gradient-to-b from-brand-700 to-brand-800">
+        <div className="px-5 py-5">
+          <div className="rounded-xl bg-white p-3 shadow-card">
+            <Image src="/logo.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-full" priority />
+          </div>
         </div>
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
           {visibleGroups.map((group, i) => (
             <div key={group.title ?? 'top'} className={i > 0 ? 'mt-4' : undefined}>
               {group.title && (
-                <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">{group.title}</p>
+                <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-white/50">{group.title}</p>
               )}
               <div className="flex flex-col gap-0.5">{group.items.map(navLink)}</div>
             </div>
@@ -149,26 +151,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </aside>
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white/80 px-6 py-3 backdrop-blur">
+        <header className="flex items-center justify-between bg-gradient-to-r from-brand-700 to-brand px-6 py-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-700 text-xs font-semibold text-white shadow-card">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-semibold text-brand shadow-card">
               {initials(user.name)}
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-800">{user.name}</p>
-              <p className="text-xs font-medium text-brand">{ROLE_LABELS[user.role] ?? user.role}</p>
+              <p className="text-sm font-semibold text-white">{user.name}</p>
+              <p className="text-xs font-medium text-white/70">{ROLE_LABELS[user.role] ?? user.role}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => logout()}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+              className="rounded-lg border border-white/30 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/10"
             >
               Sign out
             </button>
           </div>
         </header>
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 bg-gradient-to-br from-brand-700 via-brand to-brand-600 p-6">{children}</main>
       </div>
     </div>
   );

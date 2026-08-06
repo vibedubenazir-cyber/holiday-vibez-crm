@@ -116,8 +116,8 @@ export default function BookingsPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Bookings & Payments</h1>
-      <p className="mt-1 text-sm text-slate-500">
+      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Bookings & Payments</h1>
+      <p className="mt-1 text-sm text-blue-100">
         Bookings are created from approved (SENT) quotations. Generate a payment link to send the customer a real hosted-checkout
         page (Razorpay), or use "Mark paid" for offline/cash payments already received — either way, payments feed branch P&L
         and target achievement automatically once paid.
@@ -130,7 +130,7 @@ export default function BookingsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-slate-800">{b.quotation?.lead?.clientName} · {b.quotation?.lead?.destination}</p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-blue-100">
                   Departs {new Date(b.departureDate).toLocaleDateString()} ·{' '}
                   <span className="rounded-full bg-blue-100 px-2 py-0.5 font-medium text-blue-700">{b.status}</span>{' '}
                   · Total ₹{Number(b.quotation?.totalAmount ?? 0).toLocaleString('en-IN')}

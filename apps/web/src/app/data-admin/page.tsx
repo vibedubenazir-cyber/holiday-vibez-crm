@@ -52,8 +52,8 @@ export default function DataAdminPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Data Admin</h1>
-      <p className="mt-1 text-sm text-slate-500">Operational health stats and a searchable log of every create/update/delete action across the CRM.</p>
+      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Data Admin</h1>
+      <p className="mt-1 text-sm text-blue-100">Operational health stats and a searchable log of every create/update/delete action across the CRM.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {stats && (

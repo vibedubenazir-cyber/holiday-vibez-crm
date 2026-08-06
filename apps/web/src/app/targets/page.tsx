@@ -69,7 +69,7 @@ export default function TargetsPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Targets & Leaderboard</h1>
+      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Targets & Leaderboard</h1>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       <div className="mt-4 flex items-center gap-3">
