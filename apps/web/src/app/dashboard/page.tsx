@@ -55,18 +55,18 @@ export default function DashboardPage() {
 }
 
 const COLORS = {
-  brand: { border: 'border-t-brand', text: 'text-brand' },
-  purple: { border: 'border-t-blue-500', text: 'text-blue-600' },
-  emerald: { border: 'border-t-blue-500', text: 'text-blue-600' },
-  cyan: { border: 'border-t-blue-500', text: 'text-blue-600' },
-  orange: { border: 'border-t-brand-500', text: 'text-brand-700' },
-  pink: { border: 'border-t-blue-500', text: 'text-blue-600' },
+  brand: { border: 'border-l-brand', text: 'text-brand' },
+  purple: { border: 'border-l-blue-500', text: 'text-blue-600' },
+  emerald: { border: 'border-l-blue-500', text: 'text-blue-600' },
+  cyan: { border: 'border-l-blue-500', text: 'text-blue-600' },
+  orange: { border: 'border-l-brand-500', text: 'text-brand-700' },
+  pink: { border: 'border-l-blue-500', text: 'text-blue-600' },
 } as const;
 
 function DashCard({ label, value, color }: { label: string; value: string; color: keyof typeof COLORS }) {
   const c = COLORS[color];
   return (
-    <div className={`rounded-xl border-t-4 ${c.border} border-x border-b border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4`}>
+    <div className={`border-l-4 ${c.border} bg-white p-4`}>
       <p className={`text-xs font-semibold uppercase tracking-wide ${c.text}`}>{label}</p>
       <p className="mt-1 text-base font-medium text-slate-800">{value}</p>
     </div>

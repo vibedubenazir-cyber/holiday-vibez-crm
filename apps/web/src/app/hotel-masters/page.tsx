@@ -80,7 +80,7 @@ function HotelsTab({ canManage }: { canManage: boolean }) {
           </button>
         </form>
       )}
-      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover">
+      <div className="mt-4 overflow-hidden bg-white">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>
@@ -187,7 +187,7 @@ function SimpleMasterTab({
           </button>
         </form>
       )}
-      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover">
+      <div className="mt-4 overflow-hidden bg-white">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>

@@ -126,7 +126,7 @@ export default function BookingsPage() {
 
       <div className="mt-4 space-y-3">
         {bookings.map((b) => (
-          <div key={b.id} className="rounded-xl border-t-4 border-t-blue-500 border-x border-b border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <div key={b.id} className="border-l-4 border-l-blue-500 bg-white p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-slate-800">{b.quotation?.lead?.clientName} · {b.quotation?.lead?.destination}</p>

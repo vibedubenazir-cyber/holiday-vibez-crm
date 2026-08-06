@@ -16,7 +16,7 @@ const STAT_LABELS: Record<keyof DataAdminStatsDTO, string> = {
   currencyRates: 'Currency Rates',
 };
 
-const STAT_BORDER_COLORS = ['border-t-brand', 'border-t-blue-500', 'border-t-blue-500', 'border-t-brand-500', 'border-t-blue-500', 'border-t-blue-500', 'border-t-blue-500', 'border-t-blue-500'];
+const STAT_BORDER_COLORS = ['border-l-brand', 'border-l-blue-500', 'border-l-blue-500', 'border-l-brand-500', 'border-l-blue-500', 'border-l-blue-500', 'border-l-blue-500', 'border-l-blue-500'];
 
 export default function DataAdminPage() {
   const [stats, setStats] = useState<DataAdminStatsDTO | null>(null);
@@ -59,7 +59,7 @@ export default function DataAdminPage() {
       {stats && (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {(Object.keys(STAT_LABELS) as (keyof DataAdminStatsDTO)[]).map((key, i) => (
-            <div key={key} className={`rounded-xl border-t-4 ${STAT_BORDER_COLORS[i % STAT_BORDER_COLORS.length]} border-x border-b border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4`}>
+            <div key={key} className={`border-l-4 ${STAT_BORDER_COLORS[i % STAT_BORDER_COLORS.length]} bg-white p-4`}>
               <p className="text-2xl font-semibold text-slate-800">{stats[key]}</p>
               <p className="text-xs text-slate-500">{STAT_LABELS[key]}</p>
             </div>
@@ -77,7 +77,7 @@ export default function DataAdminPage() {
         />
       </div>
 
-      <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover">
+      <div className="mt-3 overflow-hidden bg-white">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>
