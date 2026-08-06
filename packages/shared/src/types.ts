@@ -560,3 +560,54 @@ export interface LoyaltyAccountDTO {
   tier: 'SILVER' | 'GOLD' | 'PLATINUM';
   transactions: LoyaltyTransactionDTO[];
 }
+
+export interface ReviewDTO {
+  id: string;
+  bookingId: string;
+  rating: number;
+  comment: string | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface TripFeedbackDTO {
+  id: string;
+  bookingId: string;
+  overallSatisfaction: number;
+  hotelRating: number | null;
+  transportRating: number | null;
+  guideRating: number | null;
+  comments: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface InsurancePolicyDTO {
+  id: string;
+  bookingId: string;
+  provider: string;
+  policyNumber: string;
+  premiumAmount: number;
+  coverageAmount: number;
+  startDate: string;
+  endDate: string;
+  status: 'ACTIVE' | 'CLAIMED' | 'EXPIRED' | 'CANCELLED';
+  claimNotes: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface SupportTicketDTO {
+  id: string;
+  leadId: string;
+  subject: string;
+  description: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+  assignedToId: string | null;
+  resolutionNote: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}

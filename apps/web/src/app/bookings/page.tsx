@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { api, ApiError } from '@/lib/api';
 import { BookingStatus } from '@holiday-vibez/shared';
-import type { BookingDTO, InvoiceDTO, VoucherDTO } from '@holiday-vibez/shared';
+import type { BookingDTO, InvoiceDTO, VoucherDTO, ReviewDTO, TripFeedbackDTO, InsurancePolicyDTO } from '@holiday-vibez/shared';
 
 const PAYMENT_TYPE_COLORS: Record<string, string> = {
   CLIENT_RECEIPT: 'bg-blue-100 text-blue-700',
@@ -31,6 +31,12 @@ export default function BookingsPage() {
   const [invoices, setInvoices] = useState<Record<string, InvoiceDTO[]>>({});
   const [linkBusy, setLinkBusy] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<Record<string, ReviewDTO[]>>({});
+  const [feedback, setFeedback] = useState<Record<string, TripFeedbackDTO[]>>({});
+  const [policies, setPolicies] = useState<Record<string, InsurancePolicyDTO[]>>({});
+  const [reviewForm, setReviewForm] = useState({ rating: '5', comment: '' });
+  const [feedbackForm, setFeedbackForm] = useState({ overallSatisfaction: '5', hotelRating: '', transportRating: '', guideRating: '', comments: '' });
+  const [policyForm, setPolicyForm] = useState({ provider: '', policyNumber: '', premiumAmount: '', coverageAmount: '', startDate: '', endDate: '' });
 
   async function load() {
     try {
@@ -89,14 +95,63 @@ export default function BookingsPage() {
 
   async function loadDocs(bookingId: string) {
     try {
-      const [v, i] = await Promise.all([
+      const [v, i, r, f, p] = await Promise.all([
         api.get<VoucherDTO[]>(`/bookings/${bookingId}/vouchers`),
         api.get<InvoiceDTO[]>(`/bookings/${bookingId}/invoices`),
+        api.get<ReviewDTO[]>(`/reviews/booking/${bookingId}`),
+        api.get<TripFeedbackDTO[]>(`/feedback/booking/${bookingId}`),
+        api.get<InsurancePolicyDTO[]>(`/insurance/booking/${bookingId}`),
       ]);
       setVouchers((prev) => ({ ...prev, [bookingId]: v }));
       setInvoices((prev) => ({ ...prev, [bookingId]: i }));
+      setReviews((prev) => ({ ...prev, [bookingId]: r }));
+      setFeedback((prev) => ({ ...prev, [bookingId]: f }));
+      setPolicies((prev) => ({ ...prev, [bookingId]: p }));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Failed to load vouchers/invoices');
+      setError(err instanceof ApiError ? err.message : 'Failed to load booking details');
+    }
+  }
+
+  async function handleAddReview(bookingId: string) {
+    try {
+      await api.post(`/reviews/booking/${bookingId}`, { rating: Number(reviewForm.rating), comment: reviewForm.comment || undefined });
+      setReviewForm({ rating: '5', comment: '' });
+      await loadDocs(bookingId);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to add review');
+    }
+  }
+
+  async function handleAddFeedback(bookingId: string) {
+    try {
+      await api.post(`/feedback/booking/${bookingId}`, {
+        overallSatisfaction: Number(feedbackForm.overallSatisfaction),
+        hotelRating: feedbackForm.hotelRating ? Number(feedbackForm.hotelRating) : undefined,
+        transportRating: feedbackForm.transportRating ? Number(feedbackForm.transportRating) : undefined,
+        guideRating: feedbackForm.guideRating ? Number(feedbackForm.guideRating) : undefined,
+        comments: feedbackForm.comments || undefined,
+      });
+      setFeedbackForm({ overallSatisfaction: '5', hotelRating: '', transportRating: '', guideRating: '', comments: '' });
+      await loadDocs(bookingId);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to add feedback');
+    }
+  }
+
+  async function handleAddPolicy(bookingId: string) {
+    try {
+      await api.post(`/insurance/booking/${bookingId}`, {
+        provider: policyForm.provider,
+        policyNumber: policyForm.policyNumber,
+        premiumAmount: Number(policyForm.premiumAmount),
+        coverageAmount: Number(policyForm.coverageAmount),
+        startDate: policyForm.startDate,
+        endDate: policyForm.endDate,
+      });
+      setPolicyForm({ provider: '', policyNumber: '', premiumAmount: '', coverageAmount: '', startDate: '', endDate: '' });
+      await loadDocs(bookingId);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to add insurance policy');
     }
   }
 
@@ -268,6 +323,75 @@ export default function BookingsPage() {
                   <button onClick={() => handleGenerateInvoice(b.id)} className="mt-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand">
                     Generate invoice
                   </button>
+                </div>
+
+                <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-700">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Reviews</p>
+                  <ul className="mt-1 space-y-1">
+                    {(reviews[b.id] ?? []).map((r) => (
+                      <li key={r.id} className="text-sm text-slate-700 dark:text-slate-200">
+                        {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}{' '}
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">{r.status}</span>{' '}
+                        {r.comment && <span className="text-slate-500 dark:text-slate-400">— {r.comment}</span>}
+                      </li>
+                    ))}
+                    {(!reviews[b.id] || reviews[b.id].length === 0) && <li className="text-sm text-slate-400">No reviews yet.</li>}
+                  </ul>
+                  <div className="mt-2 flex items-end gap-2">
+                    <select value={reviewForm.rating} onChange={(e) => setReviewForm({ ...reviewForm, rating: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
+                      {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} ★</option>)}
+                    </select>
+                    <input type="text" placeholder="Comment (optional)" value={reviewForm.comment} onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })} className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    <button onClick={() => handleAddReview(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add review</button>
+                  </div>
+                </div>
+
+                <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-700">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Post-trip feedback</p>
+                  <ul className="mt-1 space-y-1">
+                    {(feedback[b.id] ?? []).map((f) => (
+                      <li key={f.id} className="text-sm text-slate-700 dark:text-slate-200">
+                        Overall {f.overallSatisfaction}/5
+                        {f.hotelRating != null && ` · Hotel ${f.hotelRating}/5`}
+                        {f.transportRating != null && ` · Transport ${f.transportRating}/5`}
+                        {f.guideRating != null && ` · Guide ${f.guideRating}/5`}
+                        {f.comments && <span className="text-slate-500 dark:text-slate-400"> — {f.comments}</span>}
+                      </li>
+                    ))}
+                    {(!feedback[b.id] || feedback[b.id].length === 0) && <li className="text-sm text-slate-400">No feedback submitted yet.</li>}
+                  </ul>
+                  <div className="mt-2 flex flex-wrap items-end gap-2">
+                    <select value={feedbackForm.overallSatisfaction} onChange={(e) => setFeedbackForm({ ...feedbackForm, overallSatisfaction: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
+                      {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>Overall {n}/5</option>)}
+                    </select>
+                    <input type="number" min={1} max={5} placeholder="Hotel" value={feedbackForm.hotelRating} onChange={(e) => setFeedbackForm({ ...feedbackForm, hotelRating: e.target.value })} className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    <input type="number" min={1} max={5} placeholder="Transport" value={feedbackForm.transportRating} onChange={(e) => setFeedbackForm({ ...feedbackForm, transportRating: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    <input type="number" min={1} max={5} placeholder="Guide" value={feedbackForm.guideRating} onChange={(e) => setFeedbackForm({ ...feedbackForm, guideRating: e.target.value })} className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    <input type="text" placeholder="Comments" value={feedbackForm.comments} onChange={(e) => setFeedbackForm({ ...feedbackForm, comments: e.target.value })} className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    <button onClick={() => handleAddFeedback(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add feedback</button>
+                  </div>
+                </div>
+
+                <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-700">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Travel insurance</p>
+                  <ul className="mt-1 space-y-1">
+                    {(policies[b.id] ?? []).map((p) => (
+                      <li key={p.id} className="text-sm text-slate-700 dark:text-slate-200">
+                        {p.provider} #{p.policyNumber} · Cover ₹{Number(p.coverageAmount).toLocaleString('en-IN')} · Premium ₹{Number(p.premiumAmount).toLocaleString('en-IN')}{' '}
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">{p.status}</span>
+                      </li>
+                    ))}
+                    {(!policies[b.id] || policies[b.id].length === 0) && <li className="text-sm text-slate-400">No policy added yet.</li>}
+                  </ul>
+                  <div className="mt-2 flex flex-wrap items-end gap-2">
+                    <input type="text" placeholder="Provider" value={policyForm.provider} onChange={(e) => setPolicyForm({ ...policyForm, provider: e.target.value })} className="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    <input type="text" placeholder="Policy #" value={policyForm.policyNumber} onChange={(e) => setPolicyForm({ ...policyForm, policyNumber: e.target.value })} className="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    <input type="number" placeholder="Premium" value={policyForm.premiumAmount} onChange={(e) => setPolicyForm({ ...policyForm, premiumAmount: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    <input type="number" placeholder="Coverage" value={policyForm.coverageAmount} onChange={(e) => setPolicyForm({ ...policyForm, coverageAmount: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    <input type="date" value={policyForm.startDate} onChange={(e) => setPolicyForm({ ...policyForm, startDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    <input type="date" value={policyForm.endDate} onChange={(e) => setPolicyForm({ ...policyForm, endDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    <button onClick={() => handleAddPolicy(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add policy</button>
+                  </div>
                 </div>
               </div>
             )}

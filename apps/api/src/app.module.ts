@@ -36,6 +36,10 @@ import { HotelsModule } from './hotels/hotels.module';
 import { RoomTypesModule } from './room-types/room-types.module';
 import { MealPlansModule } from './meal-plans/meal-plans.module';
 import { DayItinerariesModule } from './day-itineraries/day-itineraries.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { FeedbackModule } from './feedback/feedback.module';
+import { InsuranceModule } from './insurance/insurance.module';
+import { SupportTicketsModule } from './support-tickets/support-tickets.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -77,6 +81,10 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     RoomTypesModule,
     MealPlansModule,
     DayItinerariesModule,
+    ReviewsModule,
+    FeedbackModule,
+    InsuranceModule,
+    SupportTicketsModule,
   ],
   providers: [
     PrismaService,
