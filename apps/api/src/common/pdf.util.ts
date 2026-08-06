@@ -23,7 +23,8 @@ interface PdfDocumentOptions {
   refNo: string;
   issuedAt: Date;
   company: CompanyInfo;
-  client: { name: string; phone: string; email?: string | null; destination: string };
+  client: { name: string; phone: string; email?: string | null; destination: string; destinationLabel?: string };
+  clientSectionLabel?: string;
   rows: DocumentRow[];
   total?: { label: string; value: string };
   footerNote?: string;
@@ -55,7 +56,7 @@ export function streamBrandedPdf(res: Response, opts: PdfDocumentOptions) {
 
   // Client block
   let y = 140;
-  doc.fontSize(9).font('Helvetica-Bold').fillColor(BRAND_BLUE).text('BILLED TO', marginX, y);
+  doc.fontSize(9).font('Helvetica-Bold').fillColor(BRAND_BLUE).text(opts.clientSectionLabel ?? 'BILLED TO', marginX, y);
   y += 14;
   doc.fontSize(11).font('Helvetica-Bold').fillColor(SLATE).text(opts.client.name, marginX, y);
   y += 16;
@@ -65,7 +66,7 @@ export function streamBrandedPdf(res: Response, opts: PdfDocumentOptions) {
     y,
   );
   y += 13;
-  doc.text(`Destination: ${opts.client.destination}`, marginX, y);
+  doc.text(`${opts.client.destinationLabel ?? 'Destination'}: ${opts.client.destination}`, marginX, y);
   y += 30;
 
   // Row table

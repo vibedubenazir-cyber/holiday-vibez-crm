@@ -18,6 +18,7 @@ import { InvoicesModule } from './invoices/invoices.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { LeaveModule } from './leave/leave.module';
+import { PayrollModule } from './payroll/payroll.module';
 import { InboxModule } from './inbox/inbox.module';
 import { TemplatesModule } from './templates/templates.module';
 import { CmsModule } from './cms/cms.module';
@@ -57,6 +58,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     ExpensesModule,
     AttendanceModule,
     LeaveModule,
+    PayrollModule,
     InboxModule,
     TemplatesModule,
     CmsModule,

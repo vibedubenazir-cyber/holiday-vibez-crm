@@ -30,16 +30,22 @@ export default function LeavePage() {
     try {
       setBalance(await api.get<LeaveBalanceDTO[]>('/leave/me/balance'));
       setMine(await api.get<LeaveRequestDTO[]>('/leave/me'));
-      if (canApprove) setTeam(await api.get<LeaveRequestDTO[]>('/leave'));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to load leave data');
+    }
+    if (canApprove) {
+      try {
+        setTeam(await api.get<LeaveRequestDTO[]>('/leave'));
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : 'Failed to load team leave requests');
+      }
     }
   }
 
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [me?.role]);
 
   async function handleCreate(e: FormEvent) {
     e.preventDefault();

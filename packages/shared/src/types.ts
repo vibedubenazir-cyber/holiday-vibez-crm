@@ -513,3 +513,30 @@ export interface LeaveBalanceDTO {
   used: number;
   remaining: number;
 }
+
+export interface SalaryStructureDTO {
+  id: string;
+  userId: string;
+  basicSalary: number;
+  hra: number;
+  allowances: number;
+  user?: UserDTO;
+}
+
+export interface PayslipDTO {
+  id: string;
+  userId: string;
+  month: string;
+  basicSalary: number;
+  hra: number;
+  allowances: number;
+  incentive: number;
+  deductions: number;
+  grossPay: number;
+  netPay: number;
+  presentDays: number;
+  lopDays: number;
+  generatedBy: string;
+  generatedAt: string;
+  user?: UserDTO;
+}

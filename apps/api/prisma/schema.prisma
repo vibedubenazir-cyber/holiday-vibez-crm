@@ -231,6 +231,8 @@ model User {
   messagesSent      Message[]
   leaveRequests     LeaveRequest[] @relation("LeaveRequests")
   leaveReviews      LeaveRequest[] @relation("LeaveReviews")
+  salaryStructure   SalaryStructure? @relation("SalaryStructure")
+  payslips          Payslip[]      @relation("Payslips")
 
   @@map("users")
 }
@@ -585,6 +587,40 @@ model Target {
   updatedAt        DateTime     @updatedAt
 
   @@map("targets")
+}
+
+model SalaryStructure {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation("SalaryStructure", fields: [userId], references: [id])
+  basicSalary Decimal  @db.Decimal(12, 2)
+  hra         Decimal  @default(0) @db.Decimal(12, 2)
+  allowances  Decimal  @default(0) @db.Decimal(12, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("salary_structures")
+}
+
+model Payslip {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation("Payslips", fields: [userId], references: [id])
+  month        String   // "YYYY-MM"
+  basicSalary  Decimal  @db.Decimal(12, 2)
+  hra          Decimal  @db.Decimal(12, 2)
+  allowances   Decimal  @db.Decimal(12, 2)
+  incentive    Decimal  @default(0) @db.Decimal(12, 2)
+  deductions   Decimal  @default(0) @db.Decimal(12, 2)
+  grossPay     Decimal  @db.Decimal(12, 2)
+  netPay       Decimal  @db.Decimal(12, 2)
+  presentDays  Int
+  lopDays      Int      @default(0)
+  generatedBy  String
+  generatedAt  DateTime @default(now())
+
+  @@unique([userId, month])
+  @@map("payslips")
 }
 
 model Notification {
