@@ -48,12 +48,20 @@ export default function PublicQuotationPage() {
 
   return (
     <div className="mx-auto max-w-3xl p-6 sm:p-10 text-slate-800 print:p-0">
-      <div className="no-print mb-6 flex justify-end">
-        <button
-          onClick={() => window.print()}
+      <div className="no-print mb-6 flex justify-end gap-2">
+        <a
+          href={`${API_BASE}/public/quotations/${id}/pdf`}
+          target="_blank"
+          rel="noopener noreferrer"
           className="rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
         >
-          Print / Save as PDF
+          Download PDF
+        </a>
+        <button
+          onClick={() => window.print()}
+          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Print
         </button>
       </div>
 
