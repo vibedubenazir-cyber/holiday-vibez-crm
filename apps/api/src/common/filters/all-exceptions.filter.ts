@@ -8,8 +8,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
 
     const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    const exceptionResponse = exception instanceof HttpException ? exception.getResponse() : 'Internal server error';
+    // HttpException#getResponse() returns the full body ({ statusCode, message, error })
+    // when the exception was constructed with just a string, so it must be unwrapped —
+    // otherwise `message` ends up holding that whole nested object instead of the text.
     const message =
-      exception instanceof HttpException ? exception.getResponse() : 'Internal server error';
+      typeof exceptionResponse === 'string'
+        ? exceptionResponse
+        : ((exceptionResponse as { message?: unknown }).message ?? 'An error occurred');
 
     response.status(status).json({
       statusCode: status,
