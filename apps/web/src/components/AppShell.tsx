@@ -135,9 +135,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen">
       <aside className="flex w-64 shrink-0 flex-col bg-gradient-to-b from-brand-700 to-brand-800">
         <div className="px-5 py-5">
-          <div className="rounded-xl bg-white p-3 shadow-card">
-            <Image src="/logo.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-full" priority />
-          </div>
+          <Image src="/logo-white.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-full" priority />
         </div>
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
           {visibleGroups.map((group, i) => (
