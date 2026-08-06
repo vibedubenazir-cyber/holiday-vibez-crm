@@ -149,7 +149,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </aside>
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between bg-gradient-to-r from-brand-700 to-brand px-6 py-3">
+        <header className="flex items-center justify-between bg-brand-700 px-6 py-3">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-semibold text-brand shadow-card">
               {initials(user.name)}
