@@ -42,6 +42,7 @@ import { InsuranceModule } from './insurance/insurance.module';
 import { SupportTicketsModule } from './support-tickets/support-tickets.module';
 import { TeamChatModule } from './team-chat/team-chat.module';
 import { CouponsModule } from './coupons/coupons.module';
+import { LmsModule } from './lms/lms.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -89,6 +90,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     SupportTicketsModule,
     TeamChatModule,
     CouponsModule,
+    LmsModule,
   ],
   providers: [
     PrismaService,

@@ -277,6 +277,7 @@ model User {
   assignedTickets   SupportTicket[] @relation("AssignedTickets")
   teamChannelMemberships TeamChannelMember[]
   teamMessagesSent       TeamMessage[]
+  courseEnrollments      Enrollment[]
 
   @@map("users")
 }
@@ -1100,4 +1101,105 @@ model TeamMessage {
   createdAt DateTime    @default(now())
 
   @@map("team_messages")
+}
+
+// Internal staff training (LMS) — Admin/Director author courses (lessons + an optional
+// quiz); any staff member enrolls, marks lessons complete, and takes the quiz once all
+// lessons are done. A course is "complete" once every lesson is done and (if the course
+// has a quiz) the latest attempt passed — that transition auto-issues a Certificate, so
+// there's no separate manual "issue certificate" action to forget.
+model Course {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  category    String?
+  active      Boolean  @default(true)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lessons       Lesson[]
+  quizQuestions QuizQuestion[]
+  enrollments   Enrollment[]
+
+  @@map("lms_courses")
+}
+
+model Lesson {
+  id        String   @id @default(uuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  title     String
+  content   String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  progress LessonProgress[]
+
+  @@map("lms_lessons")
+}
+
+model QuizQuestion {
+  id           String   @id @default(uuid())
+  courseId     String
+  course       Course   @relation(fields: [courseId], references: [id])
+  text         String
+  options      String[]
+  correctIndex Int
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@map("lms_quiz_questions")
+}
+
+model Enrollment {
+  id          String    @id @default(uuid())
+  courseId    String
+  course      Course    @relation(fields: [courseId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+
+  progress    LessonProgress[]
+  attempts    QuizAttempt[]
+  certificate Certificate?
+
+  @@unique([courseId, userId])
+  @@map("lms_enrollments")
+}
+
+model LessonProgress {
+  id           String     @id @default(uuid())
+  enrollmentId String
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+  lessonId     String
+  lesson       Lesson     @relation(fields: [lessonId], references: [id])
+  completedAt  DateTime   @default(now())
+
+  @@unique([enrollmentId, lessonId])
+  @@map("lms_lesson_progress")
+}
+
+model QuizAttempt {
+  id           String     @id @default(uuid())
+  enrollmentId String
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+  score        Int
+  passed       Boolean
+  attemptedAt  DateTime   @default(now())
+
+  @@map("lms_quiz_attempts")
+}
+
+model Certificate {
+  id           String     @id @default(uuid())
+  enrollmentId String     @unique
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+  courseId     String
+  userId       String
+  certNo       String     @unique
+  issuedAt     DateTime   @default(now())
+
+  @@map("lms_certificates")
 }

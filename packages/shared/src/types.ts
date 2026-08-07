@@ -667,3 +667,76 @@ export interface TeamMessageDTO {
   fileSize: number | null;
   createdAt: string;
 }
+
+export interface CourseDTO {
+  id: string;
+  title: string;
+  description: string;
+  category: string | null;
+  active: boolean;
+  createdBy: string;
+  createdAt: string;
+  lessonCount: number;
+  hasQuiz: boolean;
+  enrollmentCount: number;
+}
+
+export interface LessonDTO {
+  id: string;
+  courseId: string;
+  title: string;
+  content: string;
+  order: number;
+  createdAt: string;
+}
+
+export interface QuizQuestionDTO {
+  id: string;
+  text: string;
+  options: string[];
+  order: number;
+  correctIndex?: number;
+}
+
+export interface QuizAttemptDTO {
+  id: string;
+  enrollmentId: string;
+  score: number;
+  passed: boolean;
+  attemptedAt: string;
+}
+
+export interface CertificateDTO {
+  id: string;
+  certNo: string;
+  issuedAt: string;
+  courseId: string;
+  courseTitle?: string;
+}
+
+export interface CourseDetailDTO {
+  id: string;
+  title: string;
+  description: string;
+  category: string | null;
+  active: boolean;
+  lessons: LessonDTO[];
+  quizQuestions: QuizQuestionDTO[];
+  enrolled: boolean;
+  completedLessonIds: string[];
+  completedAt: string | null;
+  latestAttempt: QuizAttemptDTO | null;
+  certificate: CertificateDTO | null;
+}
+
+export interface MyLearningRowDTO {
+  enrollmentId: string;
+  courseId: string;
+  title: string;
+  category: string | null;
+  enrolledAt: string;
+  completedAt: string | null;
+  totalLessons: number;
+  completedLessons: number;
+  certificate: CertificateDTO | null;
+}
