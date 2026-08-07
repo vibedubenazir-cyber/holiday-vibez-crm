@@ -87,7 +87,7 @@ export const MODULES: ModuleDef[] = [
     id: 'FINANCE',
     label: 'Finance',
     description: 'Bookings, payments, expenses, currency, coupons, and P&L reporting.',
-    homeHref: '/bookings',
+    homeHref: '/accounts',
     groups: [
       {
         title: 'Finance',
@@ -98,6 +98,16 @@ export const MODULES: ModuleDef[] = [
           { href: '/currency', label: 'Currency Exchange', roles: ALL_ROLES },
           { href: '/coupons', label: 'Coupons & Offers', roles: ALL_ROLES },
           { href: '/suppliers', label: 'Vendors', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
+        ],
+      },
+      {
+        title: 'Accounts',
+        items: [
+          { href: '/accounts', label: 'Accounts Dashboard', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
+          { href: '/petty-cash', label: 'Petty Cash', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
+          { href: '/budgets', label: 'Budget & Forecast', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
+          { href: '/bank-reconciliation', label: 'Bank Reconciliation', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
+          { href: '/dmc-commissions', label: 'DMC Commissions', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
         ],
       },
     ],

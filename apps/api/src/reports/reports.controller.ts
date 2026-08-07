@@ -43,4 +43,38 @@ export class ReportsController {
   complianceExpiring() {
     return this.reportsService.complianceExpiring();
   }
+
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER)
+  @Get('ledger/daily')
+  dailyLedger(
+    @Query('date') date: string | undefined,
+    @Query('branchId') branchId: string | undefined,
+    @CurrentUser() user: { role: Role; branchId: string | null },
+  ) {
+    const resolvedDate = date ?? new Date().toISOString().slice(0, 10);
+    const resolvedBranchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? undefined) : branchId;
+    return this.reportsService.dailyLedger(resolvedDate, resolvedBranchId);
+  }
+
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER)
+  @Get('gst')
+  gstReport(
+    @Query('year') year: string | undefined,
+    @Query('month') month: string | undefined,
+    @Query('branchId') branchId: string | undefined,
+    @CurrentUser() user: { role: Role; branchId: string | null },
+  ) {
+    const now = new Date();
+    const resolvedYear = year ? Number(year) : now.getFullYear();
+    const resolvedMonth = month ? Number(month) : now.getMonth() + 1;
+    const resolvedBranchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? undefined) : branchId;
+    return this.reportsService.gstReport(resolvedYear, resolvedMonth, resolvedBranchId);
+  }
+
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER)
+  @Get('accounts-dashboard')
+  accountsDashboard(@Query('branchId') branchId: string | undefined, @CurrentUser() user: { role: Role; branchId: string | null }) {
+    const resolvedBranchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? undefined) : branchId;
+    return this.reportsService.accountsDashboard(resolvedBranchId);
+  }
 }

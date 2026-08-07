@@ -299,6 +299,9 @@ model Branch {
   expenses  Expense[]
   campaigns Campaign[]
   teamChannels TeamChannel[]
+  pettyCashEntries PettyCashEntry[]
+  budgets          Budget[]
+  bankTransactions BankTransaction[]
 
   @@map("branches")
 }
@@ -449,6 +452,7 @@ model Supplier {
 
   rateCards RateCard[]
   payments  Payment[]
+  dmcCommissions DmcCommission[]
 
   @@map("suppliers")
 }
@@ -540,6 +544,7 @@ model Booking {
   reviews   Review[]
   feedback  TripFeedback[]
   insurancePolicies InsurancePolicy[]
+  dmcCommissions    DmcCommission[]
 
   @@map("bookings")
 }
@@ -565,6 +570,8 @@ model Payment {
   coupon         Coupon?  @relation(fields: [couponId], references: [id])
   discountAmount Decimal? @db.Decimal(14, 2)
   createdAt  DateTime    @default(now())
+
+  bankTransaction BankTransaction?
 
   @@map("payments")
 }
@@ -1210,4 +1217,98 @@ model Certificate {
   issuedAt     DateTime   @default(now())
 
   @@map("lms_certificates")
+}
+
+// Accounts sub-modules (Finance module): petty cash, budgets-vs-actuals, manual
+// bank reconciliation, and DMC commission receivables. Daily Ledger and the GST
+// report are pure aggregations over existing Payment/Expense/Invoice rows (see
+// ReportsService) — no dedicated model needed for those two.
+
+enum PettyCashType {
+  CASH_IN
+  CASH_OUT
+}
+
+model PettyCashEntry {
+  id          String        @id @default(uuid())
+  branchId    String
+  branch      Branch        @relation(fields: [branchId], references: [id])
+  type        PettyCashType
+  amount      Decimal       @db.Decimal(14, 2)
+  category    String?
+  description String
+  entryDate   DateTime      @db.Date
+  createdBy   String
+  createdAt   DateTime      @default(now())
+
+  @@map("petty_cash_entries")
+}
+
+// One row per branch+category+month — set once per period, compared against
+// the sum of matching Expense rows at read time so it never drifts from actuals.
+model Budget {
+  id             String          @id @default(uuid())
+  branchId       String
+  branch         Branch          @relation(fields: [branchId], references: [id])
+  category       ExpenseCategory
+  month          Int
+  year           Int
+  budgetedAmount Decimal         @db.Decimal(14, 2)
+  createdBy      String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@unique([branchId, category, month, year])
+  @@map("budgets")
+}
+
+enum BankTransactionType {
+  CREDIT
+  DEBIT
+}
+
+// Staff key in each bank statement line by hand, then match it against an
+// existing Payment (1:1 via matchedPaymentId) — no statement file format to
+// support, and a matched line can never be double-matched thanks to @unique.
+model BankTransaction {
+  id               String              @id @default(uuid())
+  branchId         String?
+  branch           Branch?             @relation(fields: [branchId], references: [id])
+  transactionDate  DateTime            @db.Date
+  description      String
+  amount           Decimal             @db.Decimal(14, 2)
+  type             BankTransactionType
+  matched          Boolean             @default(false)
+  matchedPaymentId String?             @unique
+  matchedPayment   Payment?            @relation(fields: [matchedPaymentId], references: [id])
+  createdBy        String
+  createdAt        DateTime            @default(now())
+
+  @@map("bank_transactions")
+}
+
+enum CommissionStatus {
+  PENDING
+  RECEIVED
+}
+
+// Money a DMC owes US (e.g. volume-based commission on a booking) — the
+// receivable-side counterpart to the existing outbound COMMISSION Payment
+// type, which is money we pay out. tdsAmount is what we expect withheld
+// under Indian TDS rules when the DMC actually pays out.
+model DmcCommission {
+  id         String            @id @default(uuid())
+  supplierId String
+  supplier   Supplier          @relation(fields: [supplierId], references: [id])
+  bookingId  String?
+  booking    Booking?          @relation(fields: [bookingId], references: [id])
+  amount     Decimal           @db.Decimal(14, 2)
+  tdsAmount  Decimal           @default(0) @db.Decimal(14, 2)
+  status     CommissionStatus  @default(PENDING)
+  receivedAt DateTime?
+  notes      String?
+  createdBy  String
+  createdAt  DateTime          @default(now())
+
+  @@map("dmc_commissions")
 }

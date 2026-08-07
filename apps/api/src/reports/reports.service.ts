@@ -205,4 +205,129 @@ export class ReportsService {
     }
     return { flagged: flagged.length, notified: sent };
   }
+
+  // Auto-generated view (not a stored journal) over the day's real cash
+  // movements — Payments actually paid, Expenses logged, and Petty Cash
+  // entries — so it's always in sync with those source records with no
+  // separate ledger-entry data entry step.
+  async dailyLedger(date: string, branchId?: string) {
+    const dayStart = new Date(`${date}T00:00:00.000Z`);
+    const dayEnd = new Date(`${date}T23:59:59.999Z`);
+
+    const [payments, expenses, pettyCash] = await Promise.all([
+      this.prisma.payment.findMany({
+        where: {
+          paidAt: { gte: dayStart, lte: dayEnd },
+          ...(branchId ? { booking: { quotation: { lead: { branchId } } } } : {}),
+        },
+        include: { booking: { include: { quotation: { include: { lead: true } } } } },
+      }),
+      this.prisma.expense.findMany({
+        where: { expenseDate: { gte: dayStart, lte: dayEnd }, ...(branchId ? { branchId } : {}) },
+      }),
+      this.prisma.pettyCashEntry.findMany({
+        where: { entryDate: { gte: dayStart, lte: dayEnd }, ...(branchId ? { branchId } : {}) },
+      }),
+    ]);
+
+    const rows = [
+      ...payments.map((p) => ({
+        source: 'PAYMENT' as const,
+        time: p.paidAt!,
+        description: `${p.type.replaceAll('_', ' ')}${p.category ? ` (${p.category})` : ''} — ${p.booking.quotation.lead.clientName}`,
+        direction: p.type === 'CLIENT_RECEIPT' ? ('IN' as const) : ('OUT' as const),
+        amount: Number(p.amount),
+      })),
+      ...expenses.map((e) => ({
+        source: 'EXPENSE' as const,
+        time: e.expenseDate,
+        description: `${e.category} — ${e.description}`,
+        direction: 'OUT' as const,
+        amount: Number(e.amount),
+      })),
+      ...pettyCash.map((p) => ({
+        source: 'PETTY_CASH' as const,
+        time: p.entryDate,
+        description: `${p.category ?? 'Petty cash'} — ${p.description}`,
+        direction: p.type === 'CASH_IN' ? ('IN' as const) : ('OUT' as const),
+        amount: Number(p.amount),
+      })),
+    ].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+
+    const totalIn = rows.filter((r) => r.direction === 'IN').reduce((s, r) => s + r.amount, 0);
+    const totalOut = rows.filter((r) => r.direction === 'OUT').reduce((s, r) => s + r.amount, 0);
+
+    return { date, rows, totalIn, totalOut, net: totalIn - totalOut };
+  }
+
+  // Output-GST summary (GSTR-1-style: outward supplies only, matching the
+  // "customer invoices only" scope GST was built for) for a given month.
+  async gstReport(year: number, month: number, branchId?: string) {
+    const monthStart = new Date(Date.UTC(year, month - 1, 1));
+    const monthEnd = new Date(Date.UTC(year, month, 1));
+
+    const invoices = await this.prisma.invoice.findMany({
+      where: {
+        issuedAt: { gte: monthStart, lt: monthEnd },
+        ...(branchId ? { booking: { quotation: { lead: { branchId } } } } : {}),
+      },
+      orderBy: { issuedAt: 'asc' },
+    });
+
+    const taxableValue = invoices.reduce((s, i) => s + Number(i.amount), 0);
+    const gstCollected = invoices.reduce((s, i) => s + Number(i.taxAmount), 0);
+
+    return {
+      year,
+      month,
+      invoiceCount: invoices.length,
+      taxableValue,
+      gstCollected,
+      totalInvoiced: taxableValue + gstCollected,
+      rows: invoices.map((i) => ({
+        invoiceNo: i.invoiceNo,
+        issuedAt: i.issuedAt,
+        amount: Number(i.amount),
+        gstRate: Number(i.gstRate),
+        taxAmount: Number(i.taxAmount),
+        customerGstin: i.customerGstin,
+      })),
+    };
+  }
+
+  // Single-screen rollup of everything under the Accounts umbrella (Daily Ledger,
+  // Petty Cash, GST, Budgets, Bank Reconciliation, DMC Commissions) so nobody has
+  // to visit six pages to see whether anything needs attention today.
+  async accountsDashboard(branchId?: string) {
+    const now = new Date();
+    const today = now.toISOString().slice(0, 10);
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+
+    const [ledgerToday, gstThisMonth, pettyCashBalance, budgets, unmatchedBankTxns, pendingCommissions] = await Promise.all([
+      this.dailyLedger(today, branchId),
+      this.gstReport(year, month, branchId),
+      this.prisma.pettyCashEntry
+        .findMany({ where: branchId ? { branchId } : undefined })
+        .then((entries) => entries.reduce((s, e) => s + (e.type === 'CASH_IN' ? Number(e.amount) : -Number(e.amount)), 0)),
+      this.prisma.budget.findMany({ where: { month, year, ...(branchId ? { branchId } : {}) } }),
+      this.prisma.bankTransaction.count({ where: { matched: false, ...(branchId ? { branchId } : {}) } }),
+      this.prisma.dmcCommission.findMany({ where: { status: 'PENDING' } }),
+    ]);
+
+    const totalBudgeted = budgets.reduce((s, b) => s + Number(b.budgetedAmount), 0);
+
+    return {
+      todayNetCashFlow: ledgerToday.net,
+      todayCashIn: ledgerToday.totalIn,
+      todayCashOut: ledgerToday.totalOut,
+      pettyCashBalance,
+      gstCollectedThisMonth: gstThisMonth.gstCollected,
+      budgetedThisMonth: totalBudgeted,
+      budgetCategoryCount: budgets.length,
+      unmatchedBankTransactions: unmatchedBankTxns,
+      pendingDmcCommissions: pendingCommissions.length,
+      pendingDmcCommissionAmount: pendingCommissions.reduce((s, c) => s + Number(c.amount), 0),
+    };
+  }
 }

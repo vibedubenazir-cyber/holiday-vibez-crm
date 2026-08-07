@@ -746,3 +746,103 @@ export interface MyLearningRowDTO {
   completedLessons: number;
   certificate: CertificateDTO | null;
 }
+
+export interface PettyCashEntryDTO {
+  id: string;
+  branchId: string;
+  type: 'CASH_IN' | 'CASH_OUT';
+  amount: number;
+  category: string | null;
+  description: string;
+  entryDate: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface BudgetRowDTO {
+  id: string;
+  branchId: string;
+  category: 'OFFICE' | 'TRAVEL' | 'MARKETING' | 'SALARY' | 'OTHER';
+  month: number;
+  year: number;
+  budgetedAmount: number;
+  actualAmount: number;
+  variance: number;
+  percentUsed: number;
+}
+
+export interface BankTransactionDTO {
+  id: string;
+  branchId: string | null;
+  transactionDate: string;
+  description: string;
+  amount: number;
+  type: 'CREDIT' | 'DEBIT';
+  matched: boolean;
+  matchedPaymentId: string | null;
+  matchedPayment?: PaymentDTO | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface DmcCommissionDTO {
+  id: string;
+  supplierId: string;
+  supplier?: SupplierDTO;
+  bookingId: string | null;
+  amount: number;
+  tdsAmount: number;
+  status: 'PENDING' | 'RECEIVED';
+  receivedAt: string | null;
+  notes: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface DailyLedgerRowDTO {
+  source: 'PAYMENT' | 'EXPENSE' | 'PETTY_CASH';
+  time: string;
+  description: string;
+  direction: 'IN' | 'OUT';
+  amount: number;
+}
+
+export interface DailyLedgerDTO {
+  date: string;
+  rows: DailyLedgerRowDTO[];
+  totalIn: number;
+  totalOut: number;
+  net: number;
+}
+
+export interface GstReportRowDTO {
+  invoiceNo: string;
+  issuedAt: string;
+  amount: number;
+  gstRate: number;
+  taxAmount: number;
+  customerGstin: string | null;
+}
+
+export interface GstReportDTO {
+  year: number;
+  month: number;
+  invoiceCount: number;
+  taxableValue: number;
+  gstCollected: number;
+  totalInvoiced: number;
+  rows: GstReportRowDTO[];
+}
+
+export interface AccountsDashboardDTO {
+  todayNetCashFlow: number;
+  todayCashIn: number;
+  todayCashOut: number;
+  pettyCashBalance: number;
+  gstCollectedThisMonth: number;
+  budgetedThisMonth: number;
+  budgetCategoryCount: number;
+  unmatchedBankTransactions: number;
+  pendingDmcCommissions: number;
+  pendingDmcCommissionAmount: number;
+}

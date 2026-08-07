@@ -218,3 +218,18 @@ export enum PresenceStatus {
   BUSY = 'BUSY',
   OFFLINE = 'OFFLINE',
 }
+
+export enum PettyCashType {
+  CASH_IN = 'CASH_IN',
+  CASH_OUT = 'CASH_OUT',
+}
+
+export enum BankTransactionType {
+  CREDIT = 'CREDIT',
+  DEBIT = 'DEBIT',
+}
+
+export enum CommissionStatus {
+  PENDING = 'PENDING',
+  RECEIVED = 'RECEIVED',
+}

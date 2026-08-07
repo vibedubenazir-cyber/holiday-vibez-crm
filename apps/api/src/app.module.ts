@@ -43,6 +43,10 @@ import { SupportTicketsModule } from './support-tickets/support-tickets.module';
 import { TeamChatModule } from './team-chat/team-chat.module';
 import { CouponsModule } from './coupons/coupons.module';
 import { LmsModule } from './lms/lms.module';
+import { PettyCashModule } from './petty-cash/petty-cash.module';
+import { BudgetsModule } from './budgets/budgets.module';
+import { BankReconciliationModule } from './bank-reconciliation/bank-reconciliation.module';
+import { DmcCommissionsModule } from './dmc-commissions/dmc-commissions.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -91,6 +95,10 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     TeamChatModule,
     CouponsModule,
     LmsModule,
+    PettyCashModule,
+    BudgetsModule,
+    BankReconciliationModule,
+    DmcCommissionsModule,
   ],
   providers: [
     PrismaService,
