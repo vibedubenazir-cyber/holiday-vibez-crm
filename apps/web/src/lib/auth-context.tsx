@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { useRouter } from 'next/navigation';
 import type { LoginResponseDTO, UserDTO } from '@holiday-vibez/shared';
 import { api, setAccessToken } from './api';
+import { clearSelectedModule } from './modules';
 
 interface AuthContextValue {
   user: UserDTO | null;
@@ -50,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       setAccessToken(data.accessToken);
       setUser(data.user);
-      router.push('/dashboard');
+      router.push('/modules');
     },
     [router],
   );
@@ -60,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await api.post<{ accessToken: string; user: UserDTO }>('/auth/2fa/verify', { userId, code });
       setAccessToken(data.accessToken);
       setUser(data.user);
-      router.push('/dashboard');
+      router.push('/modules');
     },
     [router],
   );
@@ -69,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await api.post('/auth/logout');
     setAccessToken(null);
     setUser(null);
+    clearSelectedModule();
     router.push('/login');
   }, [router]);
 

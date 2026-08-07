@@ -1,83 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Role } from '@holiday-vibez/shared';
 import { useAuth } from '@/lib/auth-context';
 import { FloatingChatWidget } from './FloatingChatWidget';
-
-type NavItem = { href: string; label: string; roles: Role[] };
-type NavGroup = { title: string | null; items: NavItem[] };
-
-// Sidebar is organized department-wise rather than one flat list — each
-// group renders under its own header so staff can find the right tool by
-// what area of the business it belongs to (Sales, Finance, Operations,
-// Marketing, Admin), not by hunting through 28 alphabetically-unsorted rows.
-const NAV_GROUPS: NavGroup[] = [
-  {
-    title: null,
-    items: [{ href: '/dashboard', label: 'Dashboard', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] }],
-  },
-  {
-    title: 'Sales & CRM',
-    items: [
-      { href: '/leads', label: 'Leads', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/inbox', label: 'Inbox', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/quotations', label: 'Quotations', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/approvals', label: 'Approvals', roles: [Role.ADMIN, Role.BRANCH_MANAGER] },
-      { href: '/clients', label: 'Clients', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/targets', label: 'Targets & Leaderboard', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-    ],
-  },
-  {
-    title: 'Finance',
-    items: [
-      { href: '/bookings', label: 'Bookings & Payments', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/expenses', label: 'Accounts & Finance', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-      { href: '/reports', label: 'Reports', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER] },
-      { href: '/currency', label: 'Currency Exchange', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/coupons', label: 'Coupons & Offers', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-    ],
-  },
-  {
-    title: 'Operations',
-    items: [
-      { href: '/packages', label: 'Packages', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/calendar', label: 'Departure Calendar', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/suppliers', label: 'Suppliers', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-      { href: '/hotel-masters', label: 'Hotel Masters', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-      { href: '/day-itineraries', label: 'Day Itinerary', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-      { href: '/attendance', label: 'Attendance', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/leave', label: 'Leave', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/payroll', label: 'Payroll', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/support', label: 'Support Tickets', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/team-chat', label: 'Team Chat', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-    ],
-  },
-  {
-    title: 'Marketing & Website',
-    items: [
-      { href: '/marketing', label: 'Marketing', roles: [Role.ADMIN, Role.DIRECTOR] },
-      { href: '/cms', label: 'Website CMS', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-      { href: '/templates', label: 'Templates', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/automation', label: 'Automation', roles: [Role.ADMIN, Role.DIRECTOR] },
-    ],
-  },
-  {
-    title: 'Admin',
-    items: [
-      { href: '/admin/users', label: 'Users', roles: [Role.ADMIN, Role.DIRECTOR] },
-      { href: '/admin/branches', label: 'Branches', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/admin/rates', label: 'Rate Cards', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-      { href: '/custom-fields', label: 'Custom Fields', roles: [Role.ADMIN, Role.DIRECTOR] },
-      { href: '/storage', label: 'File Storage', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-      { href: '/data-admin', label: 'Data Admin', roles: [Role.ADMIN, Role.DIRECTOR] },
-      { href: '/security', label: 'Security', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-    ],
-  },
-];
+import { MODULES, getSelectedModule, type ModuleId, type NavItem } from '@/lib/modules';
 
 const ROLE_LABELS: Record<string, string> = {
   DIRECTOR: 'Director',
@@ -100,6 +30,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [moduleId, setModuleId] = useState<ModuleId | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -107,7 +38,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [loading, user, router]);
 
-  if (loading || !user) {
+  useEffect(() => {
+    setModuleId(getSelectedModule() ?? 'CRM');
+  }, [pathname]);
+
+  if (loading || !user || !moduleId) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-slate-500">Loading...</p>
@@ -115,10 +50,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const visibleGroups = NAV_GROUPS.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => item.roles.includes(user.role as Role)),
-  })).filter((group) => group.items.length > 0);
+  const activeModule = MODULES.find((m) => m.id === moduleId) ?? MODULES[0];
+
+  const visibleGroups = activeModule.groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => item.roles.includes(user.role as Role)),
+    }))
+    .filter((group) => group.items.length > 0);
 
   function navLink(item: NavItem) {
     const active = pathname === item.href;
@@ -143,6 +82,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex justify-center px-5 py-5">
           <Image src="/logo-white.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-28" priority />
         </div>
+        <div className="px-5">
+          <span className="inline-block rounded-lg bg-white/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white/80">
+            {activeModule.label}
+          </span>
+        </div>
         <nav className="flex flex-1 flex-col gap-0.5 p-3">
           {visibleGroups.map((group, i) => (
             <div key={group.title ?? 'top'} className={i > 0 ? 'mt-4' : undefined}>
@@ -166,6 +110,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Link
+              href="/modules"
+              className="rounded-lg border border-white/30 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/10"
+            >
+              Modules
+            </Link>
             <button
               onClick={() => logout()}
               className="rounded-lg border border-white/30 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/10"
