@@ -3,7 +3,13 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { SCHEDULED_JOBS_QUEUE } from './jobs.constants';
 
-export type JobName = 'sla-check' | 'birthday-check' | 'automation-sweep' | 'currency-refresh' | 'compliance-check';
+export type JobName =
+  | 'sla-check'
+  | 'birthday-check'
+  | 'automation-sweep'
+  | 'currency-refresh'
+  | 'compliance-check'
+  | 'engagement-reminders';
 
 // upsertJobScheduler is idempotent: calling it again with the same scheduler
 // id (re)sets the schedule instead of creating a duplicate, so this can run
@@ -21,6 +27,9 @@ const SCHEDULES: { id: JobName; pattern: string; comment: string }[] = [
   // Real cadence is once a day (passport/visa status doesn't change hour to
   // hour) — shortened for the same demonstrability reason as birthday-check.
   { id: 'compliance-check', pattern: '0 */6 * * *', comment: 'every 6 hours (shortened for demonstrability)' },
+  // Pre-departure/payment-due/post-trip-review WhatsApp nudges — also
+  // naturally a once-a-day check, shortened for the same reason.
+  { id: 'engagement-reminders', pattern: '0 */6 * * *', comment: 'every 6 hours (shortened for demonstrability)' },
 ];
 
 @Injectable()

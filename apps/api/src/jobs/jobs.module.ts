@@ -7,6 +7,7 @@ import { MarketingModule } from '../marketing/marketing.module';
 import { AutomationModule } from '../automation/automation.module';
 import { CurrencyModule } from '../currency/currency.module';
 import { ReportsModule } from '../reports/reports.module';
+import { BookingsModule } from '../bookings/bookings.module';
 import { JobsProcessor } from './jobs.processor';
 import { JobsScheduler } from './jobs.scheduler';
 import { SCHEDULED_JOBS_QUEUE } from './jobs.constants';
@@ -28,6 +29,7 @@ import { SCHEDULED_JOBS_QUEUE } from './jobs.constants';
     AutomationModule,
     CurrencyModule,
     ReportsModule,
+    BookingsModule,
   ],
   providers: [JobsProcessor, JobsScheduler],
 })

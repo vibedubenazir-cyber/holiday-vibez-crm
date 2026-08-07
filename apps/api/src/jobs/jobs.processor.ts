@@ -5,6 +5,7 @@ import { MarketingService } from '../marketing/marketing.service';
 import { AutomationService } from '../automation/automation.service';
 import { CurrencyService } from '../currency/currency.service';
 import { ReportsService } from '../reports/reports.service';
+import { BookingsService } from '../bookings/bookings.service';
 import { SCHEDULED_JOBS_QUEUE } from './jobs.constants';
 import type { JobName } from './jobs.scheduler';
 
@@ -16,6 +17,7 @@ export class JobsProcessor extends WorkerHost {
     private readonly automationService: AutomationService,
     private readonly currencyService: CurrencyService,
     private readonly reportsService: ReportsService,
+    private readonly bookingsService: BookingsService,
   ) {
     super();
   }
@@ -33,6 +35,8 @@ export class JobsProcessor extends WorkerHost {
           return await this.currencyService.refreshRates();
         case 'compliance-check':
           return await this.reportsService.notifyComplianceIssues();
+        case 'engagement-reminders':
+          return await this.bookingsService.sendEngagementReminders();
       }
     } catch (err) {
       console.error(`Scheduled job "${job.name}" failed`, err);
