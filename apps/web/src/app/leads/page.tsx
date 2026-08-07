@@ -3,6 +3,7 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/AppShell';
+import { BadgeDropdown, type BadgeDropdownOption } from '@/components/BadgeDropdown';
 import { useAuth } from '@/lib/auth-context';
 import { api, ApiError, getAccessToken } from '@/lib/api';
 import { LeadSource, LeadStatus, LeadTemperature, Role, type BranchDTO, type ClientDTO, type LeadSummaryDTO } from '@holiday-vibez/shared';
@@ -19,18 +20,40 @@ interface BulkImportRow {
 const SOURCE_OPTIONS = [LeadSource.GOOGLE, LeadSource.META, LeadSource.WEBSITE, LeadSource.WHATSAPP, LeadSource.REFERRAL, LeadSource.WALKIN];
 const STATUS_OPTIONS = Object.values(LeadStatus);
 
+// Each pipeline stage gets its own color so a row's status is readable at a
+// glance instead of every stage rendering as the same blue pill.
 const STATUS_COLORS: Record<string, string> = {
   NEW: 'bg-blue-100 text-blue-700',
-  PROPOSAL_SENT: 'bg-blue-100 text-blue-700',
-  NO_CONNECT: 'bg-blue-100 text-blue-700',
-  HOT_LEAD: 'bg-blue-100 text-blue-700',
-  PROPOSAL_CONFIRMED: 'bg-blue-100 text-blue-700',
-  PLAN_DROPPED: 'bg-blue-100 text-blue-700',
-  FOLLOW_UP: 'bg-blue-100 text-blue-700',
-  CONFIRMED: 'bg-blue-100 text-blue-700',
-  POSTPONED: 'bg-blue-100 text-blue-700',
-  JUNK_NOT_INTERESTED: 'bg-slate-200 text-slate-600',
+  PROPOSAL_SENT: 'bg-indigo-100 text-indigo-700',
+  NO_CONNECT: 'bg-amber-100 text-amber-700',
+  HOT_LEAD: 'bg-red-100 text-red-700',
+  PROPOSAL_CONFIRMED: 'bg-teal-100 text-teal-700',
+  PLAN_DROPPED: 'bg-slate-200 text-slate-600',
+  FOLLOW_UP: 'bg-amber-100 text-amber-700',
+  CONFIRMED: 'bg-emerald-100 text-emerald-700',
+  POSTPONED: 'bg-slate-200 text-slate-600',
+  JUNK_NOT_INTERESTED: 'bg-slate-200 text-slate-500',
 };
+
+const STATUS_DOT_COLORS: Record<string, string> = {
+  NEW: 'bg-blue-500',
+  PROPOSAL_SENT: 'bg-indigo-500',
+  NO_CONNECT: 'bg-amber-500',
+  HOT_LEAD: 'bg-red-500',
+  PROPOSAL_CONFIRMED: 'bg-teal-500',
+  PLAN_DROPPED: 'bg-slate-400',
+  FOLLOW_UP: 'bg-amber-500',
+  CONFIRMED: 'bg-emerald-500',
+  POSTPONED: 'bg-slate-400',
+  JUNK_NOT_INTERESTED: 'bg-slate-400',
+};
+
+const STATUS_DROPDOWN_OPTIONS: BadgeDropdownOption[] = STATUS_OPTIONS.map((s) => ({
+  value: s,
+  label: s.replaceAll('_', ' '),
+  colorClass: STATUS_COLORS[s] ?? 'bg-slate-100 text-slate-600',
+  dotClass: STATUS_DOT_COLORS[s] ?? 'bg-slate-400',
+}));
 
 const TEMPERATURE_OPTIONS = [LeadTemperature.HOT, LeadTemperature.WARM, LeadTemperature.COLD];
 
@@ -41,6 +64,19 @@ const TEMPERATURE_COLORS: Record<string, string> = {
   WARM: 'bg-orange-100 text-orange-700',
   COLD: 'bg-emerald-100 text-emerald-700',
 };
+
+const TEMPERATURE_DOT_COLORS: Record<string, string> = {
+  HOT: 'bg-red-500',
+  WARM: 'bg-orange-500',
+  COLD: 'bg-emerald-500',
+};
+
+const TEMPERATURE_DROPDOWN_OPTIONS: BadgeDropdownOption[] = TEMPERATURE_OPTIONS.map((t) => ({
+  value: t,
+  label: t.charAt(0) + t.slice(1).toLowerCase(),
+  colorClass: TEMPERATURE_COLORS[t],
+  dotClass: TEMPERATURE_DOT_COLORS[t],
+}));
 
 export default function LeadsPage() {
   const { user: me } = useAuth();
@@ -223,54 +259,56 @@ export default function LeadsPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden bg-white">
+      <div className="mt-4 overflow-hidden rounded-xl bg-white shadow-card dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
-              <th className="px-4 py-2">Client</th>
-              <th className="px-4 py-2">Destination</th>
-              <th className="px-4 py-2">Branch</th>
-              <th className="px-4 py-2">Source</th>
-              <th className="px-4 py-2" title="Whether this lead was contacted within the required response-time window">SLA</th>
-              <th className="px-4 py-2">Status</th>
-              <th className="px-4 py-2" title="How likely/urgent this lead is to convert">Priority</th>
-              <th className="px-4 py-2 text-right">Quotation</th>
+              <th className="px-4 py-3">Client</th>
+              <th className="px-4 py-3">Destination</th>
+              <th className="px-4 py-3">Branch</th>
+              <th className="px-4 py-3">Source</th>
+              <th className="px-4 py-3" title="Whether this lead was contacted within the required response-time window">SLA</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3" title="How likely/urgent this lead is to convert">Priority</th>
+              <th className="px-4 py-3 text-right">Quotation</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
             {leads.map((l) => (
-              <tr key={l.id} className="border-t border-slate-100">
-                <td className="px-4 py-2 font-medium text-slate-800">{l.clientName}<div className="text-xs text-slate-400">{l.phone}</div></td>
-                <td className="px-4 py-2">{l.destination}</td>
-                <td className="px-4 py-2">{branchName(l.branchId)}</td>
-                <td className="px-4 py-2">{l.source}</td>
-                <td className="px-4 py-2">
+              <tr key={l.id} className="transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
+                      {initials(l.clientName)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-800 dark:text-slate-100">{l.clientName}</p>
+                      <p className="text-xs text-slate-400">{l.phone}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{l.destination}</td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{branchName(l.branchId)}</td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{l.source}</td>
+                <td className="px-4 py-3">
                   {l.slaBreached ? (
-                    <span title="Not contacted within the required response-time window" className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Breached</span>
+                    <span title="Not contacted within the required response-time window" className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500" /> Breached
+                    </span>
                   ) : (
-                    <span title="Contacted within the required response-time window" className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">On time</span>
+                    <span title="Contacted within the required response-time window" className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500" /> On time
+                    </span>
                   )}
                 </td>
-                <td className="px-4 py-2">
-                  <select
-                    value={l.status}
-                    onChange={(e) => handleStatusChange(l.id, e.target.value)}
-                    className={`rounded-full border-none px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[l.status] ?? 'bg-slate-100 text-slate-600'}`}
-                  >
-                    {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                <td className="px-4 py-3">
+                  <BadgeDropdown value={l.status} options={STATUS_DROPDOWN_OPTIONS} onChange={(v) => handleStatusChange(l.id, v)} />
                 </td>
-                <td className="px-4 py-2">
-                  <select
-                    value={l.temperature}
-                    onChange={(e) => handleTemperatureChange(l.id, e.target.value)}
-                    className={`rounded-full border-none px-2 py-0.5 text-xs font-medium ${TEMPERATURE_COLORS[l.temperature] ?? 'bg-slate-100 text-slate-600'}`}
-                  >
-                    {TEMPERATURE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-                  </select>
+                <td className="px-4 py-3">
+                  <BadgeDropdown value={l.temperature} options={TEMPERATURE_DROPDOWN_OPTIONS} onChange={(v) => handleTemperatureChange(l.id, v)} />
                 </td>
-                <td className="px-4 py-2 text-right">
-                  <Link href={`/leads/${l.id}`} className="text-brand hover:underline">Open</Link>
+                <td className="px-4 py-3 text-right">
+                  <Link href={`/leads/${l.id}`} className="font-medium text-brand hover:underline">Open</Link>
                 </td>
               </tr>
             ))}
@@ -282,4 +320,14 @@ export default function LeadsPage() {
       </div>
     </AppShell>
   );
+}
+
+function initials(name: string) {
+  return name
+    .split(' ')
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
 }

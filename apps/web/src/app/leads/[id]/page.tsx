@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AppShell } from '@/components/AppShell';
+import { BadgeDropdown, type BadgeDropdownOption } from '@/components/BadgeDropdown';
 import { api, ApiError } from '@/lib/api';
 import { CustomFieldType, LeadTemperature, type CustomFieldDefinitionDTO, type CustomFieldValueDTO, type LeadSummaryDTO, type QuotationSummaryDTO } from '@holiday-vibez/shared';
 
@@ -12,6 +13,17 @@ const TEMPERATURE_COLORS: Record<string, string> = {
   WARM: 'bg-orange-100 text-orange-700',
   COLD: 'bg-emerald-100 text-emerald-700',
 };
+const TEMPERATURE_DOT_COLORS: Record<string, string> = {
+  HOT: 'bg-red-500',
+  WARM: 'bg-orange-500',
+  COLD: 'bg-emerald-500',
+};
+const TEMPERATURE_DROPDOWN_OPTIONS: BadgeDropdownOption[] = TEMPERATURE_OPTIONS.map((t) => ({
+  value: t,
+  label: t.charAt(0) + t.slice(1).toLowerCase(),
+  colorClass: TEMPERATURE_COLORS[t],
+  dotClass: TEMPERATURE_DOT_COLORS[t],
+}));
 
 interface TravelerRow {
   id: string;
@@ -120,14 +132,7 @@ export default function LeadDetailPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{lead.clientName}</h1>
-            <select
-              value={lead.temperature}
-              onChange={(e) => handleTemperatureChange(e.target.value)}
-              title="How likely/urgent this lead is to convert"
-              className={`rounded-full border-none px-2 py-1 text-xs font-medium ${TEMPERATURE_COLORS[lead.temperature] ?? 'bg-slate-100 text-slate-600'}`}
-            >
-              {TEMPERATURE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
+            <BadgeDropdown value={lead.temperature} options={TEMPERATURE_DROPDOWN_OPTIONS} onChange={handleTemperatureChange} />
           </div>
           <p className="text-sm text-slate-500">{lead.destination} · {lead.phone} · {lead.status}</p>
         </div>
