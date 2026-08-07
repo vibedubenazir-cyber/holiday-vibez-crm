@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 type Readiness = 'GREEN' | 'AMBER' | 'RED';
 
+const REMINDER_WINDOW_DAYS = 7;
+
 @Injectable()
 export class CalendarService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   // Powers the Departure Calendar (spec Section 8, GET /calendar/departures).
   // Color-coding: green = docs + payment complete; amber = payment or one document
@@ -30,6 +36,50 @@ export class CalendarService {
     });
 
     return bookings.map((booking) => this.toCalendarEntry(booking));
+  }
+
+  // Scheduled daily (see jobs/jobs.scheduler.ts's "consultant-departure-reminders") —
+  // the Departure Calendar itself is already correctly scoped per consultant, but
+  // nothing previously pushed it to them; this closes that gap the same way
+  // compliance-check does for passport/visa risk, reusing the exact readiness
+  // computation the calendar page already shows. Fires once per booking (dedup via
+  // relatedEntity, same pattern as BookingsService.sendEngagementReminders) as soon
+  // as it enters the reminder window, not on every run inside that window.
+  async notifyUpcomingDepartures() {
+    const windowEnd = new Date(Date.now() + REMINDER_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+    const bookings = await this.prisma.booking.findMany({
+      where: {
+        departureDate: { gte: new Date(), lte: windowEnd },
+      },
+      include: {
+        quotation: { include: { lead: { include: { travelers: true } } } },
+        payments: true,
+      },
+    });
+
+    let sent = 0;
+    for (const booking of bookings) {
+      // Quotation.consultantId is non-nullable, so every booking already has
+      // an owner — no filtering needed beyond the date window above.
+      const consultantId = booking.quotation.consultantId;
+
+      const relatedEntity = `booking:${booking.id}:consultant-departure-reminder`;
+      const alreadySent = await this.prisma.notification.findFirst({ where: { relatedEntity } });
+      if (alreadySent) continue;
+
+      const entry = this.toCalendarEntry(booking);
+      await this.notifications.send({
+        channel: 'PUSH',
+        triggerType: 'consultant_departure_reminder',
+        recipient: consultantId,
+        relatedEntity,
+        subject: 'Upcoming departure',
+        body: `${entry.clientName} → ${entry.destination} departs in ${entry.daysToDeparture} day${entry.daysToDeparture === 1 ? '' : 's'} (readiness: ${entry.readiness}).`,
+      });
+      sent++;
+    }
+    return { checked: bookings.length, notified: sent };
   }
 
   private toCalendarEntry(booking: any) {

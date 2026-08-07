@@ -9,7 +9,8 @@ export type JobName =
   | 'automation-sweep'
   | 'currency-refresh'
   | 'compliance-check'
-  | 'engagement-reminders';
+  | 'engagement-reminders'
+  | 'consultant-departure-reminders';
 
 // upsertJobScheduler is idempotent: calling it again with the same scheduler
 // id (re)sets the schedule instead of creating a duplicate, so this can run
@@ -30,6 +31,9 @@ const SCHEDULES: { id: JobName; pattern: string; comment: string }[] = [
   // Pre-departure/payment-due/post-trip-review WhatsApp nudges — also
   // naturally a once-a-day check, shortened for the same reason.
   { id: 'engagement-reminders', pattern: '0 */6 * * *', comment: 'every 6 hours (shortened for demonstrability)' },
+  // Consultant-facing PUSH — same "once a day" real cadence, shortened for
+  // the same demonstrability reason as the others.
+  { id: 'consultant-departure-reminders', pattern: '0 */6 * * *', comment: 'every 6 hours (shortened for demonstrability)' },
 ];
 
 @Injectable()

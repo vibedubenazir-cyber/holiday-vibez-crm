@@ -8,6 +8,7 @@ import { AutomationModule } from '../automation/automation.module';
 import { CurrencyModule } from '../currency/currency.module';
 import { ReportsModule } from '../reports/reports.module';
 import { BookingsModule } from '../bookings/bookings.module';
+import { CalendarModule } from '../calendar/calendar.module';
 import { JobsProcessor } from './jobs.processor';
 import { JobsScheduler } from './jobs.scheduler';
 import { SCHEDULED_JOBS_QUEUE } from './jobs.constants';
@@ -30,6 +31,7 @@ import { SCHEDULED_JOBS_QUEUE } from './jobs.constants';
     CurrencyModule,
     ReportsModule,
     BookingsModule,
+    CalendarModule,
   ],
   providers: [JobsProcessor, JobsScheduler],
 })
