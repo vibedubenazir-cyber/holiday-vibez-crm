@@ -3,7 +3,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { SCHEDULED_JOBS_QUEUE } from './jobs.constants';
 
-export type JobName = 'sla-check' | 'birthday-check' | 'automation-sweep' | 'currency-refresh';
+export type JobName = 'sla-check' | 'birthday-check' | 'automation-sweep' | 'currency-refresh' | 'compliance-check';
 
 // upsertJobScheduler is idempotent: calling it again with the same scheduler
 // id (re)sets the schedule instead of creating a duplicate, so this can run
@@ -18,6 +18,9 @@ const SCHEDULES: { id: JobName; pattern: string; comment: string }[] = [
   // A real forex feed only needs checking hourly — shortened for the same
   // demonstrability reason as birthday-check above.
   { id: 'currency-refresh', pattern: '*/5 * * * *', comment: 'every 5 minutes (shortened for demonstrability)' },
+  // Real cadence is once a day (passport/visa status doesn't change hour to
+  // hour) — shortened for the same demonstrability reason as birthday-check.
+  { id: 'compliance-check', pattern: '0 */6 * * *', comment: 'every 6 hours (shortened for demonstrability)' },
 ];
 
 @Injectable()

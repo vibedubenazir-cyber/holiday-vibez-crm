@@ -4,6 +4,7 @@ import { LeadsService } from '../leads/leads.service';
 import { MarketingService } from '../marketing/marketing.service';
 import { AutomationService } from '../automation/automation.service';
 import { CurrencyService } from '../currency/currency.service';
+import { ReportsService } from '../reports/reports.service';
 import { SCHEDULED_JOBS_QUEUE } from './jobs.constants';
 import type { JobName } from './jobs.scheduler';
 
@@ -14,6 +15,7 @@ export class JobsProcessor extends WorkerHost {
     private readonly marketingService: MarketingService,
     private readonly automationService: AutomationService,
     private readonly currencyService: CurrencyService,
+    private readonly reportsService: ReportsService,
   ) {
     super();
   }
@@ -29,6 +31,8 @@ export class JobsProcessor extends WorkerHost {
           return await this.automationService.runSweep();
         case 'currency-refresh':
           return await this.currencyService.refreshRates();
+        case 'compliance-check':
+          return await this.reportsService.notifyComplianceIssues();
       }
     } catch (err) {
       console.error(`Scheduled job "${job.name}" failed`, err);

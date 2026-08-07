@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ReportsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   // GET /reports/director-dashboard (spec Section 13) — conversion, revenue/margin,
   // DMC performance proxy, target-vs-achieved, real-time (computed on read, not cached
@@ -168,6 +172,7 @@ export class ReportsService {
           travelerId: traveler.id,
           name: traveler.name,
           leadId: traveler.leadId,
+          assignedConsultantId: traveler.lead.assignedConsultantId,
           departureDate: upcomingBooking.departureDate,
           passportExpiry: traveler.passportExpiry,
           visaStatus: traveler.visaStatus,
@@ -176,5 +181,28 @@ export class ReportsService {
       }
     }
     return flagged;
+  }
+
+  // Scheduled daily (see jobs/jobs.scheduler.ts's "compliance-check") — turns the
+  // pull report above into a push alert so a manager doesn't have to remember to
+  // open it. Re-sends every run rather than tracking "already notified" state:
+  // compliance risk is important enough to keep surfacing until the traveler's
+  // record is actually fixed, and a daily PUSH ping is not spam at that cadence.
+  async notifyComplianceIssues() {
+    const flagged = await this.complianceExpiring();
+    let sent = 0;
+    for (const issue of flagged) {
+      if (!issue.assignedConsultantId) continue;
+      await this.notifications.send({
+        channel: 'PUSH',
+        triggerType: 'compliance_alert',
+        recipient: issue.assignedConsultantId,
+        relatedEntity: `traveler:${issue.travelerId}`,
+        subject: 'Travel document compliance alert',
+        body: `${issue.name}: ${issue.reason} (departs ${new Date(issue.departureDate).toLocaleDateString()})`,
+      });
+      sent++;
+    }
+    return { flagged: flagged.length, notified: sent };
   }
 }
