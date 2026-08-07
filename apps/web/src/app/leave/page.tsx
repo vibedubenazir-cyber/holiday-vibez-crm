@@ -149,7 +149,7 @@ export default function LeavePage() {
                 <td className="px-4 py-2">{days(r)}</td>
                 <td className="px-4 py-2 text-slate-500">{r.reason ?? '—'}</td>
                 <td className="px-4 py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[r.status] ?? 'bg-slate-100 text-slate-600'}`}>{r.status}</span>
+                  <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[r.status] ?? 'bg-slate-100 text-slate-600'}`}>{r.status}</span>
                 </td>
                 <td className="px-4 py-2 text-right">
                   {r.status === 'PENDING' && (
@@ -188,7 +188,7 @@ export default function LeavePage() {
                     <td className="px-4 py-2 text-slate-500">{new Date(r.startDate).toLocaleDateString()} – {new Date(r.endDate).toLocaleDateString()}</td>
                     <td className="px-4 py-2">{days(r)}</td>
                     <td className="px-4 py-2">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[r.status] ?? 'bg-slate-100 text-slate-600'}`}>{r.status}</span>
+                      <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[r.status] ?? 'bg-slate-100 text-slate-600'}`}>{r.status}</span>
                     </td>
                     <td className="px-4 py-2 text-right">
                       {r.status === 'PENDING' && (

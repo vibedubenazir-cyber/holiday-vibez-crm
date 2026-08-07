@@ -92,7 +92,7 @@ export default function ReportsPage() {
                 {dashboard.costsByCategory.map((row) => (
                   <span
                     key={row.category}
-                    className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700"
+                    className="rounded-lg bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700"
                   >
                     {row.category}: ₹{row.total.toLocaleString('en-IN')}
                   </span>
@@ -106,7 +106,7 @@ export default function ReportsPage() {
             {dashboard.leadsByStatus.map((row) => (
               <span
                 key={row.status}
-                className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700"
+                className="rounded-lg bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700"
               >
                 {row.status.replaceAll('_', ' ')}: {row._count}
               </span>

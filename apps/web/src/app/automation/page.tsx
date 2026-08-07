@@ -136,7 +136,7 @@ export default function AutomationPage() {
                 <td className="px-4 py-2">{r.delayMinutes}m</td>
                 <td className="px-4 py-2">{r.channel}</td>
                 <td className="px-4 py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${r.active ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>
+                  <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${r.active ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>
                     {r.active ? 'Active' : 'Paused'}
                   </span>
                 </td>

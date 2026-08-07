@@ -47,7 +47,7 @@ export default function QuotationsPage() {
                 <td className="px-4 py-2 font-medium text-slate-800">{q.refNo}</td>
                 <td className="px-4 py-2">{q.lead?.clientName ?? '—'}</td>
                 <td className="px-4 py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[q.status] ?? 'bg-slate-100'}`}>{q.status}</span>
+                  <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[q.status] ?? 'bg-slate-100'}`}>{q.status}</span>
                 </td>
                 <td className="px-4 py-2">₹{Number(q.totalAmount).toLocaleString('en-IN')}</td>
                 <td className="px-4 py-2 text-right"><Link href={`/quotations/${q.id}`} className="text-brand hover:underline">Open</Link></td>

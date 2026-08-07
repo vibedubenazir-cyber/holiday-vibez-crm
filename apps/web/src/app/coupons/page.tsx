@@ -181,7 +181,7 @@ export default function CouponsPage() {
                 </td>
                 <td className="px-4 py-2">
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    className={`rounded-lg px-2 py-0.5 text-xs font-medium ${
                       !c.active
                         ? 'bg-slate-200 text-slate-600'
                         : isExpired(c)

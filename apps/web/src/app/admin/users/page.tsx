@@ -137,7 +137,7 @@ export default function UsersPage() {
                 <td className="px-4 py-2">{u.role}</td>
                 <td className="px-4 py-2">{branchName(u.branchId)}</td>
                 <td className="px-4 py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                  <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${
                     u.status === 'ACTIVE' ? 'bg-blue-100 text-blue-700' :
                     u.status === 'ON_LEAVE' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'
                   }`}>

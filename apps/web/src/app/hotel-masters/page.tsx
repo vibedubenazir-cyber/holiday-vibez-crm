@@ -10,7 +10,7 @@ type Tab = 'hotels' | 'roomTypes' | 'mealPlans';
 
 function StatusBadge({ active }: { active: boolean }) {
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${active ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>
+    <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${active ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>
       {active ? 'Active' : 'Inactive'}
     </span>
   );

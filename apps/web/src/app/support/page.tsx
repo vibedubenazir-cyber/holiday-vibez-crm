@@ -154,11 +154,11 @@ export default function SupportPage() {
                   <td className="px-4 py-2 text-slate-500">{(t as any).lead?.clientName ?? '—'}</td>
                   <td className="px-4 py-2">
                     {canManage ? (
-                      <select value={t.priority} onChange={(e) => handleUpdate(t.id, { priority: e.target.value })} className={`rounded-full border-none px-2 py-0.5 text-xs font-medium ${PRIORITY_COLORS[t.priority]}`}>
+                      <select value={t.priority} onChange={(e) => handleUpdate(t.id, { priority: e.target.value })} className={`rounded-lg border-none px-2 py-0.5 text-xs font-medium ${PRIORITY_COLORS[t.priority]}`}>
                         {PRIORITY_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
                       </select>
                     ) : (
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_COLORS[t.priority]}`}>{t.priority}</span>
+                      <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${PRIORITY_COLORS[t.priority]}`}>{t.priority}</span>
                     )}
                   </td>
                   <td className="px-4 py-2">
@@ -173,11 +173,11 @@ export default function SupportPage() {
                   </td>
                   <td className="px-4 py-2">
                     {canEdit ? (
-                      <select value={t.status} onChange={(e) => handleUpdate(t.id, { status: e.target.value })} className={`rounded-full border-none px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[t.status]}`}>
+                      <select value={t.status} onChange={(e) => handleUpdate(t.id, { status: e.target.value })} className={`rounded-lg border-none px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[t.status]}`}>
                         {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
                       </select>
                     ) : (
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[t.status]}`}>{t.status}</span>
+                      <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[t.status]}`}>{t.status}</span>
                     )}
                   </td>
                   <td className="px-4 py-2 text-slate-500">{new Date(t.createdAt).toLocaleDateString()}</td>

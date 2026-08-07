@@ -199,18 +199,18 @@ export default function BookingsPage() {
       </p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-4 space-y-4">
         {bookings.map((b) => (
-          <div key={b.id} className="border-l-4 border-l-blue-500 bg-white p-4">
+          <div key={b.id} className="rounded-lg border-l-4 border-l-blue-500 bg-white p-5 shadow-card dark:bg-slate-800">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-slate-800">{b.quotation?.lead?.clientName} · {b.quotation?.lead?.destination}</p>
+                <p className="font-medium text-slate-800 dark:text-slate-100">{b.quotation?.lead?.clientName} · {b.quotation?.lead?.destination}</p>
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
                   Departs {new Date(b.departureDate).toLocaleDateString()} ·
                   <select
                     value={b.status}
                     onChange={(e) => handleStatusChange(b.id, e.target.value)}
-                    className={`rounded-full border-none px-2 py-0.5 text-xs font-medium ${BOOKING_STATUS_COLORS[b.status] ?? 'bg-slate-100 text-slate-600'}`}
+                    className={`rounded-lg border-none px-2 py-0.5 text-xs font-medium ${BOOKING_STATUS_COLORS[b.status] ?? 'bg-slate-100 text-slate-600'}`}
                   >
                     {BOOKING_STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -223,85 +223,108 @@ export default function BookingsPage() {
             </div>
 
             {expanded === b.id && (
-              <div className="mt-3 border-t border-slate-100 pt-3">
-                <table className="w-full text-sm">
-                  <thead className="text-left text-xs font-semibold uppercase tracking-wide text-brand">
-                    <tr><th className="py-1">Type</th><th className="py-1">Amount</th><th className="py-1">Status</th><th></th></tr>
-                  </thead>
-                  <tbody>
-                    {(b.payments ?? []).map((p) => (
-                      <tr key={p.id} className="border-t border-slate-100">
-                        <td className="py-1">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PAYMENT_TYPE_COLORS[p.type] ?? 'bg-slate-100 text-slate-600'}`}>
-                            {p.type.replaceAll('_', ' ')}
-                          </span>
-                          {p.category && <span className="ml-1.5 text-xs text-slate-400">{p.category}</span>}
-                        </td>
-                        <td className="py-1">
-                          ₹{Number(p.amount).toLocaleString('en-IN')}
-                          {p.discountAmount != null && (
-                            <span className="ml-1.5 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
-                              -₹{Number(p.discountAmount).toLocaleString('en-IN')} coupon
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-1">
-                          {p.paidAt ? (
-                            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
-                              Paid {new Date(p.paidAt).toLocaleDateString()}
-                            </span>
-                          ) : (
-                            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">Pending</span>
-                          )}
-                        </td>
-                        <td className="py-1 text-right">
-                          {!p.paidAt && (
-                            <div className="flex items-center justify-end gap-3">
-                              {p.gatewayLinkUrl ? (
-                                <button onClick={() => handleCopyLink(p.id, p.gatewayLinkUrl!)} className="text-brand hover:underline">
-                                  {copiedId === p.id ? 'Copied!' : 'Copy payment link'}
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => handleGeneratePaymentLink(p.id)}
-                                  disabled={linkBusy === p.id}
-                                  className="text-brand hover:underline disabled:opacity-60"
-                                >
-                                  {linkBusy === p.id ? 'Generating…' : 'Generate payment link'}
-                                </button>
-                              )}
-                              <button onClick={() => handleMarkPaid(p.id)} className="text-blue-600 hover:underline">Mark paid</button>
-                            </div>
-                          )}
-                        </td>
+              <div className="mt-4 border-t border-slate-100 pt-4 dark:border-slate-700">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Payments</p>
+                <div className="mt-2 overflow-x-auto rounded-lg border border-slate-100 dark:border-slate-700">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-brand dark:bg-slate-900/40">
+                      <tr>
+                        <th className="px-3 py-2">Type</th>
+                        <th className="px-3 py-2">Amount</th>
+                        <th className="px-3 py-2">Status</th>
+                        <th className="px-3 py-2 text-right">Actions</th>
                       </tr>
-                    ))}
-                    {(!b.payments || b.payments.length === 0) && (
-                      <tr><td colSpan={4} className="py-2 text-center text-slate-400">No payments recorded yet.</td></tr>
-                    )}
-                  </tbody>
-                </table>
-                <div className="mt-3 flex items-end gap-2">
-                  <select value={paymentForm.type} onChange={(e) => setPaymentForm({ ...paymentForm, type: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
-                    <option value="CLIENT_RECEIPT">Client receipt</option>
-                    <option value="DMC_PAYABLE">DMC payable</option>
-                    <option value="COMMISSION">Commission</option>
-                    <option value="REFUND">Refund</option>
-                  </select>
-                  {paymentForm.type !== 'CLIENT_RECEIPT' && (
-                    <select value={paymentForm.category} onChange={(e) => setPaymentForm({ ...paymentForm, category: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
-                      <option value="DMC">DMC</option>
-                      <option value="FLIGHT">Flight</option>
-                      <option value="HOTEL">Hotel</option>
-                      <option value="ACTIVITY">Activity</option>
-                      <option value="OTHER">Other</option>
+                    </thead>
+                    <tbody>
+                      {(b.payments ?? []).map((p) => (
+                        <tr key={p.id} className="border-t border-slate-100 dark:border-slate-700">
+                          <td className="px-3 py-2.5">
+                            <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${PAYMENT_TYPE_COLORS[p.type] ?? 'bg-slate-100 text-slate-600'}`}>
+                              {p.type.replaceAll('_', ' ')}
+                            </span>
+                            {p.category && <span className="ml-1.5 text-xs text-slate-400">{p.category}</span>}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span>₹{Number(p.amount).toLocaleString('en-IN')}</span>
+                              {p.discountAmount != null && (
+                                <span className="rounded-lg bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                                  -₹{Number(p.discountAmount).toLocaleString('en-IN')} coupon
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-3 py-2.5">
+                            {p.paidAt ? (
+                              <span className="rounded-lg bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                                Paid {new Date(p.paidAt).toLocaleDateString()}
+                              </span>
+                            ) : (
+                              <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">Pending</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2.5 text-right">
+                            {!p.paidAt && (
+                              <div className="flex flex-wrap items-center justify-end gap-3">
+                                {p.gatewayLinkUrl ? (
+                                  <button onClick={() => handleCopyLink(p.id, p.gatewayLinkUrl!)} className="text-brand hover:underline">
+                                    {copiedId === p.id ? 'Copied!' : 'Copy payment link'}
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => handleGeneratePaymentLink(p.id)}
+                                    disabled={linkBusy === p.id}
+                                    className="text-brand hover:underline disabled:opacity-60"
+                                  >
+                                    {linkBusy === p.id ? 'Generating…' : 'Generate payment link'}
+                                  </button>
+                                )}
+                                <button onClick={() => handleMarkPaid(p.id)} className="text-blue-600 hover:underline">Mark paid</button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {(!b.payments || b.payments.length === 0) && (
+                        <tr><td colSpan={4} className="px-3 py-4 text-center text-slate-400">No payments recorded yet.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-end gap-3 rounded-lg border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-700 dark:bg-slate-900/30">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Type</label>
+                    <select value={paymentForm.type} onChange={(e) => setPaymentForm({ ...paymentForm, type: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
+                      <option value="CLIENT_RECEIPT">Client receipt</option>
+                      <option value="DMC_PAYABLE">DMC payable</option>
+                      <option value="COMMISSION">Commission</option>
+                      <option value="REFUND">Refund</option>
                     </select>
+                  </div>
+                  {paymentForm.type !== 'CLIENT_RECEIPT' && (
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Category</label>
+                      <select value={paymentForm.category} onChange={(e) => setPaymentForm({ ...paymentForm, category: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
+                        <option value="DMC">DMC</option>
+                        <option value="FLIGHT">Flight</option>
+                        <option value="HOTEL">Hotel</option>
+                        <option value="ACTIVITY">Activity</option>
+                        <option value="OTHER">Other</option>
+                      </select>
+                    </div>
                   )}
-                  <input type="number" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Amount</label>
+                    <input type="number" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                  </div>
                   {paymentForm.type === 'CLIENT_RECEIPT' && (
-                    <input type="text" placeholder="Coupon code (optional)" value={paymentForm.couponCode} onChange={(e) => setPaymentForm({ ...paymentForm, couponCode: e.target.value.toUpperCase() })} className="w-40 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Coupon code</label>
+                      <input type="text" placeholder="Optional" value={paymentForm.couponCode} onChange={(e) => setPaymentForm({ ...paymentForm, couponCode: e.target.value.toUpperCase() })} className="w-36 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    </div>
                   )}
-                  <button onClick={() => handleAddPayment(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add payment</button>
+                  <button onClick={() => handleAddPayment(b.id)} className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add payment</button>
                 </div>
 
                 <div className="mt-4 border-t border-slate-100 pt-3">
@@ -342,7 +365,7 @@ export default function BookingsPage() {
                     {(reviews[b.id] ?? []).map((r) => (
                       <li key={r.id} className="text-sm text-slate-700 dark:text-slate-200">
                         {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}{' '}
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">{r.status}</span>{' '}
+                        <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">{r.status}</span>{' '}
                         {r.comment && <span className="text-slate-500 dark:text-slate-400">— {r.comment}</span>}
                       </li>
                     ))}
@@ -389,7 +412,7 @@ export default function BookingsPage() {
                     {(policies[b.id] ?? []).map((p) => (
                       <li key={p.id} className="text-sm text-slate-700 dark:text-slate-200">
                         {p.provider} #{p.policyNumber} · Cover ₹{Number(p.coverageAmount).toLocaleString('en-IN')} · Premium ₹{Number(p.premiumAmount).toLocaleString('en-IN')}{' '}
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">{p.status}</span>
+                        <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">{p.status}</span>
                       </li>
                     ))}
                     {(!policies[b.id] || policies[b.id].length === 0) && <li className="text-sm text-slate-400">No policy added yet.</li>}

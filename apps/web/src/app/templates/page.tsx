@@ -79,7 +79,7 @@ export default function TemplatesPage() {
           <div key={t.id} className="rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
             <div className="flex items-center justify-between">
               <p className="font-medium text-slate-800">{t.name}</p>
-              <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">{t.channel}</span>
+              <span className="rounded-lg bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">{t.channel}</span>
             </div>
             {t.subject && <p className="mt-1 text-xs text-blue-100">Subject: {t.subject}</p>}
             <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">{t.body}</p>

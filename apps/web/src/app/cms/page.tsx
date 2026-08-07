@@ -163,7 +163,7 @@ export default function CmsPage() {
           <div key={item.id} className="rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
             <div className="flex items-start justify-between">
               <p className="font-medium text-slate-800">{item.title}</p>
-              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${item.active ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>
+              <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${item.active ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>
                 {item.active ? 'Active' : 'Inactive'}
               </span>
             </div>
