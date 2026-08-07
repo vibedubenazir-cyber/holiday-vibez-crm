@@ -218,6 +218,11 @@ model User {
   // once the user opts into push notifications on /security. Single most-recent
   // token per user — multi-device push is a natural follow-up, not built here.
   fcmToken     String?
+  // Presence: lastSeenAt is bumped by a client heartbeat (see team-chat/presence);
+  // computed status is ONLINE if recent, else OFFLINE, unless manualStatus overrides
+  // it to BUSY. No separate "online" boolean — freshness of lastSeenAt is the signal.
+  lastSeenAt   DateTime?
+  manualStatus String?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
@@ -234,6 +239,8 @@ model User {
   salaryStructure   SalaryStructure? @relation("SalaryStructure")
   payslips          Payslip[]      @relation("Payslips")
   assignedTickets   SupportTicket[] @relation("AssignedTickets")
+  teamChannelMemberships TeamChannelMember[]
+  teamMessagesSent       TeamMessage[]
 
   @@map("users")
 }
@@ -254,6 +261,7 @@ model Branch {
   targets   Target[]
   expenses  Expense[]
   campaigns Campaign[]
+  teamChannels TeamChannel[]
 
   @@map("branches")
 }
@@ -997,4 +1005,58 @@ model DayItinerary {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Internal staff communication — separate from the customer-facing Conversation/Message
+// pair (which is always tied to a Lead). BRANCH channels are auto-provisioned per branch
+// and visible by branchId match (no membership rows needed); ORG_WIDE is a single
+// auto-provisioned singleton visible to everyone; GROUP channels are ad-hoc and gated by
+// TeamChannelMember rows.
+enum TeamChannelType {
+  BRANCH
+  ORG_WIDE
+  GROUP
+}
+
+model TeamChannel {
+  id            String          @id @default(uuid())
+  name          String
+  type          TeamChannelType
+  branchId      String?
+  branch        Branch?         @relation(fields: [branchId], references: [id])
+  createdBy     String
+  lastMessageAt DateTime        @default(now())
+  createdAt     DateTime        @default(now())
+
+  members  TeamChannelMember[]
+  messages TeamMessage[]
+
+  @@map("team_channels")
+}
+
+model TeamChannelMember {
+  id        String      @id @default(uuid())
+  channelId String
+  channel   TeamChannel @relation(fields: [channelId], references: [id])
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  joinedAt  DateTime    @default(now())
+
+  @@unique([channelId, userId])
+  @@map("team_channel_members")
+}
+
+model TeamMessage {
+  id        String      @id @default(uuid())
+  channelId String
+  channel   TeamChannel @relation(fields: [channelId], references: [id])
+  senderId  String
+  sender    User        @relation(fields: [senderId], references: [id])
+  body      String?
+  fileUrl   String?
+  fileName  String?
+  fileSize  Int?
+  createdAt DateTime    @default(now())
+
+  @@map("team_messages")
 }

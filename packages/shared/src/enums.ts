@@ -194,3 +194,15 @@ export enum LeaveStatus {
   REJECTED = 'REJECTED',
   CANCELLED = 'CANCELLED',
 }
+
+export enum TeamChannelType {
+  BRANCH = 'BRANCH',
+  ORG_WIDE = 'ORG_WIDE',
+  GROUP = 'GROUP',
+}
+
+export enum PresenceStatus {
+  ONLINE = 'ONLINE',
+  BUSY = 'BUSY',
+  OFFLINE = 'OFFLINE',
+}

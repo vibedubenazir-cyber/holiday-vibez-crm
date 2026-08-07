@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Role } from '@holiday-vibez/shared';
 import { useAuth } from '@/lib/auth-context';
+import { FloatingChatWidget } from './FloatingChatWidget';
 
 type NavItem = { href: string; label: string; roles: Role[] };
 type NavGroup = { title: string | null; items: NavItem[] };
@@ -51,6 +52,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/leave', label: 'Leave', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
       { href: '/payroll', label: 'Payroll', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
       { href: '/support', label: 'Support Tickets', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
+      { href: '/team-chat', label: 'Team Chat', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
     ],
   },
   {
@@ -173,6 +175,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="flex-1 overflow-y-auto bg-gradient-to-br from-brand-700 via-brand to-brand-600 p-6">{children}</main>
       </div>
+      <FloatingChatWidget />
     </div>
   );
 }

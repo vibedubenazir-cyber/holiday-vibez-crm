@@ -611,3 +611,42 @@ export interface SupportTicketDTO {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface TeamChannelMemberDTO {
+  id: string;
+  channelId: string;
+  userId: string;
+  joinedAt: string;
+  user?: { id: string; name: string; role: string };
+}
+
+export interface TeamChannelDTO {
+  id: string;
+  name: string;
+  type: 'BRANCH' | 'ORG_WIDE' | 'GROUP';
+  branchId: string | null;
+  createdBy: string;
+  lastMessageAt: string;
+  createdAt: string;
+  members?: TeamChannelMemberDTO[];
+}
+
+export interface PresenceDTO {
+  userId: string;
+  name: string;
+  role: string;
+  branchId: string | null;
+  status: 'ONLINE' | 'BUSY' | 'OFFLINE';
+}
+
+export interface TeamMessageDTO {
+  id: string;
+  channelId: string;
+  senderId: string;
+  sender?: { id: string; name: string; role: string };
+  body: string | null;
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+  createdAt: string;
+}
