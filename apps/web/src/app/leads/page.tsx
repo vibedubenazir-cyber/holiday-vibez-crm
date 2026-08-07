@@ -233,7 +233,7 @@ export default function LeadsPage() {
               <th className="px-4 py-2">Source</th>
               <th className="px-4 py-2" title="Whether this lead was contacted within the required response-time window">SLA</th>
               <th className="px-4 py-2">Status</th>
-              <th className="px-4 py-2" title="How likely/urgent this lead is to convert">Temperature</th>
+              <th className="px-4 py-2" title="How likely/urgent this lead is to convert">Priority</th>
               <th className="px-4 py-2 text-right">Quotation</th>
             </tr>
           </thead>
