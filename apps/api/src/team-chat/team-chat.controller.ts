@@ -22,6 +22,7 @@ import { CreateGroupChannelDto } from './dto/create-group-channel.dto';
 import { PostMessageDto } from './dto/post-message.dto';
 import { AddMembersDto } from './dto/add-members.dto';
 import { SetPresenceStatusDto } from './dto/set-presence-status.dto';
+import { OpenDirectChannelDto } from './dto/open-direct-channel.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -73,6 +74,12 @@ export class TeamChatController {
   @Post('channels/group')
   createGroupChannel(@Body() dto: CreateGroupChannelDto, @CurrentUser() user: AuthUser) {
     return this.teamChatService.createGroupChannel(dto, user);
+  }
+
+  @Roles(...ALL_ROLES)
+  @Post('channels/direct')
+  openDirectChannel(@Body() dto: OpenDirectChannelDto, @CurrentUser() user: AuthUser) {
+    return this.teamChatService.getOrCreateDirectChannel(dto.userId, user);
   }
 
   @Roles(...ALL_ROLES)

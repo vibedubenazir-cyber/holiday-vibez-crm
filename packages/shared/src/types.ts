@@ -623,7 +623,7 @@ export interface TeamChannelMemberDTO {
 export interface TeamChannelDTO {
   id: string;
   name: string;
-  type: 'BRANCH' | 'ORG_WIDE' | 'GROUP';
+  type: 'BRANCH' | 'ORG_WIDE' | 'GROUP' | 'DIRECT';
   branchId: string | null;
   createdBy: string;
   lastMessageAt: string;

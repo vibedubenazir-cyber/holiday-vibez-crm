@@ -51,9 +51,42 @@ export class TeamChatService {
     });
     const groupChannels = groupMemberships.map((m) => m.channel);
 
-    const all = [orgWide, ...branchChannels, ...groupChannels];
+    // DIRECT channels need their members included so the frontend can resolve
+    // "the other person's name" — a DIRECT channel has no meaningful name of its own.
+    const directMemberships = await this.prisma.teamChannelMember.findMany({
+      where: { userId: actor.id, channel: { type: 'DIRECT' } },
+      include: { channel: { include: { members: { include: { user: { select: USER_SELECT } } } } } },
+    });
+    const directChannels = directMemberships.map((m) => m.channel);
+
+    const all = [orgWide, ...branchChannels, ...groupChannels, ...directChannels];
     all.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
     return all;
+  }
+
+  async getOrCreateDirectChannel(otherUserId: string, actor: Actor) {
+    if (otherUserId === actor.id) throw new ForbiddenException('Cannot start a direct message with yourself');
+    const otherUser = await this.prisma.user.findUnique({ where: { id: otherUserId } });
+    if (!otherUser) throw new NotFoundException('User not found');
+
+    const existing = await this.prisma.teamChannelMember.findMany({
+      where: { userId: actor.id, channel: { type: 'DIRECT' } },
+      include: { channel: { include: { members: true } } },
+    });
+    const match = existing.find(
+      (m) => m.channel.members.length === 2 && m.channel.members.some((mem) => mem.userId === otherUserId),
+    );
+    if (match) return match.channel;
+
+    return this.prisma.teamChannel.create({
+      data: {
+        name: `${actor.id}:${otherUserId}`,
+        type: 'DIRECT',
+        createdBy: actor.id,
+        members: { create: [{ userId: actor.id }, { userId: otherUserId }] },
+      },
+      include: { members: { include: { user: { select: USER_SELECT } } } },
+    });
   }
 
   async createGroupChannel(dto: CreateGroupChannelDto, actor: Actor) {

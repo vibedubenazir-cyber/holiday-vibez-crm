@@ -1016,6 +1016,7 @@ enum TeamChannelType {
   BRANCH
   ORG_WIDE
   GROUP
+  DIRECT
 }
 
 model TeamChannel {

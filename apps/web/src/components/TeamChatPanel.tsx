@@ -12,7 +12,16 @@ const TYPE_LABELS: Record<string, string> = {
   ORG_WIDE: 'Company-wide',
   BRANCH: 'Branch',
   GROUP: 'Group',
+  DIRECT: 'Direct message',
 };
+
+function channelDisplayName(channel: TeamChannelDTO, meId?: string) {
+  if (channel.type === 'DIRECT' && channel.members) {
+    const other = channel.members.find((m) => m.userId !== meId);
+    if (other?.user) return other.user.name;
+  }
+  return channel.name;
+}
 
 function absoluteUrl(url: string) {
   return url.startsWith('http') ? url : `${API_BASE.replace(/\/api$/, '')}${url}`;
@@ -169,6 +178,17 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
     }
   }
 
+  async function handleOpenDirect(userId: string) {
+    try {
+      const channel = await api.post<TeamChannelDTO>('/team-chat/channels/direct', { userId });
+      await loadChannels();
+      setSelectedId(channel.id);
+      setTab('channels');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to open direct message');
+    }
+  }
+
   async function handleToggleMyStatus() {
     const next = myStatus === 'AVAILABLE' ? 'BUSY' : 'AVAILABLE';
     setMyStatus(next);
@@ -227,7 +247,7 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
                       selectedId === c.id ? 'bg-brand-50 dark:bg-slate-700' : ''
                     }`}
                   >
-                    <span className="truncate font-medium text-slate-800 dark:text-slate-100">{c.name}</span>
+                    <span className="truncate font-medium text-slate-800 dark:text-slate-100">{channelDisplayName(c, me?.id)}</span>
                     {!compact && <span className="text-xs text-slate-400">{TYPE_LABELS[c.type] ?? c.type}</span>}
                   </button>
                 </li>
@@ -237,12 +257,22 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
           </>
         ) : (
           <ul>
-            {presence.map((p) => (
-              <li key={p.userId} className="flex items-center gap-2 px-3 py-2 text-sm">
-                <PresenceDot status={p.status} />
-                <span className="truncate text-slate-700 dark:text-slate-200">{p.name}{p.userId === me?.id ? ' (you)' : ''}</span>
-              </li>
-            ))}
+            {presence.map((p) => {
+              const isMe = p.userId === me?.id;
+              return (
+                <li key={p.userId}>
+                  <button
+                    onClick={() => !isMe && handleOpenDirect(p.userId)}
+                    disabled={isMe}
+                    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${isMe ? '' : 'hover:bg-brand-50 dark:hover:bg-slate-700'}`}
+                    title={isMe ? undefined : `Message ${p.name}`}
+                  >
+                    <PresenceDot status={p.status} />
+                    <span className="truncate text-slate-700 dark:text-slate-200">{p.name}{isMe ? ' (you)' : ''}</span>
+                  </button>
+                </li>
+              );
+            })}
             {presence.length === 0 && <li className="px-3 py-4 text-xs text-slate-400">Loading…</li>}
             {me && (
               <li className="border-t border-slate-100 px-3 py-2 dark:border-slate-700">
@@ -260,7 +290,7 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
         {selectedChannel ? (
           <>
             <div className="border-b border-slate-100 p-2.5 dark:border-slate-700">
-              <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{selectedChannel.name}</p>
+              <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{channelDisplayName(selectedChannel, me?.id)}</p>
               {!compact && <p className="text-xs text-slate-400">{TYPE_LABELS[selectedChannel.type] ?? selectedChannel.type}</p>}
             </div>
             <div className="flex-1 space-y-2.5 overflow-y-auto p-3">

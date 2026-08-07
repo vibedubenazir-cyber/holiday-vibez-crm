@@ -199,6 +199,7 @@ export enum TeamChannelType {
   BRANCH = 'BRANCH',
   ORG_WIDE = 'ORG_WIDE',
   GROUP = 'GROUP',
+  DIRECT = 'DIRECT',
 }
 
 export enum PresenceStatus {
