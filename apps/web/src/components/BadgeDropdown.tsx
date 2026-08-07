@@ -49,7 +49,7 @@ export function BadgeDropdown({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
-        className={`inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-bold shadow-sm transition-opacity hover:opacity-90 disabled:cursor-default disabled:opacity-100 ${
+        className={`inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold shadow-sm transition-opacity hover:opacity-90 disabled:cursor-default disabled:opacity-100 ${
           current?.colorClass ?? 'bg-slate-400 text-white'
         } ${triggerClassName}`}
       >
