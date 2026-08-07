@@ -292,11 +292,11 @@ export default function LeadsPage() {
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{l.source}</td>
                 <td className="px-4 py-3">
                   {l.slaBreached ? (
-                    <span title="Not contacted within the required response-time window" className="inline-flex w-[90px] items-center justify-center whitespace-nowrap rounded-full bg-red-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
+                    <span title="Not contacted within the required response-time window" className="inline-flex w-[90px] items-center justify-center whitespace-nowrap rounded-lg bg-red-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
                       Breached
                     </span>
                   ) : (
-                    <span title="Contacted within the required response-time window" className="inline-flex w-[90px] items-center justify-center whitespace-nowrap rounded-full bg-blue-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
+                    <span title="Contacted within the required response-time window" className="inline-flex w-[90px] items-center justify-center whitespace-nowrap rounded-lg bg-blue-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
                       On time
                     </span>
                   )}
