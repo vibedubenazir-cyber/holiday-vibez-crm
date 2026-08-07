@@ -20,19 +20,19 @@ interface BulkImportRow {
 const SOURCE_OPTIONS = [LeadSource.GOOGLE, LeadSource.META, LeadSource.WEBSITE, LeadSource.WHATSAPP, LeadSource.REFERRAL, LeadSource.WALKIN];
 const STATUS_OPTIONS = Object.values(LeadStatus);
 
-// Each pipeline stage gets its own color so a row's status is readable at a
-// glance instead of every stage rendering as the same blue pill.
+// Each pipeline stage gets its own solid color so a row's status is readable
+// at a glance instead of every stage rendering as the same pale pill.
 const STATUS_COLORS: Record<string, string> = {
-  NEW: 'bg-blue-100 text-blue-700',
-  PROPOSAL_SENT: 'bg-indigo-100 text-indigo-700',
-  NO_CONNECT: 'bg-amber-100 text-amber-700',
-  HOT_LEAD: 'bg-red-100 text-red-700',
-  PROPOSAL_CONFIRMED: 'bg-teal-100 text-teal-700',
-  PLAN_DROPPED: 'bg-slate-200 text-slate-600',
-  FOLLOW_UP: 'bg-amber-100 text-amber-700',
-  CONFIRMED: 'bg-emerald-100 text-emerald-700',
-  POSTPONED: 'bg-slate-200 text-slate-600',
-  JUNK_NOT_INTERESTED: 'bg-slate-200 text-slate-500',
+  NEW: 'bg-blue-500 text-white',
+  PROPOSAL_SENT: 'bg-indigo-500 text-white',
+  NO_CONNECT: 'bg-amber-500 text-white',
+  HOT_LEAD: 'bg-red-500 text-white',
+  PROPOSAL_CONFIRMED: 'bg-teal-500 text-white',
+  PLAN_DROPPED: 'bg-slate-400 text-white',
+  FOLLOW_UP: 'bg-amber-500 text-white',
+  CONFIRMED: 'bg-emerald-500 text-white',
+  POSTPONED: 'bg-slate-400 text-white',
+  JUNK_NOT_INTERESTED: 'bg-slate-400 text-white',
 };
 
 const STATUS_DOT_COLORS: Record<string, string> = {
@@ -60,9 +60,9 @@ const TEMPERATURE_OPTIONS = [LeadTemperature.HOT, LeadTemperature.WARM, LeadTemp
 // Hot = act now (red), Warm = worth nurturing (orange), Cold = low urgency (green) —
 // independent of pipeline status, this is a consultant's own read on lead urgency.
 const TEMPERATURE_COLORS: Record<string, string> = {
-  HOT: 'bg-red-100 text-red-700',
-  WARM: 'bg-orange-100 text-orange-700',
-  COLD: 'bg-emerald-100 text-emerald-700',
+  HOT: 'bg-red-500 text-white',
+  WARM: 'bg-orange-500 text-white',
+  COLD: 'bg-emerald-500 text-white',
 };
 
 const TEMPERATURE_DOT_COLORS: Record<string, string> = {
@@ -292,12 +292,12 @@ export default function LeadsPage() {
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{l.source}</td>
                 <td className="px-4 py-3">
                   {l.slaBreached ? (
-                    <span title="Not contacted within the required response-time window" className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
-                      <span className="h-1.5 w-1.5 rounded-full bg-red-500" /> Breached
+                    <span title="Not contacted within the required response-time window" className="inline-flex w-[90px] items-center justify-center whitespace-nowrap rounded-xl bg-red-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
+                      Breached
                     </span>
                   ) : (
-                    <span title="Contacted within the required response-time window" className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">
-                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500" /> On time
+                    <span title="Contacted within the required response-time window" className="inline-flex w-[90px] items-center justify-center whitespace-nowrap rounded-xl bg-blue-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
+                      On time
                     </span>
                   )}
                 </td>
