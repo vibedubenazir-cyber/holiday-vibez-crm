@@ -94,6 +94,22 @@ export interface PaymentDTO {
   paidAt: string | null;
   gatewayRef: string | null;
   gatewayLinkUrl: string | null;
+  couponId: string | null;
+  discountAmount: number | null;
+}
+
+export interface CouponDTO {
+  id: string;
+  code: string;
+  discountType: 'PERCENTAGE' | 'FIXED';
+  discountValue: number;
+  validFrom: string;
+  validTo: string;
+  usageLimit: number | null;
+  usedCount: number;
+  active: boolean;
+  createdBy: string;
+  createdAt: string;
 }
 
 export interface TargetDTO {

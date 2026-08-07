@@ -26,7 +26,7 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState<BookingDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [paymentForm, setPaymentForm] = useState({ type: 'CLIENT_RECEIPT', category: 'DMC', amount: '' });
+  const [paymentForm, setPaymentForm] = useState({ type: 'CLIENT_RECEIPT', category: 'DMC', amount: '', couponCode: '' });
   const [vouchers, setVouchers] = useState<Record<string, VoucherDTO[]>>({});
   const [invoices, setInvoices] = useState<Record<string, InvoiceDTO[]>>({});
   const [linkBusy, setLinkBusy] = useState<string | null>(null);
@@ -57,8 +57,9 @@ export default function BookingsPage() {
         type: paymentForm.type,
         category: paymentForm.type === 'CLIENT_RECEIPT' ? undefined : paymentForm.category,
         amount: Number(paymentForm.amount),
+        couponCode: paymentForm.couponCode || undefined,
       });
-      setPaymentForm({ type: 'CLIENT_RECEIPT', category: 'DMC', amount: '' });
+      setPaymentForm({ type: 'CLIENT_RECEIPT', category: 'DMC', amount: '', couponCode: '' });
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to add payment');
@@ -236,7 +237,14 @@ export default function BookingsPage() {
                           </span>
                           {p.category && <span className="ml-1.5 text-xs text-slate-400">{p.category}</span>}
                         </td>
-                        <td className="py-1">₹{Number(p.amount).toLocaleString('en-IN')}</td>
+                        <td className="py-1">
+                          ₹{Number(p.amount).toLocaleString('en-IN')}
+                          {p.discountAmount != null && (
+                            <span className="ml-1.5 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                              -₹{Number(p.discountAmount).toLocaleString('en-IN')} coupon
+                            </span>
+                          )}
+                        </td>
                         <td className="py-1">
                           {p.paidAt ? (
                             <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
@@ -290,6 +298,9 @@ export default function BookingsPage() {
                     </select>
                   )}
                   <input type="number" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                  {paymentForm.type === 'CLIENT_RECEIPT' && (
+                    <input type="text" placeholder="Coupon code (optional)" value={paymentForm.couponCode} onChange={(e) => setPaymentForm({ ...paymentForm, couponCode: e.target.value.toUpperCase() })} className="w-40 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                  )}
                   <button onClick={() => handleAddPayment(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add payment</button>
                 </div>
 

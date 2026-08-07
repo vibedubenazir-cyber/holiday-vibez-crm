@@ -49,6 +49,32 @@ enum LeadStatus {
   JUNK_NOT_INTERESTED
 }
 
+enum CouponDiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+// Applied at payment-creation time (see PaymentsService.create) rather than
+// on the Quotation — a real checkout moment, not an estimate, so usedCount
+// only increments once money is actually about to change hands.
+model Coupon {
+  id            String             @id @default(uuid())
+  code          String             @unique
+  discountType  CouponDiscountType
+  discountValue Decimal            @db.Decimal(10, 2)
+  validFrom     DateTime
+  validTo       DateTime
+  usageLimit    Int?
+  usedCount     Int                @default(0)
+  active        Boolean            @default(true)
+  createdBy     String
+  createdAt     DateTime           @default(now())
+
+  payments Payment[]
+
+  @@map("coupons")
+}
+
 // Independent of LeadStatus (pipeline stage) — this is a consultant's own read
 // on how likely/urgent the lead is to convert, shown as a colored badge (red/
 // orange/green) in the UI. Defaults to WARM rather than forcing a judgment call
@@ -532,6 +558,9 @@ model Payment {
   gatewayLinkUrl String?
   supplierId String?
   supplier   Supplier?   @relation(fields: [supplierId], references: [id])
+  couponId       String?
+  coupon         Coupon?  @relation(fields: [couponId], references: [id])
+  discountAmount Decimal? @db.Decimal(14, 2)
   createdAt  DateTime    @default(now())
 
   @@map("payments")

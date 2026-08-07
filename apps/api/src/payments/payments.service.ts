@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { CouponsService } from '../coupons/coupons.service';
 import { CreatePaymentDto } from './dto/payment.dto';
 
 const RAZORPAY_API_URL = 'https://api.razorpay.com/v1/payment_links';
@@ -8,7 +9,10 @@ const RAZORPAY_API_URL = 'https://api.razorpay.com/v1/payment_links';
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly coupons: CouponsService,
+  ) {}
 
   findAll(bookingId?: string, branchId?: string) {
     return this.prisma.payment.findMany({
@@ -17,16 +21,36 @@ export class PaymentsService {
     });
   }
 
-  create(dto: CreatePaymentDto) {
-    return this.prisma.payment.create({
+  async create(dto: CreatePaymentDto) {
+    if (!dto.couponCode) {
+      return this.prisma.payment.create({
+        data: {
+          bookingId: dto.bookingId,
+          type: dto.type,
+          category: dto.category,
+          amount: dto.amount,
+          dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+        },
+      });
+    }
+
+    // computeDiscount() is pure (no side effects); redeem() is the only step
+    // that actually consumes a use, and only runs once the Payment row is
+    // about to be created — so a rejected/failed create() never burns a use.
+    const { coupon, discountAmount, finalAmount } = await this.coupons.computeDiscount(dto.couponCode, dto.amount);
+    const payment = await this.prisma.payment.create({
       data: {
         bookingId: dto.bookingId,
         type: dto.type,
         category: dto.category,
-        amount: dto.amount,
+        amount: finalAmount,
+        discountAmount,
+        couponId: coupon.id,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
       },
     });
+    await this.coupons.redeem(coupon.id);
+    return payment;
   }
 
   // Manual/offline reconciliation path (cash, bank transfer already received) —

@@ -208,6 +208,11 @@ export enum TeamChannelType {
   DIRECT = 'DIRECT',
 }
 
+export enum CouponDiscountType {
+  PERCENTAGE = 'PERCENTAGE',
+  FIXED = 'FIXED',
+}
+
 export enum PresenceStatus {
   ONLINE = 'ONLINE',
   BUSY = 'BUSY',

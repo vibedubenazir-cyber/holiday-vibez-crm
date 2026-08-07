@@ -20,4 +20,8 @@ export class CreatePaymentDto {
   @IsOptional()
   @IsDateString()
   dueDate?: string;
+
+  @IsOptional()
+  @IsString()
+  couponCode?: string;
 }
