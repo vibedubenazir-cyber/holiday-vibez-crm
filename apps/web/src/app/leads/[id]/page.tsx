@@ -4,7 +4,14 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AppShell } from '@/components/AppShell';
 import { api, ApiError } from '@/lib/api';
-import { CustomFieldType, type CustomFieldDefinitionDTO, type CustomFieldValueDTO, type LeadSummaryDTO, type QuotationSummaryDTO } from '@holiday-vibez/shared';
+import { CustomFieldType, LeadTemperature, type CustomFieldDefinitionDTO, type CustomFieldValueDTO, type LeadSummaryDTO, type QuotationSummaryDTO } from '@holiday-vibez/shared';
+
+const TEMPERATURE_OPTIONS = [LeadTemperature.HOT, LeadTemperature.WARM, LeadTemperature.COLD];
+const TEMPERATURE_COLORS: Record<string, string> = {
+  HOT: 'bg-red-100 text-red-700',
+  WARM: 'bg-orange-100 text-orange-700',
+  COLD: 'bg-emerald-100 text-emerald-700',
+};
 
 interface TravelerRow {
   id: string;
@@ -81,6 +88,15 @@ export default function LeadDetailPage() {
     }
   }
 
+  async function handleTemperatureChange(temperature: string) {
+    try {
+      await api.patch(`/leads/${id}`, { temperature });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to update lead');
+    }
+  }
+
   async function handleCreateQuotation() {
     try {
       const q = await api.post<QuotationSummaryDTO>('/quotations', { leadId: id });
@@ -102,7 +118,17 @@ export default function LeadDetailPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{lead.clientName}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{lead.clientName}</h1>
+            <select
+              value={lead.temperature}
+              onChange={(e) => handleTemperatureChange(e.target.value)}
+              title="How likely/urgent this lead is to convert"
+              className={`rounded-full border-none px-2 py-1 text-xs font-medium ${TEMPERATURE_COLORS[lead.temperature] ?? 'bg-slate-100 text-slate-600'}`}
+            >
+              {TEMPERATURE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
           <p className="text-sm text-slate-500">{lead.destination} · {lead.phone} · {lead.status}</p>
         </div>
         <button onClick={handleCreateQuotation} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">

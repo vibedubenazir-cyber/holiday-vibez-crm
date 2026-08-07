@@ -1,4 +1,4 @@
-import { LeadSource, LeadStatus } from '@prisma/client';
+import { LeadSource, LeadStatus, LeadTemperature } from '@prisma/client';
 import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class CreateLeadDto {
@@ -35,6 +35,10 @@ export class UpdateLeadDto {
   @IsOptional()
   @IsEnum(LeadStatus)
   status?: LeadStatus;
+
+  @IsOptional()
+  @IsEnum(LeadTemperature)
+  temperature?: LeadTemperature;
 
   @IsOptional()
   @IsString()

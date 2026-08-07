@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { AppShell } from '@/components/AppShell';
 import { useAuth } from '@/lib/auth-context';
 import { api, ApiError, getAccessToken } from '@/lib/api';
-import { LeadSource, LeadStatus, Role, type BranchDTO, type ClientDTO, type LeadSummaryDTO } from '@holiday-vibez/shared';
+import { LeadSource, LeadStatus, LeadTemperature, Role, type BranchDTO, type ClientDTO, type LeadSummaryDTO } from '@holiday-vibez/shared';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
 
@@ -30,6 +30,16 @@ const STATUS_COLORS: Record<string, string> = {
   CONFIRMED: 'bg-blue-100 text-blue-700',
   POSTPONED: 'bg-blue-100 text-blue-700',
   JUNK_NOT_INTERESTED: 'bg-slate-200 text-slate-600',
+};
+
+const TEMPERATURE_OPTIONS = [LeadTemperature.HOT, LeadTemperature.WARM, LeadTemperature.COLD];
+
+// Hot = act now (red), Warm = worth nurturing (orange), Cold = low urgency (green) —
+// independent of pipeline status, this is a consultant's own read on lead urgency.
+const TEMPERATURE_COLORS: Record<string, string> = {
+  HOT: 'bg-red-100 text-red-700',
+  WARM: 'bg-orange-100 text-orange-700',
+  COLD: 'bg-emerald-100 text-emerald-700',
 };
 
 export default function LeadsPage() {
@@ -138,6 +148,15 @@ export default function LeadsPage() {
     }
   }
 
+  async function handleTemperatureChange(id: string, temperature: string) {
+    try {
+      await api.patch(`/leads/${id}`, { temperature });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to update lead');
+    }
+  }
+
   return (
     <AppShell>
       <div className="flex items-center justify-between">
@@ -214,6 +233,7 @@ export default function LeadsPage() {
               <th className="px-4 py-2">Source</th>
               <th className="px-4 py-2" title="Whether this lead was contacted within the required response-time window">SLA</th>
               <th className="px-4 py-2">Status</th>
+              <th className="px-4 py-2" title="How likely/urgent this lead is to convert">Temperature</th>
               <th className="px-4 py-2 text-right">Quotation</th>
             </tr>
           </thead>
@@ -240,13 +260,22 @@ export default function LeadsPage() {
                     {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </td>
+                <td className="px-4 py-2">
+                  <select
+                    value={l.temperature}
+                    onChange={(e) => handleTemperatureChange(l.id, e.target.value)}
+                    className={`rounded-full border-none px-2 py-0.5 text-xs font-medium ${TEMPERATURE_COLORS[l.temperature] ?? 'bg-slate-100 text-slate-600'}`}
+                  >
+                    {TEMPERATURE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </td>
                 <td className="px-4 py-2 text-right">
                   <Link href={`/leads/${l.id}`} className="text-brand hover:underline">Open</Link>
                 </td>
               </tr>
             ))}
             {leads.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">No leads yet.</td></tr>
+              <tr><td colSpan={8} className="px-4 py-6 text-center text-slate-400">No leads yet.</td></tr>
             )}
           </tbody>
         </table>

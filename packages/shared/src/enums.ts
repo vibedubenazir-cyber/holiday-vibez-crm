@@ -33,6 +33,12 @@ export enum LeadStatus {
   JUNK_NOT_INTERESTED = 'JUNK_NOT_INTERESTED',
 }
 
+export enum LeadTemperature {
+  HOT = 'HOT',
+  WARM = 'WARM',
+  COLD = 'COLD',
+}
+
 export enum BookingStatus {
   PENDING = 'PENDING',
   CONFIRMED = 'CONFIRMED',

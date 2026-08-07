@@ -49,6 +49,16 @@ enum LeadStatus {
   JUNK_NOT_INTERESTED
 }
 
+// Independent of LeadStatus (pipeline stage) — this is a consultant's own read
+// on how likely/urgent the lead is to convert, shown as a colored badge (red/
+// orange/green) in the UI. Defaults to WARM rather than forcing a judgment call
+// at creation time.
+enum LeadTemperature {
+  HOT
+  WARM
+  COLD
+}
+
 enum BookingStatus {
   PENDING
   CONFIRMED
@@ -279,6 +289,7 @@ model Lead {
   assignedConsultantId String?
   assignedConsultant   User?      @relation("AssignedConsultant", fields: [assignedConsultantId], references: [id])
   status               LeadStatus @default(NEW)
+  temperature          LeadTemperature @default(WARM)
   firstContactedAt     DateTime?
   slaBreached          Boolean    @default(false)
   createdAt            DateTime   @default(now())
