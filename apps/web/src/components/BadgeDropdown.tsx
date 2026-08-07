@@ -19,11 +19,17 @@ export function BadgeDropdown({
   options,
   onChange,
   disabled = false,
+  triggerClassName = '',
 }: {
   value: string;
   options: BadgeDropdownOption[];
   onChange: (value: string) => void;
   disabled?: boolean;
+  /** Fixes the trigger's width (e.g. "w-[130px]") so every badge in a column
+   * renders the same size regardless of how long its label is — pass this
+   * per-column so "JUNK NOT INTERESTED" and "NEW" don't produce mismatched
+   * pill sizes or wrap onto two lines. */
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -43,13 +49,13 @@ export function BadgeDropdown({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
-        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-opacity hover:opacity-80 disabled:cursor-default disabled:opacity-100 ${
+        className={`inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium transition-opacity hover:opacity-80 disabled:cursor-default disabled:opacity-100 ${
           current?.colorClass ?? 'bg-slate-100 text-slate-600'
-        }`}
+        } ${triggerClassName}`}
       >
-        {current?.label ?? value}
+        <span className="truncate">{current?.label ?? value}</span>
         {!disabled && (
-          <svg viewBox="0 0 20 20" fill="currentColor" className="h-3 w-3 opacity-60">
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-3 w-3 shrink-0 opacity-60">
             <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
           </svg>
         )}

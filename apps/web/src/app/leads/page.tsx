@@ -302,10 +302,20 @@ export default function LeadsPage() {
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <BadgeDropdown value={l.status} options={STATUS_DROPDOWN_OPTIONS} onChange={(v) => handleStatusChange(l.id, v)} />
+                  <BadgeDropdown
+                    value={l.status}
+                    options={STATUS_DROPDOWN_OPTIONS}
+                    onChange={(v) => handleStatusChange(l.id, v)}
+                    triggerClassName="w-[170px]"
+                  />
                 </td>
                 <td className="px-4 py-3">
-                  <BadgeDropdown value={l.temperature} options={TEMPERATURE_DROPDOWN_OPTIONS} onChange={(v) => handleTemperatureChange(l.id, v)} />
+                  <BadgeDropdown
+                    value={l.temperature}
+                    options={TEMPERATURE_DROPDOWN_OPTIONS}
+                    onChange={(v) => handleTemperatureChange(l.id, v)}
+                    triggerClassName="w-[90px]"
+                  />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <Link href={`/leads/${l.id}`} className="font-medium text-brand hover:underline">Open</Link>
