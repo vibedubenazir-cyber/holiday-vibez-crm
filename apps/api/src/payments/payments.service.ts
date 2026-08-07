@@ -30,6 +30,7 @@ export class PaymentsService {
           category: dto.category,
           amount: dto.amount,
           dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+          supplierId: dto.supplierId,
         },
       });
     }

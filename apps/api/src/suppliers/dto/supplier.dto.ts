@@ -26,6 +26,14 @@ export class CreateSupplierDto {
 
   @IsOptional()
   @IsString()
+  gstin?: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @IsOptional()
+  @IsString()
   paymentTerms?: string;
 }
 
@@ -49,6 +57,14 @@ export class UpdateSupplierDto {
   @IsOptional()
   @IsString()
   destination?: string;
+
+  @IsOptional()
+  @IsString()
+  gstin?: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
 
   @IsOptional()
   @IsString()

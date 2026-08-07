@@ -23,7 +23,7 @@ interface PdfDocumentOptions {
   refNo: string;
   issuedAt: Date;
   company: CompanyInfo;
-  client: { name: string; phone: string; email?: string | null; destination: string; destinationLabel?: string };
+  client: { name: string; phone: string; email?: string | null; destination: string; destinationLabel?: string; gstin?: string | null };
   clientSectionLabel?: string;
   rows: DocumentRow[];
   total?: { label: string; value: string };
@@ -67,7 +67,12 @@ export function streamBrandedPdf(res: Response, opts: PdfDocumentOptions) {
   );
   y += 13;
   doc.text(`${opts.client.destinationLabel ?? 'Destination'}: ${opts.client.destination}`, marginX, y);
-  y += 30;
+  y += 13;
+  if (opts.client.gstin) {
+    doc.text(`GSTIN: ${opts.client.gstin}`, marginX, y);
+    y += 13;
+  }
+  y += 17;
 
   // Row table
   const tableWidth = pageWidth - marginX * 2;

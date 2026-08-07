@@ -10,7 +10,9 @@ interface PublicInvoice {
   type: string;
   issuedAt: string;
   amount: number;
+  gstRate: number;
   taxAmount: number;
+  customerGstin: string | null;
   currency: string;
   client: { name: string; phone: string; email: string | null; destination: string };
   company: { name: string; address: string; gstNumber: string; email: string; phone: string; logoUrl: string | null };
@@ -96,6 +98,7 @@ export default function PublicInvoicePage() {
           <p className="mt-1 font-medium text-slate-800">{invoice.client.name}</p>
           <p className="text-sm text-slate-500">{invoice.client.phone}{invoice.client.email ? ` · ${invoice.client.email}` : ''}</p>
           <p className="text-sm text-slate-500">Destination: {invoice.client.destination}</p>
+          {invoice.customerGstin && <p className="text-sm text-slate-500">GSTIN: {invoice.customerGstin}</p>}
         </div>
 
         <table className="mt-8 w-full text-sm">
@@ -105,7 +108,7 @@ export default function PublicInvoicePage() {
               <td className="py-2 text-right">{invoice.currency} {invoice.amount.toLocaleString('en-IN')}</td>
             </tr>
             <tr className="border-b border-slate-100">
-              <td className="py-2 text-slate-600">Tax</td>
+              <td className="py-2 text-slate-600">GST ({invoice.gstRate}%)</td>
               <td className="py-2 text-right">{invoice.currency} {invoice.taxAmount.toLocaleString('en-IN')}</td>
             </tr>
           </tbody>

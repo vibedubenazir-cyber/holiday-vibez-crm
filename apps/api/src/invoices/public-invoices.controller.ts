@@ -24,10 +24,10 @@ export class PublicInvoicesController {
       refNo: invoice.invoiceNo,
       issuedAt: new Date(invoice.issuedAt),
       company: invoice.company,
-      client: invoice.client,
+      client: invoice.customerGstin ? { ...invoice.client, gstin: invoice.customerGstin } : invoice.client,
       rows: [
         { label: 'Amount', value: `${invoice.currency} ${invoice.amount.toLocaleString('en-IN')}` },
-        { label: 'Tax', value: `${invoice.currency} ${invoice.taxAmount.toLocaleString('en-IN')}` },
+        { label: `GST (${invoice.gstRate}%)`, value: `${invoice.currency} ${invoice.taxAmount.toLocaleString('en-IN')}` },
       ],
       total: { label: 'Total', value: `${invoice.currency} ${total.toLocaleString('en-IN')}` },
       footerNote: `Thank you for booking with ${invoice.company.name}. Contact your travel consultant with any billing questions.`,

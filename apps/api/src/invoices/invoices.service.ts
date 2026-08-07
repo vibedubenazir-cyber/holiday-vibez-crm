@@ -28,13 +28,19 @@ export class InvoicesService {
     // GST-compliant structured invoicing (spec Section 12) — amount defaults to the
     // quotation total so it stays consistent with what the customer already agreed to.
     const amount = dto.amount ?? Number(booking.quotation.totalAmount);
+    const gstRate = dto.gstRate ?? 0;
+    // taxAmount is derived from gstRate unless the caller passes an explicit
+    // override (e.g. a manually-adjusted invoice).
+    const taxAmount = dto.taxAmount ?? Math.round(amount * (gstRate / 100) * 100) / 100;
     const invoice = await this.prisma.invoice.create({
       data: {
         bookingId,
         invoiceNo,
         type: dto.type,
         amount,
-        taxAmount: dto.taxAmount ?? 0,
+        gstRate,
+        taxAmount,
+        customerGstin: dto.customerGstin,
         currency: booking.quotation.currency,
         issuedBy,
       },
@@ -73,7 +79,9 @@ export class InvoicesService {
       type: invoice.type,
       issuedAt: invoice.issuedAt,
       amount: Number(invoice.amount),
+      gstRate: Number(invoice.gstRate),
       taxAmount: Number(invoice.taxAmount),
+      customerGstin: invoice.customerGstin,
       currency: invoice.currency,
       client: { name: lead.clientName, phone: lead.phone, email: lead.email, destination: lead.destination },
       company: await getPublicCompanyInfo(this.prisma),

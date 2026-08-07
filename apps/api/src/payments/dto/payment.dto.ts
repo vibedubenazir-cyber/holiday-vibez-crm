@@ -24,4 +24,10 @@ export class CreatePaymentDto {
   @IsOptional()
   @IsString()
   couponCode?: string;
+
+  // Links this outbound payment to a vendor for accounts-payable tracking
+  // (Suppliers page outstandingBalance). Not meaningful on CLIENT_RECEIPT rows.
+  @IsOptional()
+  @IsString()
+  supplierId?: string;
 }

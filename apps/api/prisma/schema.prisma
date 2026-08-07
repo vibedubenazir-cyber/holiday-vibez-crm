@@ -440,6 +440,8 @@ model Supplier {
   phone        String?
   email        String?
   destination  String?
+  gstin        String?
+  address      String?
   paymentTerms String?
   active       Boolean      @default(true)
   createdAt    DateTime     @default(now())
@@ -672,17 +674,23 @@ model Voucher {
 }
 
 model Invoice {
-  id          String      @id @default(uuid())
-  bookingId   String
-  booking     Booking     @relation(fields: [bookingId], references: [id])
-  invoiceNo   String      @unique
-  type        InvoiceType
-  amount      Decimal     @db.Decimal(14, 2)
-  taxAmount   Decimal     @default(0) @db.Decimal(14, 2)
-  currency    String      @default("INR")
-  pdfUrl      String?
-  issuedBy    String
-  issuedAt    DateTime    @default(now())
+  id            String      @id @default(uuid())
+  bookingId     String
+  booking       Booking     @relation(fields: [bookingId], references: [id])
+  invoiceNo     String      @unique
+  type          InvoiceType
+  amount        Decimal     @db.Decimal(14, 2)
+  // GST% applied to `amount` — taxAmount is derived from this at creation time
+  // unless an explicit taxAmount is passed (e.g. a manually-adjusted invoice).
+  gstRate       Decimal     @default(0) @db.Decimal(5, 2)
+  taxAmount     Decimal     @default(0) @db.Decimal(14, 2)
+  // Customer's GSTIN, for B2B bookings that need it on the tax invoice — left
+  // null for ordinary B2C travelers.
+  customerGstin String?
+  currency      String      @default("INR")
+  pdfUrl        String?
+  issuedBy      String
+  issuedAt      DateTime    @default(now())
 
   @@map("invoices")
 }

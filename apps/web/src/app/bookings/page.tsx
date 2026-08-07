@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { api, ApiError } from '@/lib/api';
 import { BookingStatus } from '@holiday-vibez/shared';
-import type { BookingDTO, InvoiceDTO, VoucherDTO, ReviewDTO, TripFeedbackDTO, InsurancePolicyDTO } from '@holiday-vibez/shared';
+import type { BookingDTO, InvoiceDTO, VoucherDTO, ReviewDTO, TripFeedbackDTO, InsurancePolicyDTO, SupplierDTO } from '@holiday-vibez/shared';
 
 const PAYMENT_TYPE_COLORS: Record<string, string> = {
   CLIENT_RECEIPT: 'bg-blue-100 text-blue-700',
@@ -26,9 +26,11 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState<BookingDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [paymentForm, setPaymentForm] = useState({ type: 'CLIENT_RECEIPT', category: 'DMC', amount: '', couponCode: '' });
+  const [paymentForm, setPaymentForm] = useState({ type: 'CLIENT_RECEIPT', category: 'DMC', amount: '', couponCode: '', supplierId: '' });
   const [vouchers, setVouchers] = useState<Record<string, VoucherDTO[]>>({});
   const [invoices, setInvoices] = useState<Record<string, InvoiceDTO[]>>({});
+  const [suppliers, setSuppliers] = useState<SupplierDTO[]>([]);
+  const [invoiceForm, setInvoiceForm] = useState({ gstRate: '5', customerGstin: '' });
   const [linkBusy, setLinkBusy] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Record<string, ReviewDTO[]>>({});
@@ -40,7 +42,9 @@ export default function BookingsPage() {
 
   async function load() {
     try {
-      setBookings(await api.get<BookingDTO[]>('/bookings'));
+      const [b, s] = await Promise.all([api.get<BookingDTO[]>('/bookings'), api.get<SupplierDTO[]>('/suppliers')]);
+      setBookings(b);
+      setSuppliers(s);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to load bookings');
     }
@@ -58,8 +62,9 @@ export default function BookingsPage() {
         category: paymentForm.type === 'CLIENT_RECEIPT' ? undefined : paymentForm.category,
         amount: Number(paymentForm.amount),
         couponCode: paymentForm.couponCode || undefined,
+        supplierId: paymentForm.type !== 'CLIENT_RECEIPT' ? paymentForm.supplierId || undefined : undefined,
       });
-      setPaymentForm({ type: 'CLIENT_RECEIPT', category: 'DMC', amount: '', couponCode: '' });
+      setPaymentForm({ type: 'CLIENT_RECEIPT', category: 'DMC', amount: '', couponCode: '', supplierId: '' });
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to add payment');
@@ -167,7 +172,11 @@ export default function BookingsPage() {
 
   async function handleGenerateInvoice(bookingId: string) {
     try {
-      await api.post(`/bookings/${bookingId}/invoices`, { type: 'MANUAL' });
+      await api.post(`/bookings/${bookingId}/invoices`, {
+        type: 'MANUAL',
+        gstRate: invoiceForm.gstRate ? Number(invoiceForm.gstRate) : undefined,
+        customerGstin: invoiceForm.customerGstin || undefined,
+      });
       await loadDocs(bookingId);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to generate invoice');
@@ -314,6 +323,15 @@ export default function BookingsPage() {
                       </select>
                     </div>
                   )}
+                  {paymentForm.type !== 'CLIENT_RECEIPT' && (
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Vendor</label>
+                      <select value={paymentForm.supplierId} onChange={(e) => setPaymentForm({ ...paymentForm, supplierId: e.target.value })} className="w-40 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
+                        <option value="">None</option>
+                        {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
+                    </div>
+                  )}
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Amount</label>
                     <input type="number" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
@@ -349,14 +367,29 @@ export default function BookingsPage() {
                     {(invoices[b.id] ?? []).map((i) => (
                       <li key={i.id} className="text-sm">
                         <a href={i.pdfUrl ?? '#'} className="text-brand hover:underline">{i.invoiceNo}</a>{' '}
-                        <span className="text-slate-400">· {i.currency} {Number(i.amount).toLocaleString('en-IN')} · issued {new Date(i.issuedAt).toLocaleDateString()}</span>
+                        <span className="text-slate-400">
+                          · {i.currency} {Number(i.amount).toLocaleString('en-IN')}
+                          {i.gstRate > 0 && ` + GST ${i.gstRate}% (${i.currency} ${Number(i.taxAmount).toLocaleString('en-IN')})`}
+                          {i.customerGstin && ` · GSTIN ${i.customerGstin}`}
+                          {' '}· issued {new Date(i.issuedAt).toLocaleDateString()}
+                        </span>
                       </li>
                     ))}
                     {(!invoices[b.id] || invoices[b.id].length === 0) && <li className="text-sm text-slate-400">None generated yet.</li>}
                   </ul>
-                  <button onClick={() => handleGenerateInvoice(b.id)} className="mt-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand">
-                    Generate invoice
-                  </button>
+                  <div className="mt-2 flex flex-wrap items-end gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-slate-500">GST %</label>
+                      <input type="number" min={0} max={100} step="0.01" value={invoiceForm.gstRate} onChange={(e) => setInvoiceForm({ ...invoiceForm, gstRate: e.target.value })} className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-slate-500">Customer GSTIN</label>
+                      <input type="text" placeholder="Optional (B2B)" value={invoiceForm.customerGstin} onChange={(e) => setInvoiceForm({ ...invoiceForm, customerGstin: e.target.value.toUpperCase() })} className="w-40 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                    </div>
+                    <button onClick={() => handleGenerateInvoice(b.id)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand">
+                      Generate invoice
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-700">

@@ -96,6 +96,7 @@ export interface PaymentDTO {
   gatewayLinkUrl: string | null;
   couponId: string | null;
   discountAmount: number | null;
+  supplierId: string | null;
 }
 
 export interface CouponDTO {
@@ -152,8 +153,11 @@ export interface SupplierDTO {
   phone: string | null;
   email: string | null;
   destination: string | null;
+  gstin: string | null;
+  address: string | null;
   paymentTerms: string | null;
   active: boolean;
+  outstandingBalance: number;
 }
 
 export interface HotelDTO {
@@ -223,7 +227,9 @@ export interface InvoiceDTO {
   invoiceNo: string;
   type: 'MANUAL' | 'FLIGHT';
   amount: number;
+  gstRate: number;
   taxAmount: number;
+  customerGstin: string | null;
   currency: string;
   pdfUrl: string | null;
   issuedBy: string;

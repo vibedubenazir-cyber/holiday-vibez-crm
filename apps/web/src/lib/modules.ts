@@ -38,7 +38,6 @@ export const MODULES: ModuleDef[] = [
         items: [
           { href: '/packages', label: 'Packages', roles: ALL_ROLES },
           { href: '/calendar', label: 'Departure Calendar', roles: ALL_ROLES },
-          { href: '/suppliers', label: 'Suppliers', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
           { href: '/hotel-masters', label: 'Hotel Masters', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
           { href: '/day-itineraries', label: 'Day Itinerary', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
           { href: '/support', label: 'Support Tickets', roles: ALL_ROLES },
@@ -98,6 +97,7 @@ export const MODULES: ModuleDef[] = [
           { href: '/reports', label: 'Reports', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER] },
           { href: '/currency', label: 'Currency Exchange', roles: ALL_ROLES },
           { href: '/coupons', label: 'Coupons & Offers', roles: ALL_ROLES },
+          { href: '/suppliers', label: 'Vendors', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
         ],
       },
     ],
