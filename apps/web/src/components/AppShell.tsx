@@ -82,7 +82,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen overflow-hidden">
       <aside className="flex w-64 shrink-0 flex-col overflow-y-auto bg-brand-700">
         <div className="flex justify-center px-5 py-5">
-          <Image src="/logo-white.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-28" priority />
+          <Image src="/logo-white.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-36" priority />
         </div>
         <div className="px-5">
           <span className="inline-block rounded-lg bg-white/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white/80">
