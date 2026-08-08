@@ -13,6 +13,11 @@ export interface ModuleDef {
 }
 
 const ALL_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT];
+// Finance module only — Finance role gets full read/write parity with Branch
+// Manager there; Auditor is read-only everywhere, so it's added item-by-item
+// below rather than folded into FINANCE_ROLES.
+const FINANCE_ROLES = [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.FINANCE];
+const FINANCE_READ_ROLES = [...FINANCE_ROLES, Role.AUDITOR];
 
 export const MODULES: ModuleDef[] = [
   {
@@ -92,22 +97,22 @@ export const MODULES: ModuleDef[] = [
       {
         title: 'Finance',
         items: [
-          { href: '/bookings', label: 'Bookings & Payments', roles: ALL_ROLES },
-          { href: '/expenses', label: 'Accounts & Finance', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-          { href: '/reports', label: 'Reports', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER] },
-          { href: '/currency', label: 'Currency Exchange', roles: ALL_ROLES },
-          { href: '/coupons', label: 'Coupons & Offers', roles: ALL_ROLES },
-          { href: '/suppliers', label: 'Vendors', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
+          { href: '/bookings', label: 'Bookings & Payments', roles: [...ALL_ROLES, Role.FINANCE, Role.AUDITOR] },
+          { href: '/expenses', label: 'Accounts & Finance', roles: FINANCE_READ_ROLES },
+          { href: '/reports', label: 'Reports', roles: FINANCE_READ_ROLES },
+          { href: '/currency', label: 'Currency Exchange', roles: [...ALL_ROLES, Role.FINANCE, Role.AUDITOR] },
+          { href: '/coupons', label: 'Coupons & Offers', roles: [...ALL_ROLES, Role.FINANCE, Role.AUDITOR] },
+          { href: '/suppliers', label: 'Vendors', roles: FINANCE_READ_ROLES },
         ],
       },
       {
         title: 'Accounts',
         items: [
-          { href: '/accounts', label: 'Accounts Dashboard', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-          { href: '/petty-cash', label: 'Petty Cash', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-          { href: '/budgets', label: 'Budget & Forecast', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-          { href: '/bank-reconciliation', label: 'Bank Reconciliation', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
-          { href: '/dmc-commissions', label: 'DMC Commissions', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
+          { href: '/accounts', label: 'Accounts Dashboard', roles: FINANCE_READ_ROLES },
+          { href: '/petty-cash', label: 'Petty Cash', roles: FINANCE_READ_ROLES },
+          { href: '/budgets', label: 'Budget & Forecast', roles: FINANCE_READ_ROLES },
+          { href: '/bank-reconciliation', label: 'Bank Reconciliation', roles: FINANCE_READ_ROLES },
+          { href: '/dmc-commissions', label: 'DMC Commissions', roles: FINANCE_READ_ROLES },
         ],
       },
     ],

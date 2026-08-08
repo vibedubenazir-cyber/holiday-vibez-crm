@@ -15,7 +15,8 @@ export default function ExpensesPage() {
   const [branches, setBranches] = useState<BranchDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const needsBranchPicker = me?.role === Role.ADMIN || me?.role === Role.DIRECTOR;
+  const needsBranchPicker = me?.role === Role.ADMIN || me?.role === Role.DIRECTOR || me?.role === Role.FINANCE || me?.role === Role.AUDITOR;
+  const canManage = me?.role !== Role.AUDITOR;
 
   const [form, setForm] = useState({
     branchId: '',
@@ -71,11 +72,14 @@ export default function ExpensesPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Accounts & Finance — Expenses</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
-          {showForm ? 'Cancel' : 'Log expense'}
-        </button>
+        {canManage && (
+          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
+            {showForm ? 'Cancel' : 'Log expense'}
+          </button>
+        )}
       </div>
-      <p className="mt-1 text-sm text-blue-100">Branch Manager sees their own branch; Admin/Director see and log expenses for any branch.</p>
+      <p className="mt-1 text-sm text-blue-100">Branch Manager sees their own branch; Admin/Director/Finance see and log expenses for any branch.</p>
+      {!canManage && <p className="mt-1 text-xs text-blue-100">Read-only — auditor access.</p>}
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
@@ -89,7 +93,7 @@ export default function ExpensesPage() {
         {summary.length === 0 && <p className="col-span-full text-sm text-slate-400">No expenses logged yet.</p>}
       </div>
 
-      {showForm && (
+      {canManage && showForm && (
         <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
           {needsBranchPicker && (
             <select value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">

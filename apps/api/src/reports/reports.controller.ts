@@ -26,7 +26,7 @@ export class ReportsController {
   // Branch Manager is always scoped to their own branch, regardless of what's
   // passed in the query string — Director/Admin can pass any branchId or omit
   // it for an org-wide total.
-  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE, Role.AUDITOR)
   @Get('pnl/monthly')
   monthlyPnL(
     @Query('year') year: string | undefined,
@@ -44,7 +44,7 @@ export class ReportsController {
     return this.reportsService.complianceExpiring();
   }
 
-  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE, Role.AUDITOR)
   @Get('ledger/daily')
   dailyLedger(
     @Query('date') date: string | undefined,
@@ -56,7 +56,7 @@ export class ReportsController {
     return this.reportsService.dailyLedger(resolvedDate, resolvedBranchId);
   }
 
-  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE, Role.AUDITOR)
   @Get('gst')
   gstReport(
     @Query('year') year: string | undefined,
@@ -71,7 +71,7 @@ export class ReportsController {
     return this.reportsService.gstReport(resolvedYear, resolvedMonth, resolvedBranchId);
   }
 
-  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE, Role.AUDITOR)
   @Get('accounts-dashboard')
   accountsDashboard(@Query('branchId') branchId: string | undefined, @CurrentUser() user: { role: Role; branchId: string | null }) {
     const resolvedBranchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? undefined) : branchId;

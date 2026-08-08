@@ -8,14 +8,15 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
-const FINANCE_ROLES = [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER];
+const FINANCE_ROLES = [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.FINANCE];
+const READ_ROLES = [...FINANCE_ROLES, Role.AUDITOR];
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('dmc-commissions')
 export class DmcCommissionsController {
   constructor(private readonly dmcCommissionsService: DmcCommissionsService) {}
 
-  @Roles(...FINANCE_ROLES)
+  @Roles(...READ_ROLES)
   @Get()
   findAll(@Query('status') status?: 'PENDING' | 'RECEIVED') {
     return this.dmcCommissionsService.findAll(status);

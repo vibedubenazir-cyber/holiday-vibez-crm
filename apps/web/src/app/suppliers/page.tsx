@@ -13,7 +13,7 @@ export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<SupplierDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const canManage = me?.role === Role.ADMIN || me?.role === Role.DIRECTOR;
+  const canManage = me?.role === Role.ADMIN || me?.role === Role.DIRECTOR || me?.role === Role.FINANCE;
 
   const [form, setForm] = useState({
     type: SupplierType.DMC as string,
@@ -83,7 +83,7 @@ export default function SuppliersPage() {
       <p className="mt-1 text-sm text-blue-100">
         Hotels, DMCs, flights, and other suppliers you pay. Outstanding balance is computed from unpaid payments linked to each vendor.
       </p>
-      {!canManage && <p className="mt-1 text-xs text-blue-100">Read-only — only Admin/Director can manage vendors.</p>}
+      {!canManage && <p className="mt-1 text-xs text-blue-100">Read-only — only Admin/Director/Finance can manage vendors.</p>}
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 

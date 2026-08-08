@@ -17,7 +17,8 @@ export default function BudgetsPage() {
   const [showForm, setShowForm] = useState(false);
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
-  const needsBranchPicker = me?.role === Role.ADMIN || me?.role === Role.DIRECTOR;
+  const needsBranchPicker = me?.role === Role.ADMIN || me?.role === Role.DIRECTOR || me?.role === Role.FINANCE || me?.role === Role.AUDITOR;
+  const canManage = me?.role !== Role.AUDITOR;
 
   const [form, setForm] = useState({ branchId: '', category: ExpenseCategory.OFFICE as string, budgetedAmount: '' });
 
@@ -67,11 +68,14 @@ export default function BudgetsPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Budget & Forecast</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
-          {showForm ? 'Cancel' : 'Set budget'}
-        </button>
+        {canManage && (
+          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
+            {showForm ? 'Cancel' : 'Set budget'}
+          </button>
+        )}
       </div>
       <p className="mt-1 text-sm text-blue-100">Expense budgets vs actuals, per branch and category.</p>
+      {!canManage && <p className="mt-1 text-xs text-blue-100">Read-only — auditor access.</p>}
 
       <div className="mt-3 flex items-center gap-2">
         <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="rounded-lg border-none bg-white px-3 py-1.5 text-sm shadow-card">
@@ -86,7 +90,7 @@ export default function BudgetsPage() {
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-      {showForm && (
+      {canManage && showForm && (
         <form onSubmit={handleSet} className="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
           {needsBranchPicker && (
             <div className="flex flex-col gap-1">

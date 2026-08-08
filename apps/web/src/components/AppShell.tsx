@@ -14,6 +14,8 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Admin',
   BRANCH_MANAGER: 'Branch Manager',
   TRAVEL_CONSULTANT: 'Travel Consultant',
+  FINANCE: 'Finance',
+  AUDITOR: 'Auditor',
 };
 
 function initials(name: string) {

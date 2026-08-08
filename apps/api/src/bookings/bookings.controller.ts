@@ -15,7 +15,7 @@ type AuthUser = { id: string; role: Role; branchId: string | null };
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
-  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE, Role.AUDITOR)
   @Get()
   findAll(@CurrentUser() user: AuthUser) {
     if (user.role === Role.TRAVEL_CONSULTANT) return this.bookingsService.findAll({ consultantId: user.id });
@@ -23,7 +23,7 @@ export class BookingsController {
     return this.bookingsService.findAll({});
   }
 
-  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE, Role.AUDITOR)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.bookingsService.findOne(id);

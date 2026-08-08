@@ -3,6 +3,8 @@ export enum Role {
   ADMIN = 'ADMIN',
   BRANCH_MANAGER = 'BRANCH_MANAGER',
   TRAVEL_CONSULTANT = 'TRAVEL_CONSULTANT',
+  FINANCE = 'FINANCE',
+  AUDITOR = 'AUDITOR',
 }
 
 export enum UserStatus {

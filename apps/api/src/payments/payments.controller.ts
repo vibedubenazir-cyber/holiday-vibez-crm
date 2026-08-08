@@ -14,34 +14,34 @@ type AuthUser = { id: string; role: Role; branchId: string | null };
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
-  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE, Role.AUDITOR)
   @Get('payments')
   findAll(@CurrentUser() user: AuthUser, @Query('bookingId') bookingId?: string) {
     // Branch Manager is always scoped to their own branch (spec Section 13) —
-    // Director/Admin can see everything.
+    // Director/Admin/Finance/Auditor can see everything.
     const branchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? undefined) : undefined;
     return this.paymentsService.findAll(bookingId, branchId);
   }
 
-  @Roles(Role.ADMIN, Role.BRANCH_MANAGER)
+  @Roles(Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE)
   @Post('payments')
   create(@Body() dto: CreatePaymentDto) {
     return this.paymentsService.create(dto);
   }
 
-  @Roles(Role.ADMIN, Role.BRANCH_MANAGER)
+  @Roles(Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE)
   @Patch('payments/:id/mark-paid')
   markPaid(@Param('id') id: string) {
     return this.paymentsService.markPaid(id);
   }
 
-  @Roles(Role.ADMIN, Role.BRANCH_MANAGER)
+  @Roles(Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE)
   @Post('payments/:id/create-payment-link')
   createPaymentLink(@Param('id') id: string) {
     return this.paymentsService.createPaymentLink(id);
   }
 
-  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE, Role.AUDITOR)
   @Get('finance/branch-pnl')
   branchPnl(@CurrentUser() user: AuthUser, @Query('branchId') branchId: string) {
     // Branch Manager can only ever see their own branch's P&L, regardless of what's queried.

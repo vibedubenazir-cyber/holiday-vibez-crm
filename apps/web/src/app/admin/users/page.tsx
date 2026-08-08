@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { api, ApiError } from '@/lib/api';
 import { Role, UserStatus, type BranchDTO, type UserDTO } from '@holiday-vibez/shared';
 
-const ROLE_OPTIONS = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT];
+const ROLE_OPTIONS = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE, Role.AUDITOR];
 
 export default function UsersPage() {
   const { user: me } = useAuth();

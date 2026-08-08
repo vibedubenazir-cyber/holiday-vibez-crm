@@ -9,27 +9,27 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
 
-// Consultants have no access at all — Accounts & Finance is a Manager/Admin/Director module.
+// Consultants have no access at all — Accounts & Finance is a Manager/Admin/Director/Finance module.
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('expenses')
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
-  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER)
+  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.FINANCE, Role.AUDITOR)
   @Get()
   findAll(@CurrentUser() user: AuthUser, @Query('branchId') branchId?: string) {
     if (user.role === Role.BRANCH_MANAGER) return this.expensesService.findAll({ branchId: user.branchId ?? undefined });
     return this.expensesService.findAll({ branchId });
   }
 
-  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER)
+  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.FINANCE, Role.AUDITOR)
   @Get('summary')
   summary(@CurrentUser() user: AuthUser, @Query('branchId') branchId?: string) {
     if (user.role === Role.BRANCH_MANAGER) return this.expensesService.summaryByCategory({ branchId: user.branchId ?? undefined });
     return this.expensesService.summaryByCategory({ branchId });
   }
 
-  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER)
+  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.FINANCE)
   @Post()
   create(@Body() dto: CreateExpenseDto, @CurrentUser() user: AuthUser) {
     const branchId = user.role === Role.BRANCH_MANAGER ? user.branchId : dto.branchId;

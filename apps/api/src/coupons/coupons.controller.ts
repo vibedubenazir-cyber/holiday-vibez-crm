@@ -9,7 +9,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 type AuthUser = { id: string; role: Role };
-const ALL_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT];
+const ALL_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE, Role.AUDITOR];
 const MANAGE_ROLES = [Role.DIRECTOR, Role.ADMIN];
 
 @UseGuards(JwtAuthGuard, RolesGuard)

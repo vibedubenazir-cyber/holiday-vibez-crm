@@ -14,13 +14,13 @@ type AuthUser = { id: string; role: Role; branchId: string | null };
 export class InvoicesController {
   constructor(private readonly invoicesService: InvoicesService) {}
 
-  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE, Role.AUDITOR)
   @Get()
   findAll(@Param('bookingId') bookingId: string) {
     return this.invoicesService.findAllForBooking(bookingId);
   }
 
-  @Roles(Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Roles(Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE)
   @Post()
   create(@Param('bookingId') bookingId: string, @Body() dto: CreateInvoiceDto, @CurrentUser() user: AuthUser) {
     return this.invoicesService.create(bookingId, dto, user.id, user);

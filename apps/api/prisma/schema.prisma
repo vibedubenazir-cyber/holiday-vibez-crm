@@ -19,6 +19,14 @@ enum Role {
   ADMIN
   BRANCH_MANAGER
   TRAVEL_CONSULTANT
+  // Accounts/payments-scoped staff — full access to the Finance module (bookings,
+  // payments, invoices, expenses, vendors, GST, petty cash, budgets, bank
+  // reconciliation, DMC commissions) but no lead/quote edit rights and no access
+  // to CRM/HRMS/LMS/Admin modules.
+  FINANCE
+  // Read-only cross-module access for external accountants/auditors — never
+  // granted a write endpoint anywhere, enforced by only ever appearing on @Get().
+  AUDITOR
 }
 
 enum UserStatus {

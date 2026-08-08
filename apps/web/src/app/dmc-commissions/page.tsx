@@ -2,10 +2,13 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
+import { useAuth } from '@/lib/auth-context';
 import { api, ApiError } from '@/lib/api';
-import type { DmcCommissionDTO, SupplierDTO } from '@holiday-vibez/shared';
+import { Role, type DmcCommissionDTO, type SupplierDTO } from '@holiday-vibez/shared';
 
 export default function DmcCommissionsPage() {
+  const { user: me } = useAuth();
+  const canManage = me?.role !== Role.AUDITOR;
   const [commissions, setCommissions] = useState<DmcCommissionDTO[]>([]);
   const [suppliers, setSuppliers] = useState<SupplierDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -65,11 +68,14 @@ export default function DmcCommissionsPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">DMC Commissions</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
-          {showForm ? 'Cancel' : 'Record commission'}
-        </button>
+        {canManage && (
+          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
+            {showForm ? 'Cancel' : 'Record commission'}
+          </button>
+        )}
       </div>
       <p className="mt-1 text-sm text-blue-100">Commission receivables — money DMCs owe us, separate from what we pay out to them.</p>
+      {!canManage && <p className="mt-1 text-xs text-blue-100">Read-only — auditor access.</p>}
 
       <div className="mt-3 flex gap-2">
         {(['PENDING', 'RECEIVED', 'ALL'] as const).map((s) => (
@@ -85,7 +91,7 @@ export default function DmcCommissionsPage() {
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-      {showForm && (
+      {canManage && showForm && (
         <form onSubmit={handleCreate} className="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-500">DMC / Vendor</label>
@@ -134,7 +140,7 @@ export default function DmcCommissionsPage() {
                   </span>
                 </td>
                 <td className="px-4 py-2 text-right">
-                  {c.status === 'PENDING' && (
+                  {canManage && c.status === 'PENDING' && (
                     <button onClick={() => handleMarkReceived(c.id)} className="text-brand hover:underline">Mark received</button>
                   )}
                 </td>

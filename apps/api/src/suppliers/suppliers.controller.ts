@@ -11,20 +11,20 @@ import { Roles } from '../common/decorators/roles.decorator';
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 
-  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE, Role.AUDITOR)
   @Get()
   findAll() {
     return this.suppliersService.findAll();
   }
 
-  // Write endpoints restricted to Admin/Director — Branch Manager/Consultant read-only.
-  @Roles(Role.ADMIN, Role.DIRECTOR)
+  // Write endpoints restricted to Admin/Director/Finance — Branch Manager/Consultant/Auditor read-only.
+  @Roles(Role.ADMIN, Role.DIRECTOR, Role.FINANCE)
   @Post()
   create(@Body() dto: CreateSupplierDto) {
     return this.suppliersService.create(dto);
   }
 
-  @Roles(Role.ADMIN, Role.DIRECTOR)
+  @Roles(Role.ADMIN, Role.DIRECTOR, Role.FINANCE)
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateSupplierDto) {
     return this.suppliersService.update(id, dto);
