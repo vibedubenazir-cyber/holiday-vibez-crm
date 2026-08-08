@@ -79,6 +79,7 @@ export class InboxService {
       triggerType: 'inbox_message',
       recipient: conversation.channel === 'WHATSAPP' ? conversation.lead.phone : (conversation.lead.email ?? conversation.lead.phone),
       relatedEntity: `conversation:${conversationId}`,
+      relatedMessageId: message.id,
       body,
     });
 
@@ -160,6 +161,7 @@ export class InboxService {
           triggerType: 'inbox_bot_reply',
           recipient: conversation.channel === 'WHATSAPP' ? conversation.lead.phone : (conversation.lead.email ?? conversation.lead.phone),
           relatedEntity: `conversation:${conversationId}`,
+          relatedMessageId: botReply.id,
           body: replyBody,
         });
       }

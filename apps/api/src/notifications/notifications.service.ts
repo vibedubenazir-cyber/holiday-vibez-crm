@@ -22,6 +22,10 @@ export interface SendNotificationInput {
   // Email-only. Falls back to a generic subject derived from triggerType if
   // omitted, same as `body`'s fallback.
   subject?: string;
+  // WhatsApp-only. When set, the outbound Message row gets stamped with the
+  // real WAMID once Meta's API confirms the send, so a later delivery/read
+  // status webhook can target this exact message instead of guessing.
+  relatedMessageId?: string;
 }
 
 /**
@@ -175,6 +179,9 @@ export class NotificationsService {
       const externalId: string | undefined = payload?.messages?.[0]?.id;
       if (externalId) {
         await this.prisma.notification.update({ where: { id: notificationId }, data: { externalId } });
+        if (input.relatedMessageId) {
+          await this.prisma.message.update({ where: { id: input.relatedMessageId }, data: { externalId } });
+        }
       }
     } catch (err) {
       this.logger.error(`WhatsApp send threw for notification ${notificationId}`, err as Error);

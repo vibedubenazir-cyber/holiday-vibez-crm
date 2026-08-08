@@ -866,6 +866,7 @@ model Message {
   status         NotificationStatus  @default(SENT)
   sentBy         String?             // null = system/bot-generated
   sender         User?               @relation(fields: [sentBy], references: [id])
+  externalId     String?             @unique // WhatsApp WAMID, set once the send confirms — lets delivery/read status webhooks target this exact message instead of guessing "most recent outbound"
   createdAt      DateTime            @default(now())
 
   @@map("messages")

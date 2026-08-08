@@ -97,16 +97,24 @@ export class WhatsappWebhookController {
 
     await this.prisma.notification.update({ where: { id: notification.id }, data: { status: mapped as any } });
 
-    // Best-effort: also reflect the status on the matching outbound Message, if
-    // this notification came from an Inbox conversation.
+    // Reflect the status on the matching outbound Message, if this
+    // notification came from an Inbox conversation. Matched by externalId
+    // (the real WAMID) when available — messages sent before that field
+    // existed fall back to "most recent outbound in the conversation" so
+    // status updates don't just silently stop working for older threads.
     if (notification.relatedEntity?.startsWith('conversation:')) {
-      const conversationId = notification.relatedEntity.slice('conversation:'.length);
-      const lastOutbound = await this.prisma.message.findFirst({
-        where: { conversationId, direction: 'OUTBOUND' },
-        orderBy: { createdAt: 'desc' },
-      });
-      if (lastOutbound) {
-        await this.prisma.message.update({ where: { id: lastOutbound.id }, data: { status: mapped as any } });
+      const byExternalId = await this.prisma.message.findUnique({ where: { externalId } });
+      if (byExternalId) {
+        await this.prisma.message.update({ where: { id: byExternalId.id }, data: { status: mapped as any } });
+      } else {
+        const conversationId = notification.relatedEntity.slice('conversation:'.length);
+        const lastOutbound = await this.prisma.message.findFirst({
+          where: { conversationId, direction: 'OUTBOUND', externalId: null },
+          orderBy: { createdAt: 'desc' },
+        });
+        if (lastOutbound) {
+          await this.prisma.message.update({ where: { id: lastOutbound.id }, data: { status: mapped as any } });
+        }
       }
     }
   }

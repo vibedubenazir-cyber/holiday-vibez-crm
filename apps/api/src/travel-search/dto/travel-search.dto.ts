@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsISO8601, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsIn, IsInt, IsISO8601, IsNumber, IsOptional, IsPositive, IsString, Max, Min } from 'class-validator';
 
 export class SearchHotelsQueryDto {
   @IsString()
@@ -65,12 +65,18 @@ export class AddSearchResultToQuotationDto {
   @IsString()
   destination!: string;
 
+  // Sane bounds against a wildly fabricated price — this endpoint takes the
+  // rate straight from the client (see travel-search.service.ts addToQuotation()
+  // for why full server-side re-verification isn't done here), so these caps
+  // are a pragmatic mitigation, not a substitute for a real price source.
   @IsNumber()
-  @Min(0)
+  @IsPositive()
+  @Max(1000000)
   netRate!: number;
 
   @IsNumber()
   @Min(0)
+  @Max(500)
   markupPct!: number;
 
   @IsOptional()

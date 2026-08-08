@@ -87,6 +87,26 @@ export class PaymentsService {
     const lead = payment.booking.quotation.lead;
     const auth = Buffer.from(`${process.env.PAYMENT_GATEWAY_KEY_ID}:${process.env.PAYMENT_GATEWAY_KEY}`).toString('base64');
 
+    // A previous link for this payment is still live at Razorpay and payable —
+    // if we didn't cancel it, a customer paying via the old link would have
+    // their payment silently lost (confirmPaidByGatewayLinkId looks up by the
+    // *current* gatewayLinkId, which is about to be overwritten below).
+    // Best-effort: Razorpay may already consider it expired/paid, so a failure
+    // here shouldn't block staff from generating a fresh link.
+    if (payment.gatewayLinkId) {
+      const cancelRes = await fetch(`${RAZORPAY_API_URL}/${payment.gatewayLinkId}/cancel`, {
+        method: 'POST',
+        headers: { Authorization: `Basic ${auth}` },
+      }).catch((err) => {
+        this.logger.warn(`Failed to cancel previous Razorpay payment link ${payment.gatewayLinkId}: ${err}`);
+        return null;
+      });
+      if (cancelRes && !cancelRes.ok) {
+        const cancelBody = await cancelRes.json().catch(() => null);
+        this.logger.warn(`Razorpay declined to cancel previous payment link ${payment.gatewayLinkId}: ${JSON.stringify(cancelBody)}`);
+      }
+    }
+
     const res = await fetch(RAZORPAY_API_URL, {
       method: 'POST',
       headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/json' },
