@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 import {
   BookingStatus,
   LeadStatus,
+  LeadTemperature,
   Role,
   type BranchDTO,
   type BookingDTO,
@@ -105,6 +106,22 @@ export default function DashboardPage() {
 
   const totalInRange = leadsInRange.length;
 
+  const interestCounts = useMemo(() => {
+    const counts = { hot: 0, warm: 0, cold: 0, junk: 0 };
+    leads.forEach((l) => {
+      if (l.status === LeadStatus.JUNK_NOT_INTERESTED || l.status === LeadStatus.PLAN_DROPPED) {
+        counts.junk += 1;
+      } else if (l.temperature === LeadTemperature.HOT) {
+        counts.hot += 1;
+      } else if (l.temperature === LeadTemperature.WARM) {
+        counts.warm += 1;
+      } else {
+        counts.cold += 1;
+      }
+    });
+    return counts;
+  }, [leads]);
+
   const slaBreachedOpen = useMemo(() => leads.filter((l) => l.slaBreached && !CLOSED.includes(l.status)), [leads]);
   const followUpsDue = useMemo(() => leads.filter((l) => l.status === LeadStatus.FOLLOW_UP), [leads]);
   const hotLeads = useMemo(() => leads.filter((l) => l.status === LeadStatus.HOT_LEAD), [leads]);
@@ -131,20 +148,19 @@ export default function DashboardPage() {
           <h1 className="inline-block rounded-lg bg-gradient-to-r from-brand to-indigo-600 px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">
             Welcome, {user?.name}
           </h1>
-          <p className="mt-1 text-sm text-blue-100">Here&apos;s what&apos;s happening across your workspace right now.</p>
+          <p className="mt-1 text-sm text-blue-100">
+            {user?.role.replaceAll('_', ' ')}
+            {branchName ? ` · ${branchName} branch` : ''} — here&apos;s what&apos;s happening across your workspace right now.
+          </p>
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <DashCard gradient="from-brand to-indigo-600" label="Role" value={user?.role ?? '—'} />
-        <DashCard gradient="from-purple-500 to-fuchsia-600" label="Branch" value={branchName ?? (user?.branchId ? '—' : 'All branches')} />
-        <DashCard gradient="from-emerald-500 to-teal-500" label="Status" value={user?.status ?? '—'} />
-      </div>
-
-      <h2 className="mt-8 text-sm font-semibold text-white">Your workspace at a glance</h2>
+      <h2 className="mt-6 text-sm font-semibold text-white">
+        {user?.role === Role.TRAVEL_CONSULTANT ? 'Leads assigned to you' : 'Your workspace at a glance'}
+      </h2>
       <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Link href="/leads">
-          <DashCard gradient="from-cyan-500 to-blue-600" label="Leads" value={leads.length.toString()} />
+          <DashCard gradient="from-cyan-500 to-blue-600" label={user?.role === Role.TRAVEL_CONSULTANT ? 'Assigned to you' : 'Total leads'} value={leads.length.toString()} />
         </Link>
         <Link href="/quotations">
           <DashCard gradient="from-orange-500 to-amber-500" label="Quotations" value={quotationCount === null ? '—' : quotationCount.toString()} />
@@ -152,6 +168,14 @@ export default function DashboardPage() {
         <Link href="/bookings">
           <DashCard gradient="from-pink-500 to-rose-500" label="Bookings" value={bookings.length.toString()} />
         </Link>
+      </div>
+
+      <h2 className="mt-8 text-sm font-semibold text-white">How interested are they?</h2>
+      <div className="mt-2 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <DashCard gradient="from-red-500 to-orange-500" label="🔥 Hot" value={interestCounts.hot.toString()} />
+        <DashCard gradient="from-amber-500 to-yellow-500" label="🌤 Warm" value={interestCounts.warm.toString()} />
+        <DashCard gradient="from-sky-500 to-indigo-500" label="❄️ Cold" value={interestCounts.cold.toString()} />
+        <DashCard gradient="from-slate-500 to-slate-600" label="🗑 Junk / not interested" value={interestCounts.junk.toString()} />
       </div>
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3">

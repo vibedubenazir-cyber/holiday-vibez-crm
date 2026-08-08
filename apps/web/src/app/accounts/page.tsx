@@ -8,20 +8,20 @@ import type { AccountsDashboardDTO, DailyLedgerDTO, GstReportDTO } from '@holida
 
 const now = new Date();
 
-function StatCard({ label, value, tone }: { label: string; value: string; tone?: 'warn' | 'ok' }) {
+function StatCard({ label, value, gradient }: { label: string; value: string; gradient: string }) {
   return (
-    <div className="rounded-lg bg-white p-4 shadow-card dark:bg-slate-800">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
-      <p className={`mt-1 text-xl font-bold ${tone === 'warn' ? 'text-amber-600' : 'text-brand'}`}>{value}</p>
+    <div className={`overflow-hidden rounded-xl bg-gradient-to-br ${gradient} p-4 text-white shadow-card transition-transform hover:-translate-y-0.5 hover:shadow-card-hover`}>
+      <p className="text-xs font-semibold uppercase tracking-wide text-white/80">{label}</p>
+      <p className="mt-1 text-xl font-bold">{value}</p>
     </div>
   );
 }
 
 const QUICK_LINKS = [
-  { href: '/petty-cash', label: 'Petty Cash' },
-  { href: '/budgets', label: 'Budget & Forecast' },
-  { href: '/bank-reconciliation', label: 'Bank Reconciliation' },
-  { href: '/dmc-commissions', label: 'DMC Commissions' },
+  { href: '/petty-cash', label: 'Petty Cash', gradient: 'from-cyan-500 to-blue-600' },
+  { href: '/budgets', label: 'Budget & Forecast', gradient: 'from-orange-500 to-amber-500' },
+  { href: '/bank-reconciliation', label: 'Bank Reconciliation', gradient: 'from-purple-500 to-fuchsia-600' },
+  { href: '/dmc-commissions', label: 'DMC Commissions', gradient: 'from-pink-500 to-rose-500' },
 ];
 
 export default function AccountsDashboardPage() {
@@ -74,24 +74,24 @@ export default function AccountsDashboardPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Accounts Dashboard</h1>
+      <h1 className="inline-block rounded-lg bg-gradient-to-r from-brand to-indigo-600 px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Accounts Dashboard</h1>
       <p className="mt-1 text-sm text-blue-100">Everything under Accounts, at a glance.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {dashboard && (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          <StatCard label="Today's net cash flow" value={`₹${dashboard.todayNetCashFlow.toLocaleString('en-IN')}`} />
-          <StatCard label="Petty cash balance" value={`₹${dashboard.pettyCashBalance.toLocaleString('en-IN')}`} />
-          <StatCard label="GST collected (this month)" value={`₹${dashboard.gstCollectedThisMonth.toLocaleString('en-IN')}`} />
-          <StatCard label="Budgeted (this month)" value={`₹${dashboard.budgetedThisMonth.toLocaleString('en-IN')} · ${dashboard.budgetCategoryCount} categories`} />
-          <StatCard label="Unmatched bank lines" value={String(dashboard.unmatchedBankTransactions)} tone={dashboard.unmatchedBankTransactions > 0 ? 'warn' : 'ok'} />
-          <StatCard label="Pending DMC commissions" value={`${dashboard.pendingDmcCommissions} · ₹${dashboard.pendingDmcCommissionAmount.toLocaleString('en-IN')}`} tone={dashboard.pendingDmcCommissions > 0 ? 'warn' : 'ok'} />
+          <StatCard gradient="from-cyan-500 to-blue-600" label="Today's net cash flow" value={`₹${dashboard.todayNetCashFlow.toLocaleString('en-IN')}`} />
+          <StatCard gradient="from-emerald-500 to-teal-500" label="Petty cash balance" value={`₹${dashboard.pettyCashBalance.toLocaleString('en-IN')}`} />
+          <StatCard gradient="from-purple-500 to-fuchsia-600" label="GST collected (this month)" value={`₹${dashboard.gstCollectedThisMonth.toLocaleString('en-IN')}`} />
+          <StatCard gradient="from-orange-500 to-amber-500" label="Budgeted (this month)" value={`₹${dashboard.budgetedThisMonth.toLocaleString('en-IN')} · ${dashboard.budgetCategoryCount} categories`} />
+          <StatCard gradient={dashboard.unmatchedBankTransactions > 0 ? 'from-rose-500 to-red-500' : 'from-emerald-500 to-teal-500'} label="Unmatched bank lines" value={String(dashboard.unmatchedBankTransactions)} />
+          <StatCard gradient={dashboard.pendingDmcCommissions > 0 ? 'from-rose-500 to-red-500' : 'from-emerald-500 to-teal-500'} label="Pending DMC commissions" value={`${dashboard.pendingDmcCommissions} · ₹${dashboard.pendingDmcCommissionAmount.toLocaleString('en-IN')}`} />
         </div>
       )}
 
       <div className="mt-4 flex flex-wrap gap-2">
         {QUICK_LINKS.map((l) => (
-          <Link key={l.href} href={l.href} className="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-card hover:shadow-card-hover">
+          <Link key={l.href} href={l.href} className={`rounded-lg bg-gradient-to-r ${l.gradient} px-3 py-1.5 text-sm font-medium text-white shadow-card transition-transform hover:-translate-y-0.5 hover:shadow-card-hover`}>
             {l.label} →
           </Link>
         ))}
