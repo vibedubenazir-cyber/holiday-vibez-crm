@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { resolveBranchScope } from '../common/branch-scope.util';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
 const ALL_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT];
@@ -19,7 +20,7 @@ export class InboxController {
   @Get('conversations')
   findAll(@CurrentUser() user: AuthUser, @Query('channel') channel?: NotificationChannel) {
     if (user.role === Role.TRAVEL_CONSULTANT) return this.inboxService.findAll({ consultantId: user.id, channel });
-    if (user.role === Role.BRANCH_MANAGER) return this.inboxService.findAll({ branchId: user.branchId ?? undefined, channel });
+    if (user.role === Role.BRANCH_MANAGER) return this.inboxService.findAll({ branchId: resolveBranchScope(user), channel });
     return this.inboxService.findAll({ channel });
   }
 

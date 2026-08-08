@@ -1,10 +1,11 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, ForbiddenException, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { resolveBranchScope } from '../common/branch-scope.util';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('reports')
@@ -19,7 +20,10 @@ export class ReportsController {
 
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER)
   @Get('branch/:id')
-  branchReport(@Param('id') id: string) {
+  branchReport(@Param('id') id: string, @CurrentUser() user: { role: Role; branchId: string | null }) {
+    if (user.role === Role.BRANCH_MANAGER && user.branchId !== id) {
+      throw new ForbiddenException("You can only view your own branch's report");
+    }
     return this.reportsService.branchReport(id);
   }
 
@@ -34,7 +38,7 @@ export class ReportsController {
     @CurrentUser() user: { role: Role; branchId: string | null },
   ) {
     const resolvedYear = year ? Number(year) : new Date().getFullYear();
-    const resolvedBranchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? undefined) : branchId;
+    const resolvedBranchId = resolveBranchScope(user, branchId);
     return this.reportsService.getMonthlyPnL(resolvedYear, resolvedBranchId);
   }
 
@@ -52,7 +56,7 @@ export class ReportsController {
     @CurrentUser() user: { role: Role; branchId: string | null },
   ) {
     const resolvedDate = date ?? new Date().toISOString().slice(0, 10);
-    const resolvedBranchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? undefined) : branchId;
+    const resolvedBranchId = resolveBranchScope(user, branchId);
     return this.reportsService.dailyLedger(resolvedDate, resolvedBranchId);
   }
 
@@ -67,14 +71,14 @@ export class ReportsController {
     const now = new Date();
     const resolvedYear = year ? Number(year) : now.getFullYear();
     const resolvedMonth = month ? Number(month) : now.getMonth() + 1;
-    const resolvedBranchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? undefined) : branchId;
+    const resolvedBranchId = resolveBranchScope(user, branchId);
     return this.reportsService.gstReport(resolvedYear, resolvedMonth, resolvedBranchId);
   }
 
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE, Role.AUDITOR)
   @Get('accounts-dashboard')
   accountsDashboard(@Query('branchId') branchId: string | undefined, @CurrentUser() user: { role: Role; branchId: string | null }) {
-    const resolvedBranchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? undefined) : branchId;
+    const resolvedBranchId = resolveBranchScope(user, branchId);
     return this.reportsService.accountsDashboard(resolvedBranchId);
   }
 }

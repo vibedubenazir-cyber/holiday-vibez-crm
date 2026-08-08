@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { resolveBranchScope } from '../common/branch-scope.util';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
 const FINANCE_ROLES = [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.FINANCE];
@@ -19,26 +20,26 @@ export class BankReconciliationController {
   @Roles(...READ_ROLES)
   @Get()
   findAll(@CurrentUser() user: AuthUser, @Query('branchId') branchId?: string) {
-    if (user.role === Role.BRANCH_MANAGER) return this.bankReconciliationService.findAll({ branchId: user.branchId ?? undefined });
+    if (user.role === Role.BRANCH_MANAGER) return this.bankReconciliationService.findAll({ branchId: resolveBranchScope(user) });
     return this.bankReconciliationService.findAll({ branchId });
   }
 
   @Roles(...FINANCE_ROLES)
   @Post()
   create(@Body() dto: CreateBankTransactionDto, @CurrentUser() user: AuthUser) {
-    const branchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? undefined) : dto.branchId;
+    const branchId = user.role === Role.BRANCH_MANAGER ? resolveBranchScope(user) : dto.branchId;
     return this.bankReconciliationService.create(dto, branchId, user.id);
   }
 
   @Roles(...FINANCE_ROLES)
   @Patch(':id/match')
-  match(@Param('id') id: string, @Body() dto: MatchBankTransactionDto) {
-    return this.bankReconciliationService.match(id, dto.paymentId);
+  match(@Param('id') id: string, @Body() dto: MatchBankTransactionDto, @CurrentUser() user: AuthUser) {
+    return this.bankReconciliationService.match(id, dto.paymentId, user);
   }
 
   @Roles(...FINANCE_ROLES)
   @Patch(':id/unmatch')
-  unmatch(@Param('id') id: string) {
-    return this.bankReconciliationService.unmatch(id);
+  unmatch(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.bankReconciliationService.unmatch(id, user);
   }
 }

@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 
@@ -57,7 +58,23 @@ export class CouponsService {
   // Actually consumes one use — call only at the moment a Payment is created,
   // never from the preview/validate endpoint (which must stay side-effect-free
   // since a consultant may check several codes before picking one).
-  async redeem(couponId: string) {
-    await this.prisma.coupon.update({ where: { id: couponId }, data: { usedCount: { increment: 1 } } });
+  //
+  // The limit check and the increment happen in one conditional UPDATE
+  // (re-checking usedCount < usageLimit in the WHERE clause) rather than
+  // trusting computeDiscount()'s earlier read — two concurrent payments for
+  // the same usageLimit:1 coupon would otherwise both pass that earlier
+  // check before either commits its increment. Callers should run this
+  // inside the same transaction as the Payment create so a failed payment
+  // never burns a use (see PaymentsService.create()).
+  async redeem(couponId: string, client: Prisma.TransactionClient | PrismaService = this.prisma) {
+    const coupon = await client.coupon.findUniqueOrThrow({ where: { id: couponId } });
+    const { count } = await client.coupon.updateMany({
+      where: {
+        id: couponId,
+        OR: [{ usageLimit: null }, { usedCount: { lt: coupon.usageLimit ?? undefined } }],
+      },
+      data: { usedCount: { increment: 1 } },
+    });
+    if (count === 0) throw new BadRequestException('This coupon has reached its usage limit');
   }
 }

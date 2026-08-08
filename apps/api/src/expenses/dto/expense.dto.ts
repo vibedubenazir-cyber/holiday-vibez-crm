@@ -1,5 +1,5 @@
 import { ExpenseCategory } from '@prisma/client';
-import { IsDateString, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsEnum, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class CreateExpenseDto {
   @IsOptional()
@@ -13,6 +13,7 @@ export class CreateExpenseDto {
   description!: string;
 
   @IsNumber()
+  @IsPositive()
   amount!: number;
 
   @IsOptional()

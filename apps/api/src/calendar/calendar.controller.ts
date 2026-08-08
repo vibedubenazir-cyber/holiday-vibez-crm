@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { resolveBranchScope } from '../common/branch-scope.util';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
 
@@ -23,7 +24,7 @@ export class CalendarController {
   ) {
     // Consultant/Manager scoping mirrors the RBAC matrix (spec Section 2) even if the
     // client omits the filter.
-    const branchId = user.role === Role.BRANCH_MANAGER ? user.branchId ?? undefined : branch;
+    const branchId = user.role === Role.BRANCH_MANAGER ? resolveBranchScope(user) : branch;
     const consultantId = user.role === Role.TRAVEL_CONSULTANT ? user.id : consultant;
     return this.calendarService.departures({ branchId, consultantId, days: range ? Number(range) : undefined });
   }

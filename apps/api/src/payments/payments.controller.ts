@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { resolveBranchScope } from '../common/branch-scope.util';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
 
@@ -19,7 +20,7 @@ export class PaymentsController {
   findAll(@CurrentUser() user: AuthUser, @Query('bookingId') bookingId?: string) {
     // Branch Manager is always scoped to their own branch (spec Section 13) —
     // Director/Admin/Finance/Auditor can see everything.
-    const branchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? undefined) : undefined;
+    const branchId = user.role === Role.BRANCH_MANAGER ? resolveBranchScope(user, undefined) : undefined;
     return this.paymentsService.findAll(bookingId, branchId);
   }
 

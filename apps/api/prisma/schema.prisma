@@ -536,7 +536,7 @@ model QuotationItem {
 
 model Booking {
   id            String    @id @default(uuid())
-  quotationId   String
+  quotationId   String    @unique
   quotation     Quotation @relation(fields: [quotationId], references: [id])
   status        BookingStatus @default(PENDING)
   departureDate DateTime

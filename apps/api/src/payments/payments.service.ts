@@ -35,23 +35,26 @@ export class PaymentsService {
       });
     }
 
-    // computeDiscount() is pure (no side effects); redeem() is the only step
-    // that actually consumes a use, and only runs once the Payment row is
-    // about to be created — so a rejected/failed create() never burns a use.
+    // computeDiscount() is pure (no side effects) and gives a friendly
+    // upfront error; the actual redeem+create both happen in one transaction
+    // so a failed/rolled-back create() never burns a use, and redeem()'s own
+    // atomic conditional update still protects against two concurrent
+    // payments both passing computeDiscount()'s check for a usageLimit:1 coupon.
     const { coupon, discountAmount, finalAmount } = await this.coupons.computeDiscount(dto.couponCode, dto.amount);
-    const payment = await this.prisma.payment.create({
-      data: {
-        bookingId: dto.bookingId,
-        type: dto.type,
-        category: dto.category,
-        amount: finalAmount,
-        discountAmount,
-        couponId: coupon.id,
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      await this.coupons.redeem(coupon.id, tx);
+      return tx.payment.create({
+        data: {
+          bookingId: dto.bookingId,
+          type: dto.type,
+          category: dto.category,
+          amount: finalAmount,
+          discountAmount,
+          couponId: coupon.id,
+          dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+        },
+      });
     });
-    await this.coupons.redeem(coupon.id);
-    return payment;
   }
 
   // Manual/offline reconciliation path (cash, bank transfer already received) —
@@ -117,23 +120,30 @@ export class PaymentsService {
   // Shared by the manual mark-paid path and the real Razorpay webhook — both
   // "paid" outcomes flow through exactly the same target-crediting logic, so
   // the two paths can never drift apart on what actually happens on payment.
+  //
+  // The paidAt check and the write are combined into a single conditional
+  // update (updateMany ... where paidAt: null) rather than a separate
+  // findUnique-then-update, so two near-simultaneous callers (e.g. Razorpay's
+  // documented aggressive webhook retries) can't both pass a paidAt === null
+  // check before either commits — only the caller whose update actually
+  // matched a still-unpaid row gets to run applyToTargets.
   private async confirmPaid(payment: { id: string; bookingId: string; type: string; amount: unknown }, gatewayRef: string) {
-    const updated = await this.prisma.payment.update({
-      where: { id: payment.id },
+    const { count } = await this.prisma.payment.updateMany({
+      where: { id: payment.id, paidAt: null },
       data: { paidAt: new Date(), gatewayRef },
     });
 
-    if (payment.type === 'CLIENT_RECEIPT') {
+    if (count > 0 && payment.type === 'CLIENT_RECEIPT') {
       await this.applyToTargets(payment.bookingId, Number(payment.amount));
     }
-    return updated;
+    return this.prisma.payment.findUniqueOrThrow({ where: { id: payment.id } });
   }
 
   // Called by razorpay-webhook.controller.ts once Razorpay confirms a payment
   // link was actually paid.
   async confirmPaidByGatewayLinkId(gatewayLinkId: string, gatewayPaymentId: string) {
     const payment = await this.prisma.payment.findFirst({ where: { gatewayLinkId } });
-    if (!payment || payment.paidAt) return null;
+    if (!payment) return null;
     return this.confirmPaid(payment, gatewayPaymentId);
   }
 

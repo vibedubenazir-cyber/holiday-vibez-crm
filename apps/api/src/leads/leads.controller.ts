@@ -9,6 +9,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { resolveBranchScope } from '../common/branch-scope.util';
 
 const MAX_CSV_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 
@@ -25,7 +26,7 @@ export class LeadsController {
       return this.leadsService.findAll({ consultantId: user.id });
     }
     if (user.role === Role.BRANCH_MANAGER) {
-      return this.leadsService.findAll({ branchId: user.branchId ?? undefined });
+      return this.leadsService.findAll({ branchId: resolveBranchScope(user) });
     }
     return this.leadsService.findAll({ branchId });
   }
@@ -68,7 +69,7 @@ export class LeadsController {
 
   @Roles(Role.ADMIN, Role.BRANCH_MANAGER)
   @Post(':id/assign')
-  assign(@Param('id') id: string, @Body('consultantId') consultantId?: string) {
-    return consultantId ? this.leadsService.reassign(id, consultantId) : this.leadsService.autoAssign(id);
+  assign(@Param('id') id: string, @CurrentUser() user: { id: string; role: Role; branchId: string | null }, @Body('consultantId') consultantId?: string) {
+    return consultantId ? this.leadsService.reassign(id, consultantId, user) : this.leadsService.autoAssign(id);
   }
 }

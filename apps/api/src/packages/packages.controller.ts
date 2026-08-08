@@ -59,6 +59,6 @@ export class PackagesController {
   @Roles(Role.TRAVEL_CONSULTANT, Role.ADMIN)
   @Post(':id/build-quotation')
   buildQuotation(@Param('id') id: string, @Body() dto: BuildQuotationFromPackageDto, @CurrentUser() user: AuthUser) {
-    return this.packagesService.buildQuotation(id, dto.leadId, user.id);
+    return this.packagesService.buildQuotation(id, dto.leadId, user);
   }
 }

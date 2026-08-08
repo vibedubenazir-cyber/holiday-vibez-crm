@@ -95,4 +95,9 @@ export class TargetsService {
     if (!target) throw new NotFoundException('Target not found');
     return target;
   }
+
+  async consultantBranchId(consultantId: string) {
+    const consultant = await this.prisma.user.findUnique({ where: { id: consultantId } });
+    return consultant?.branchId ?? null;
+  }
 }

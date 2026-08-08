@@ -14,7 +14,7 @@ export class DataAdminService {
         entity: filter.entity ? { contains: filter.entity, mode: 'insensitive' } : undefined,
         userId: filter.userId,
       },
-      include: { user: true },
+      include: { user: { select: { id: true, name: true, email: true, role: true } } },
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * pageSize,
       take: pageSize,

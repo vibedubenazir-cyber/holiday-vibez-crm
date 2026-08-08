@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { resolveBranchScope } from '../common/branch-scope.util';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
 const FINANCE_ROLES = [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.FINANCE];
@@ -19,7 +20,7 @@ export class BudgetsController {
   @Roles(...READ_ROLES)
   @Get()
   findAll(@CurrentUser() user: AuthUser, @Query('branchId') branchId: string | undefined, @Query('month') month: string, @Query('year') year: string) {
-    const scopedBranchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? undefined) : branchId;
+    const scopedBranchId = resolveBranchScope(user, branchId);
     return this.budgetsService.findAll({ branchId: scopedBranchId, month: Number(month), year: Number(year) });
   }
 

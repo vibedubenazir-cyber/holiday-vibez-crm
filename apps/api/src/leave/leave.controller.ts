@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { resolveBranchScope } from '../common/branch-scope.util';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
 const ALL_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT];
@@ -38,7 +39,7 @@ export class LeaveController {
   @Roles(...APPROVER_ROLES)
   @Get()
   findForBranch(@CurrentUser() user: AuthUser, @Query('branchId') branchId?: string) {
-    const scopedBranchId = user.role === Role.BRANCH_MANAGER ? user.branchId ?? undefined : branchId;
+    const scopedBranchId = resolveBranchScope(user, branchId);
     return this.leaveService.findForBranch({ branchId: scopedBranchId });
   }
 

@@ -49,7 +49,7 @@ export class TravelSearchController {
   // an alternate entry point into that identical action.
   @Roles(Role.TRAVEL_CONSULTANT, Role.ADMIN)
   @Post('add-to-quotation')
-  addToQuotation(@Body() dto: AddSearchResultToQuotationDto, @CurrentUser() user: { id: string }) {
-    return this.travelSearchAddService.addToQuotation(dto, user.id);
+  addToQuotation(@Body() dto: AddSearchResultToQuotationDto, @CurrentUser() user: { id: string; role: Role; branchId: string | null }) {
+    return this.travelSearchAddService.addToQuotation(dto, user);
   }
 }

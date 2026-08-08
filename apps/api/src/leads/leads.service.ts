@@ -234,8 +234,11 @@ export class LeadsService {
     return updated;
   }
 
-  async reassign(leadId: string, consultantId: string) {
+  async reassign(leadId: string, consultantId: string, actor: Actor) {
     const lead = await this.ensureExists(leadId);
+    if (actor.role === Role.BRANCH_MANAGER && actor.branchId !== lead.branchId) {
+      throw new ForbiddenException("You can only reassign your own branch's leads");
+    }
     const consultant = await this.prisma.user.findUnique({ where: { id: consultantId } });
     if (!consultant || consultant.branchId !== lead.branchId) {
       throw new NotFoundException('Consultant not found in this branch');

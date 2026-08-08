@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { resolveBranchScope } from '../common/branch-scope.util';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
 
@@ -19,7 +20,7 @@ export class BookingsController {
   @Get()
   findAll(@CurrentUser() user: AuthUser) {
     if (user.role === Role.TRAVEL_CONSULTANT) return this.bookingsService.findAll({ consultantId: user.id });
-    if (user.role === Role.BRANCH_MANAGER) return this.bookingsService.findAll({ branchId: user.branchId ?? undefined });
+    if (user.role === Role.BRANCH_MANAGER) return this.bookingsService.findAll({ branchId: resolveBranchScope(user) });
     return this.bookingsService.findAll({});
   }
 
@@ -31,13 +32,13 @@ export class BookingsController {
 
   @Roles(Role.TRAVEL_CONSULTANT, Role.ADMIN, Role.BRANCH_MANAGER)
   @Post()
-  create(@Body() dto: CreateBookingDto) {
-    return this.bookingsService.create(dto);
+  create(@Body() dto: CreateBookingDto, @CurrentUser() user: AuthUser) {
+    return this.bookingsService.create(dto, user);
   }
 
   @Roles(Role.TRAVEL_CONSULTANT, Role.ADMIN, Role.BRANCH_MANAGER)
   @Patch(':id/status')
-  updateStatus(@Param('id') id: string, @Body() dto: UpdateBookingStatusDto) {
-    return this.bookingsService.updateStatus(id, dto.status);
+  updateStatus(@Param('id') id: string, @Body() dto: UpdateBookingStatusDto, @CurrentUser() user: AuthUser) {
+    return this.bookingsService.updateStatus(id, dto.status, user);
   }
 }

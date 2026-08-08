@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { resolveBranchScope } from '../common/branch-scope.util';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
 const FINANCE_ROLES = [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.FINANCE];
@@ -19,14 +20,14 @@ export class PettyCashController {
   @Roles(...READ_ROLES)
   @Get()
   findAll(@CurrentUser() user: AuthUser, @Query('branchId') branchId?: string) {
-    if (user.role === Role.BRANCH_MANAGER) return this.pettyCashService.findAll({ branchId: user.branchId ?? undefined });
+    if (user.role === Role.BRANCH_MANAGER) return this.pettyCashService.findAll({ branchId: resolveBranchScope(user) });
     return this.pettyCashService.findAll({ branchId });
   }
 
   @Roles(...READ_ROLES)
   @Get('balance')
   balance(@CurrentUser() user: AuthUser, @Query('branchId') branchId?: string) {
-    if (user.role === Role.BRANCH_MANAGER) return this.pettyCashService.balance({ branchId: user.branchId ?? undefined });
+    if (user.role === Role.BRANCH_MANAGER) return this.pettyCashService.balance({ branchId: resolveBranchScope(user) });
     return this.pettyCashService.balance({ branchId });
   }
 

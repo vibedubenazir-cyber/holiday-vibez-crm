@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { resolveBranchScope } from '../common/branch-scope.util';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
 
@@ -18,38 +19,38 @@ export class QuotationsController {
   @Get()
   findAll(@CurrentUser() user: AuthUser, @Query('branchId') branchId?: string) {
     if (user.role === Role.TRAVEL_CONSULTANT) return this.quotationsService.findAll({ consultantId: user.id });
-    if (user.role === Role.BRANCH_MANAGER) return this.quotationsService.findAll({ branchId: user.branchId ?? undefined });
+    if (user.role === Role.BRANCH_MANAGER) return this.quotationsService.findAll({ branchId: resolveBranchScope(user) });
     return this.quotationsService.findAll({ branchId });
   }
 
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.quotationsService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.quotationsService.findOne(id, user);
   }
 
   @Roles(Role.TRAVEL_CONSULTANT, Role.ADMIN)
   @Post()
   create(@Body() dto: CreateQuotationDto, @CurrentUser() user: AuthUser) {
-    return this.quotationsService.create(dto.leadId, user.id);
+    return this.quotationsService.create(dto.leadId, user);
   }
 
   @Roles(Role.TRAVEL_CONSULTANT, Role.ADMIN)
   @Post(':id/items')
-  addItem(@Param('id') id: string, @Body() dto: AddQuotationItemDto) {
-    return this.quotationsService.addItem(id, dto);
+  addItem(@Param('id') id: string, @Body() dto: AddQuotationItemDto, @CurrentUser() user: AuthUser) {
+    return this.quotationsService.addItem(id, dto, user);
   }
 
   @Roles(Role.TRAVEL_CONSULTANT, Role.ADMIN)
   @Delete(':id/items/:itemId')
-  removeItem(@Param('id') id: string, @Param('itemId') itemId: string) {
-    return this.quotationsService.removeItem(id, itemId);
+  removeItem(@Param('id') id: string, @Param('itemId') itemId: string, @CurrentUser() user: AuthUser) {
+    return this.quotationsService.removeItem(id, itemId, user);
   }
 
   @Roles(Role.TRAVEL_CONSULTANT, Role.ADMIN)
   @Post(':id/submit-for-approval')
-  submit(@Param('id') id: string) {
-    return this.quotationsService.submitForApproval(id);
+  submit(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.quotationsService.submitForApproval(id, user);
   }
 
   // Approve/reject restricted to Branch Manager of that lead's branch (spec Section 13).
@@ -67,13 +68,13 @@ export class QuotationsController {
 
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
   @Get(':id/pdf')
-  pdf(@Param('id') id: string) {
-    return this.quotationsService.pdfUrl(id);
+  pdf(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.quotationsService.pdfUrl(id, user);
   }
 
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
   @Post(':id/send')
-  send(@Param('id') id: string) {
-    return this.quotationsService.sendToClient(id);
+  send(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.quotationsService.sendToClient(id, user);
   }
 }

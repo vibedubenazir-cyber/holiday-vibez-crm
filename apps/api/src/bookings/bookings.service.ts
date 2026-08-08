@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { BookingStatus } from '@prisma/client';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BookingStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateBookingDto } from './dto/booking.dto';
@@ -37,30 +37,51 @@ export class BookingsService {
 
   // Booking confirmed -> vouchers/invoices generated -> auto-appears on the Departure
   // Calendar (spec Section 6 step 8) since Calendar just reads Booking.departureDate directly.
-  async create(dto: CreateBookingDto) {
-    const quotation = await this.prisma.quotation.findUnique({ where: { id: dto.quotationId } });
+  async create(dto: CreateBookingDto, actor: { role: Role; id: string; branchId: string | null }) {
+    const quotation = await this.prisma.quotation.findUnique({ where: { id: dto.quotationId }, include: { lead: true } });
     if (!quotation) throw new NotFoundException('Quotation not found');
     if (quotation.status !== 'SENT') {
       throw new BadRequestException('Only an approved & sent quotation can be converted into a booking');
     }
+    this.assertActorScope(actor, quotation.consultantId, quotation.lead.branchId);
 
     // Booking.voucherUrl/invoiceUrl are unused legacy columns from before the
     // real Voucher/Invoice models existed — the real documents (with real
     // viewable pdfUrl links) are created separately via VouchersService/
     // InvoicesService, not stamped here.
-    return this.prisma.booking.create({
-      data: {
-        quotationId: dto.quotationId,
-        status: 'PENDING',
-        departureDate: new Date(dto.departureDate),
-        returnDate: dto.returnDate ? new Date(dto.returnDate) : undefined,
-      },
-    });
+    try {
+      return await this.prisma.booking.create({
+        data: {
+          quotationId: dto.quotationId,
+          status: 'PENDING',
+          departureDate: new Date(dto.departureDate),
+          returnDate: dto.returnDate ? new Date(dto.returnDate) : undefined,
+        },
+      });
+    } catch (err) {
+      // Unique constraint on quotationId (P2002) — a booking for this quotation
+      // already exists, most likely from a double-click or two staff racing.
+      if (err && typeof err === 'object' && 'code' in err && err.code === 'P2002') {
+        throw new ConflictException('A booking already exists for this quotation');
+      }
+      throw err;
+    }
   }
 
-  async updateStatus(id: string, status: BookingStatus) {
-    await this.findOne(id);
+  async updateStatus(id: string, status: BookingStatus, actor: { role: Role; id: string; branchId: string | null }) {
+    const booking = await this.prisma.booking.findUnique({ where: { id }, include: { quotation: { include: { lead: true } } } });
+    if (!booking) throw new NotFoundException('Booking not found');
+    this.assertActorScope(actor, booking.quotation.consultantId, booking.quotation.lead.branchId);
     return this.prisma.booking.update({ where: { id }, data: { status } });
+  }
+
+  private assertActorScope(actor: { role: Role; id: string; branchId: string | null }, consultantId: string, leadBranchId: string) {
+    if (actor.role === Role.TRAVEL_CONSULTANT && actor.id !== consultantId) {
+      throw new ForbiddenException('You can only act on your own bookings');
+    }
+    if (actor.role === Role.BRANCH_MANAGER && actor.branchId !== leadBranchId) {
+      throw new ForbiddenException("You can only act on your own branch's bookings");
+    }
   }
 
   // Scheduled daily (see jobs/jobs.scheduler.ts's "engagement-reminders") — the

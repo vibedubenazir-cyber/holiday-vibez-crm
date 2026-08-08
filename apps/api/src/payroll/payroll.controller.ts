@@ -11,6 +11,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { streamBrandedPdf } from '../common/pdf.util';
 import { getPublicCompanyInfo } from '../common/company-info.util';
 import { PrismaService } from '../prisma.service';
+import { resolveBranchScope } from '../common/branch-scope.util';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
 const ALL_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT];
@@ -51,7 +52,7 @@ export class PayrollController {
   @Roles(...ADMIN_ROLES, Role.BRANCH_MANAGER)
   @Get('payslips')
   findForBranch(@CurrentUser() user: AuthUser, @Query('branchId') branchId?: string, @Query('month') month?: string) {
-    const scopedBranchId = user.role === Role.BRANCH_MANAGER ? user.branchId ?? undefined : branchId;
+    const scopedBranchId = resolveBranchScope(user, branchId);
     return this.payrollService.findForBranch({ branchId: scopedBranchId, month });
   }
 

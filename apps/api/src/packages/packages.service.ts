@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { QuotationsService } from '../quotations/quotations.service';
 import { AddPackageItemDto, CreatePackageDto, UpdatePackageDto } from './dto/package.dto';
@@ -73,19 +74,19 @@ export class PackagesService {
   // Fast-path itinerary creation (feature-table "Itinerary Creation" row): a package is
   // a reusable template, so building a quotation from one just replays QuotationsService's
   // own create + addItem flow instead of duplicating its snapshot-costing logic.
-  async buildQuotation(packageId: string, leadId: string, consultantId: string) {
+  async buildQuotation(packageId: string, leadId: string, actor: { role: Role; id: string; branchId: string | null }) {
     const pkg = await this.prisma.package.findUnique({ where: { id: packageId }, include: { items: true } });
     if (!pkg) throw new NotFoundException('Package not found');
     if (pkg.items.length === 0) throw new BadRequestException('This package has no items to copy into a quotation');
 
-    const quotation = await this.quotationsService.create(leadId, consultantId);
+    const quotation = await this.quotationsService.create(leadId, actor);
     for (const item of pkg.items) {
       await this.quotationsService.addItem(quotation.id, {
         rateCardId: item.rateCardId,
         quantity: item.quantity,
-      });
+      }, actor);
     }
-    return this.quotationsService.findOne(quotation.id);
+    return this.quotationsService.findOne(quotation.id, actor);
   }
 
   // Called by the unauthenticated public controller (for the public marketing

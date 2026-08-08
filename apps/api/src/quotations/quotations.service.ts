@@ -22,30 +22,34 @@ export class QuotationsService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, actor: { role: Role; id: string; branchId: string | null }) {
     const quotation = await this.prisma.quotation.findUnique({
       where: { id },
       include: { items: { include: { rateCard: true } }, lead: true },
     });
     if (!quotation) throw new NotFoundException('Quotation not found');
+    this.assertActorScope(actor, quotation.consultantId, quotation.lead.branchId);
     return quotation;
   }
 
-  async create(leadId: string, consultantId: string) {
+  async create(leadId: string, actor: { role: Role; id: string; branchId: string | null }) {
     const lead = await this.prisma.lead.findUnique({ where: { id: leadId } });
     if (!lead) throw new NotFoundException('Lead not found');
+    if (actor.role === Role.TRAVEL_CONSULTANT && lead.assignedConsultantId !== actor.id) {
+      throw new ForbiddenException('You can only create quotations for leads assigned to you');
+    }
 
     const refNo = `HV-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
     return this.prisma.quotation.create({
-      data: { refNo, leadId, consultantId, status: QuotationStatus.DRAFT },
+      data: { refNo, leadId, consultantId: actor.id, status: QuotationStatus.DRAFT },
     });
   }
 
   // Multi-select, auto-costing item add (spec Section 5/6 step 4). The rate is
   // snapshotted at selection time so later Admin rate edits never retroactively
   // change an existing quotation's total (spec Section 4, QuotationItem.snapshot_amount).
-  async addItem(quotationId: string, dto: AddQuotationItemDto) {
-    const quotation = await this.ensureDraft(quotationId);
+  async addItem(quotationId: string, dto: AddQuotationItemDto, actor: { role: Role; id: string; branchId: string | null }) {
+    await this.ensureDraft(quotationId, actor);
     const rateCard = await this.prisma.rateCard.findUnique({ where: { id: dto.rateCardId } });
     if (!rateCard || !rateCard.active) throw new NotFoundException('Rate card not found or inactive');
 
@@ -66,15 +70,15 @@ export class QuotationsService {
     return this.recalculateTotal(quotationId);
   }
 
-  async removeItem(quotationId: string, itemId: string) {
-    await this.ensureDraft(quotationId);
+  async removeItem(quotationId: string, itemId: string, actor: { role: Role; id: string; branchId: string | null }) {
+    await this.ensureDraft(quotationId, actor);
     const { count } = await this.prisma.quotationItem.deleteMany({ where: { id: itemId, quotationId } });
     if (count === 0) throw new NotFoundException('Item not found on this quotation');
     return this.recalculateTotal(quotationId);
   }
 
-  async submitForApproval(id: string) {
-    const quotation = await this.ensureDraft(id);
+  async submitForApproval(id: string, actor: { role: Role; id: string; branchId: string | null }) {
+    const quotation = await this.ensureDraft(id, actor);
     const items = await this.prisma.quotationItem.findMany({ where: { quotationId: id } });
     if (items.length === 0) {
       throw new BadRequestException('Add at least one item before submitting for approval');
@@ -154,12 +158,13 @@ export class QuotationsService {
   // Staff-triggered resend from the quotation detail page — approve() already
   // sends once automatically, this lets staff re-send the same WhatsApp/email
   // on demand (e.g. customer says they never got it) without re-approving.
-  async sendToClient(id: string) {
+  async sendToClient(id: string, actor: { role: Role; id: string; branchId: string | null }) {
     const quotation = await this.prisma.quotation.findUnique({ where: { id }, include: { lead: true } });
     if (!quotation) throw new NotFoundException('Quotation not found');
     if (quotation.status !== QuotationStatus.SENT) {
       throw new BadRequestException('Only sent quotations can be sent to the client');
     }
+    this.assertActorScope(actor, quotation.consultantId, quotation.lead.branchId);
     await this.notifyCustomer(quotation);
     return { sent: true };
   }
@@ -191,8 +196,8 @@ export class QuotationsService {
   // Only exposes SENT quotations (approved, customer-facing) — DRAFT/
   // PENDING_APPROVAL/REJECTED aren't meant for the customer to see, even via a
   // guessable-if-leaked link.
-  async pdfUrl(id: string) {
-    const quotation = await this.ensureExists(id);
+  async pdfUrl(id: string, actor: { role: Role; id: string; branchId: string | null }) {
+    const quotation = await this.ensureExists(id, actor);
     return { pdfUrl: `${process.env.WEB_ORIGIN}/quote/${id}`, refNo: quotation.refNo };
   }
 
@@ -256,18 +261,33 @@ export class QuotationsService {
     }
   }
 
-  private async ensureDraft(id: string) {
-    const quotation = await this.prisma.quotation.findUnique({ where: { id } });
+  // Consultants may only touch their own quotations; branch managers only
+  // their own branch's; Admin/Director are unrestricted. Mirrors
+  // assertBranchScope but also covers the consultant-ownership case, which
+  // approve()/reject() don't need since only managers/admins call those.
+  private assertActorScope(actor: { role: Role; id: string; branchId: string | null }, consultantId: string, leadBranchId: string) {
+    if (actor.role === Role.TRAVEL_CONSULTANT && actor.id !== consultantId) {
+      throw new ForbiddenException('You can only act on your own quotations');
+    }
+    if (actor.role === Role.BRANCH_MANAGER && actor.branchId !== leadBranchId) {
+      throw new ForbiddenException("You can only act on your own branch's quotations");
+    }
+  }
+
+  private async ensureDraft(id: string, actor: { role: Role; id: string; branchId: string | null }) {
+    const quotation = await this.prisma.quotation.findUnique({ where: { id }, include: { lead: true } });
     if (!quotation) throw new NotFoundException('Quotation not found');
     if (quotation.status !== QuotationStatus.DRAFT) {
       throw new BadRequestException('Only draft quotations can be edited');
     }
+    this.assertActorScope(actor, quotation.consultantId, quotation.lead.branchId);
     return quotation;
   }
 
-  private async ensureExists(id: string) {
-    const quotation = await this.prisma.quotation.findUnique({ where: { id } });
+  private async ensureExists(id: string, actor: { role: Role; id: string; branchId: string | null }) {
+    const quotation = await this.prisma.quotation.findUnique({ where: { id }, include: { lead: true } });
     if (!quotation) throw new NotFoundException('Quotation not found');
+    this.assertActorScope(actor, quotation.consultantId, quotation.lead.branchId);
     return quotation;
   }
 }
