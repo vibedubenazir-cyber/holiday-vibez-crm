@@ -67,7 +67,7 @@ export default function DmcCommissionsPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">DMC Commissions</h1>
+        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">DMC Commissions</h1>
         {canManage && (
           <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
             {showForm ? 'Cancel' : 'Record commission'}
@@ -82,7 +82,7 @@ export default function DmcCommissionsPage() {
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium ${statusFilter === s ? 'bg-white text-brand shadow-card' : 'bg-white/10 text-white/80'}`}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium ${statusFilter === s ? 'bg-brand-50 text-brand shadow-card' : 'bg-white/10 text-white/80'}`}
           >
             {s === 'ALL' ? 'All' : s === 'PENDING' ? 'Pending' : 'Received'}
           </button>
@@ -92,7 +92,7 @@ export default function DmcCommissionsPage() {
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {canManage && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+        <form onSubmit={handleCreate} className="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-500">DMC / Vendor</label>
             <select value={form.supplierId} onChange={(e) => setForm({ ...form, supplierId: e.target.value })} className="w-48 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
@@ -115,7 +115,7 @@ export default function DmcCommissionsPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden bg-white">
+      <div className="mt-4 overflow-hidden bg-brand-50">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>

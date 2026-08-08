@@ -79,7 +79,7 @@ export default function AutomationPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Automation</h1>
+        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Automation</h1>
         <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
           {showForm ? 'Cancel' : 'New rule'}
         </button>
@@ -90,7 +90,7 @@ export default function AutomationPage() {
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
           <input required placeholder="Rule name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           <select value={form.trigger} onChange={(e) => setForm({ ...form, trigger: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             {Object.entries(TRIGGER_LABELS).map(([v, label]) => <option key={v} value={v}>{label}</option>)}
@@ -115,7 +115,7 @@ export default function AutomationPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden bg-white">
+      <div className="mt-4 overflow-hidden bg-brand-50">
         <div className="border-b border-slate-100 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500">Rules</div>
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
@@ -152,7 +152,7 @@ export default function AutomationPage() {
         </table>
       </div>
 
-      <div className="mt-4 overflow-hidden bg-white">
+      <div className="mt-4 overflow-hidden bg-brand-50">
         <div className="border-b border-slate-100 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500">Recent fires</div>
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">

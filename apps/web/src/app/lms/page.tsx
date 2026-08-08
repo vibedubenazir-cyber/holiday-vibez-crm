@@ -45,7 +45,7 @@ export default function LmsCoursesPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Courses</h1>
+        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Courses</h1>
         {isManager && (
           <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
             {showForm ? 'Cancel' : 'Add course'}
@@ -57,7 +57,7 @@ export default function LmsCoursesPage() {
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {isManager && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+        <form onSubmit={handleCreate} className="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-500">Title</label>
             <input required placeholder="Onboarding Basics" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-56 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
@@ -79,7 +79,7 @@ export default function LmsCoursesPage() {
           <Link
             key={c.id}
             href={`/lms/${c.id}`}
-            className="flex flex-col gap-2 rounded-lg bg-white p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover dark:bg-slate-800"
+            className="flex flex-col gap-2 rounded-lg bg-brand-50 p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover dark:bg-slate-800"
           >
             <div className="flex items-center justify-between">
               <span className="font-medium text-slate-800 dark:text-slate-100">{c.title}</span>

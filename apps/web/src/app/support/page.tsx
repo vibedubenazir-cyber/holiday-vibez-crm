@@ -90,7 +90,7 @@ export default function SupportPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Support Tickets</h1>
+        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Support Tickets</h1>
         <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
           {showForm ? 'Cancel' : 'New ticket'}
         </button>
@@ -98,7 +98,7 @@ export default function SupportPage() {
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
           <select required value={form.leadId} onChange={(e) => setForm({ ...form, leadId: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             <option value="">Select lead…</option>
             {leads.map((l) => <option key={l.id} value={l.id}>{l.clientName} · {l.destination}</option>)}
@@ -128,7 +128,7 @@ export default function SupportPage() {
         </select>
       </div>
 
-      <div className="mt-2 overflow-hidden bg-white">
+      <div className="mt-2 overflow-hidden bg-brand-50">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>

@@ -211,7 +211,7 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className={`flex ${compact ? 'h-full' : ''} gap-2`} style={compact ? undefined : { height: '65vh' }}>
-      <div className={`${sidebarWidth} shrink-0 overflow-y-auto rounded-xl bg-white shadow-card dark:bg-slate-800`}>
+      <div className={`${sidebarWidth} shrink-0 overflow-y-auto rounded-xl bg-brand-50 shadow-card dark:bg-slate-800`}>
         <div className="flex border-b border-slate-100 dark:border-slate-700">
           <button
             onClick={() => setTab('channels')}
@@ -285,7 +285,7 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
         )}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-white shadow-card dark:bg-slate-800">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-brand-50 shadow-card dark:bg-slate-800">
         {error && <p className="px-3 pt-2 text-xs text-red-600">{error}</p>}
         {selectedChannel ? (
           <>
@@ -358,7 +358,7 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
 
       {showNewGroup && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-card dark:bg-slate-800">
+          <div className="w-full max-w-md rounded-xl bg-brand-50 p-5 shadow-card dark:bg-slate-800">
             <h2 className="text-lg font-semibold text-slate-800 dark:text-white">New group channel</h2>
             <input
               type="text"

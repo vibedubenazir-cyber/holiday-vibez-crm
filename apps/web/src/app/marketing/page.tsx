@@ -71,7 +71,7 @@ export default function MarketingPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Marketing</h1>
+        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Marketing</h1>
         <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
           {showForm ? 'Cancel' : 'New campaign'}
         </button>
@@ -79,11 +79,11 @@ export default function MarketingPage() {
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="border-l-4 border-l-brand bg-white p-4">
+        <div className="border-l-4 border-l-brand bg-brand-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-brand">Campaigns sent this month</p>
           <p className="mt-1 text-2xl font-semibold text-slate-800">{dashboard?.campaignsSentThisMonth ?? 0}</p>
         </div>
-        <div className="border-l-4 border-l-blue-500 bg-white p-4 sm:col-span-2">
+        <div className="border-l-4 border-l-blue-500 bg-brand-50 p-4 sm:col-span-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Leads by source</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {dashboard?.leadsBySource.map((s) => (
@@ -94,7 +94,7 @@ export default function MarketingPage() {
             {(!dashboard || dashboard.leadsBySource.length === 0) && <span className="text-sm text-slate-400">No leads yet.</span>}
           </div>
         </div>
-        <div className="border-l-4 border-l-brand-500 bg-white p-4 sm:col-span-3">
+        <div className="border-l-4 border-l-brand-500 bg-brand-50 p-4 sm:col-span-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">Upcoming birthdays &amp; anniversaries (next 7 days)</p>
           <div className="mt-2 space-y-1">
             {dashboard?.upcoming.map((u) => (
@@ -108,7 +108,7 @@ export default function MarketingPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
           <input required placeholder="Campaign name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           <select value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             <option value={NotificationChannel.WHATSAPP}>WhatsApp</option>
@@ -128,7 +128,7 @@ export default function MarketingPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden bg-white">
+      <div className="mt-4 overflow-hidden bg-brand-50">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>

@@ -82,7 +82,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         href={item.href}
         className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
           active
-            ? 'bg-white text-brand shadow-card'
+            ? 'bg-brand-50 text-brand shadow-card'
             : 'text-white/80 hover:translate-x-0.5 hover:bg-white/10 hover:text-white'
         }`}
       >
@@ -117,7 +117,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex shrink-0 items-center justify-between bg-brand-700 px-6 py-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-semibold text-brand shadow-card">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand shadow-card">
               {initials(user.name)}
             </div>
             <div>

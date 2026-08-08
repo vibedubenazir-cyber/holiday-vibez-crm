@@ -19,7 +19,7 @@ const ACCENTS = {
 function StatCard({ label, value, accent }: { label: string; value: string; accent: keyof typeof ACCENTS }) {
   const c = ACCENTS[accent];
   return (
-    <div className={`overflow-hidden rounded-xl border-t-4 ${c.border} bg-white p-4 shadow-card transition-shadow hover:shadow-card-hover dark:bg-slate-800`}>
+    <div className={`overflow-hidden rounded-xl border-t-4 ${c.border} bg-brand-50 p-4 shadow-card transition-shadow hover:shadow-card-hover dark:bg-slate-800`}>
       <p className={`text-xs font-semibold uppercase tracking-wide ${c.text}`}>{label}</p>
       <p className="mt-1 text-xl font-bold text-slate-800 dark:text-slate-100">{value}</p>
     </div>
@@ -83,7 +83,7 @@ export default function AccountsDashboardPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Accounts Dashboard</h1>
+      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Accounts Dashboard</h1>
       <p className="mt-1 text-sm text-blue-100">Everything under Accounts, at a glance.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
@@ -100,13 +100,13 @@ export default function AccountsDashboardPage() {
 
       <div className="mt-4 flex flex-wrap gap-2">
         {QUICK_LINKS.map((l) => (
-          <Link key={l.href} href={l.href} className="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-card hover:shadow-card-hover">
+          <Link key={l.href} href={l.href} className="rounded-lg bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand shadow-card hover:shadow-card-hover">
             {l.label} →
           </Link>
         ))}
       </div>
 
-      <div className="mt-6 rounded-lg bg-white p-4 shadow-card dark:bg-slate-800">
+      <div className="mt-6 rounded-lg bg-brand-50 p-4 shadow-card dark:bg-slate-800">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Daily Ledger</p>
           <input type="date" value={ledgerDate} onChange={(e) => setLedgerDate(e.target.value)} className="rounded-lg border border-slate-300 px-2 py-1 text-sm" />
@@ -137,7 +137,7 @@ export default function AccountsDashboardPage() {
         )}
       </div>
 
-      <div className="mt-4 rounded-lg bg-white p-4 shadow-card dark:bg-slate-800">
+      <div className="mt-4 rounded-lg bg-brand-50 p-4 shadow-card dark:bg-slate-800">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">GST Report</p>
           <div className="flex gap-2">

@@ -122,7 +122,7 @@ export default function CourseDetailPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{course.title}</h1>
+      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{course.title}</h1>
       <p className="mt-1 text-sm text-blue-100">{course.description}</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
@@ -131,11 +131,11 @@ export default function CourseDetailPage() {
           {enrolling ? 'Enrolling...' : 'Enroll in this course'}
         </button>
       ) : course.certificate ? (
-        <div className="mt-4 rounded-lg bg-white p-4 shadow-card dark:bg-slate-800">
+        <div className="mt-4 rounded-lg bg-brand-50 p-4 shadow-card dark:bg-slate-800">
           <p className="text-sm font-medium text-blue-700">🎓 Completed — certificate {course.certificate.certNo} issued</p>
         </div>
       ) : (
-        <div className="mt-4 rounded-lg bg-white p-3 shadow-card dark:bg-slate-800">
+        <div className="mt-4 rounded-lg bg-brand-50 p-3 shadow-card dark:bg-slate-800">
           <p className="text-sm text-slate-600 dark:text-slate-300">
             Progress: {course.completedLessonIds.length} / {course.lessons.length} lessons complete
             {course.latestAttempt && !course.latestAttempt.passed && ` · last quiz attempt: ${course.latestAttempt.score}% (not passed, try again)`}
@@ -143,7 +143,7 @@ export default function CourseDetailPage() {
         </div>
       )}
 
-      <div className="mt-4 rounded-lg bg-white p-4 shadow-card dark:bg-slate-800">
+      <div className="mt-4 rounded-lg bg-brand-50 p-4 shadow-card dark:bg-slate-800">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Lessons</p>
           {isManager && (
@@ -186,7 +186,7 @@ export default function CourseDetailPage() {
         </ul>
       </div>
 
-      <div className="mt-4 rounded-lg bg-white p-4 shadow-card dark:bg-slate-800">
+      <div className="mt-4 rounded-lg bg-brand-50 p-4 shadow-card dark:bg-slate-800">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Quiz</p>
           {isManager && (

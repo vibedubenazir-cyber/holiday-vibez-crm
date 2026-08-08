@@ -73,7 +73,7 @@ export default function ReportsPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Reports</h1>
+      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Reports</h1>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {dashboard && (
@@ -115,7 +115,7 @@ export default function ReportsPage() {
           </div>
 
           <h2 className="mt-6 text-sm font-semibold text-slate-700">Branch target vs. achieved</h2>
-          <div className="mt-2 overflow-hidden bg-white">
+          <div className="mt-2 overflow-hidden bg-brand-50">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
                 <tr><th className="px-4 py-2">Branch</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Achieved</th></tr>
@@ -164,7 +164,7 @@ export default function ReportsPage() {
             Revenue and payment costs bucket by when client/DMC payments were actually recorded; expenses bucket by their own date. Net margin = revenue − payment costs − expenses.
           </p>
           {pnlError && <p className="mt-2 text-sm text-red-600">{pnlError}</p>}
-          <div className="mt-2 overflow-hidden bg-white">
+          <div className="mt-2 overflow-hidden bg-brand-50">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
                 <tr>
@@ -212,7 +212,7 @@ export default function ReportsPage() {
 
       <h2 className="mt-6 text-sm font-semibold text-slate-700">Passport/visa expiry compliance</h2>
       <p className="text-xs text-slate-500">Travelers on an upcoming booking with a passport expiring within 6 months of departure, or no visa status on file.</p>
-      <div className="mt-2 overflow-hidden bg-white">
+      <div className="mt-2 overflow-hidden bg-brand-50">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr><th className="px-4 py-2">Traveler</th><th className="px-4 py-2">Departure</th><th className="px-4 py-2">Passport expiry</th><th className="px-4 py-2">Reason</th></tr>
@@ -246,7 +246,7 @@ const STAT_COLORS = {
 function Stat({ label, value, color = 'brand' }: { label: string; value: string; color?: keyof typeof STAT_COLORS }) {
   const c = STAT_COLORS[color];
   return (
-    <div className={`border-l-4 ${c.border} bg-white p-4`}>
+    <div className={`border-l-4 ${c.border} bg-brand-50 p-4`}>
       <p className={`text-xs font-semibold uppercase tracking-wide ${c.text}`}>{label}</p>
       <p className="mt-1 text-xl font-bold tracking-tight text-slate-800">{value}</p>
     </div>

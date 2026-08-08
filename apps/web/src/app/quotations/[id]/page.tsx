@@ -257,7 +257,7 @@ export default function QuotationDetailPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{quotation.refNo}</h1>
+          <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{quotation.refNo}</h1>
           <p className="text-sm text-slate-500">{quotation.lead.clientName} · {quotation.lead.destination} · {quotation.status}</p>
         </div>
         <div className="flex gap-2">
@@ -297,7 +297,7 @@ export default function QuotationDetailPage() {
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {isSent && (
-        <form onSubmit={handleCreateBooking} className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+        <form onSubmit={handleCreateBooking} className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <div>
             <label className="block text-xs text-slate-500">Departure date</label>
             <input
@@ -316,7 +316,7 @@ export default function QuotationDetailPage() {
 
       {isDraft && (
         <div className="mt-4 space-y-3">
-          <div className="rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <div className="rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <button onClick={() => setShowHotelSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
               {showHotelSearch ? 'Hide hotel search' : '+ Search hotels (live)'}
             </button>
@@ -371,7 +371,7 @@ export default function QuotationDetailPage() {
             )}
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <div className="rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <button onClick={() => setShowFlightSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
               {showFlightSearch ? 'Hide flight search' : '+ Search flights (live)'}
             </button>
@@ -420,7 +420,7 @@ export default function QuotationDetailPage() {
             )}
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <div className="rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <button onClick={() => setShowTransferSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
               {showTransferSearch ? 'Hide transfer search' : '+ Search transfers (live)'}
             </button>
@@ -470,7 +470,7 @@ export default function QuotationDetailPage() {
       )}
 
       {isDraft && (
-        <form onSubmit={handleAddItem} className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+        <form onSubmit={handleAddItem} className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <div className="flex-1 min-w-[220px]">
             <label className="block text-xs text-slate-500">Rate card</label>
             <select value={selectedRate} onChange={(e) => setSelectedRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
@@ -489,7 +489,7 @@ export default function QuotationDetailPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden bg-white">
+      <div className="mt-4 overflow-hidden bg-brand-50">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>

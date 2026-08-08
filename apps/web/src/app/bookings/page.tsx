@@ -200,7 +200,7 @@ export default function BookingsPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Bookings & Payments</h1>
+      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Bookings & Payments</h1>
       <p className="mt-1 text-sm text-blue-100">
         Bookings are created from approved (SENT) quotations. Generate a payment link to send the customer a real hosted-checkout
         page (Razorpay), or use "Mark paid" for offline/cash payments already received — either way, payments feed branch P&L
@@ -210,7 +210,7 @@ export default function BookingsPage() {
 
       <div className="mt-4 space-y-4">
         {bookings.map((b) => (
-          <div key={b.id} className="rounded-lg border-l-4 border-l-blue-500 bg-white p-5 shadow-card dark:bg-slate-800">
+          <div key={b.id} className="rounded-lg border-l-4 border-l-blue-500 bg-brand-50 p-5 shadow-card dark:bg-slate-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-slate-800 dark:text-slate-100">{b.quotation?.lead?.clientName} · {b.quotation?.lead?.destination}</p>

@@ -196,7 +196,7 @@ export default function LeadsPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Leads</h1>
+        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Leads</h1>
         {canCreate && (
           <div className="flex items-center gap-2">
             <button
@@ -225,7 +225,7 @@ export default function LeadsPage() {
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       {importError && <p className="mt-3 text-sm text-red-600">{importError}</p>}
       {importResults && (
-        <div className="mt-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-3 text-sm">
+        <div className="mt-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-3 text-sm">
           <p className="font-medium text-slate-700">
             Imported {importResults.filter((r) => r.success).length} of {importResults.length} rows
           </p>
@@ -238,7 +238,7 @@ export default function LeadsPage() {
       )}
 
       {canCreate && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
           <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             {SOURCE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -259,7 +259,7 @@ export default function LeadsPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-xl bg-white shadow-card dark:bg-slate-800">
+      <div className="mt-4 overflow-hidden rounded-xl bg-brand-50 shadow-card dark:bg-slate-800">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>

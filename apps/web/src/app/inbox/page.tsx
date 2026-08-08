@@ -112,8 +112,8 @@ export default function InboxPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Inbox</h1>
-        <div className="flex rounded-lg border border-slate-200 bg-white p-1 text-sm">
+        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Inbox</h1>
+        <div className="flex rounded-lg border border-slate-200 bg-brand-50 p-1 text-sm">
           {[NotificationChannel.WHATSAPP, NotificationChannel.EMAIL].map((c) => (
             <button
               key={c}
@@ -128,7 +128,7 @@ export default function InboxPage() {
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover lg:col-span-1">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover lg:col-span-1">
           <div className="border-b border-slate-100 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500">Conversations</div>
           <ul className="max-h-[520px] divide-y divide-slate-100 overflow-y-auto">
             {leads.map((l) => {
@@ -150,7 +150,7 @@ export default function InboxPage() {
           </ul>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover lg:col-span-2">
+        <div className="rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover lg:col-span-2">
           {!activeConversation ? (
             <div className="flex h-full items-center justify-center p-10 text-sm text-slate-400">
               Select a conversation to view messages.

@@ -131,7 +131,7 @@ export default function LeadDetailPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{lead.clientName}</h1>
+            <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{lead.clientName}</h1>
             <BadgeDropdown value={lead.temperature} options={TEMPERATURE_DROPDOWN_OPTIONS} onChange={handleTemperatureChange} />
           </div>
           <p className="text-sm text-slate-500">{lead.destination} · {lead.phone} · {lead.status}</p>
@@ -152,7 +152,7 @@ export default function LeadDetailPage() {
             </button>
           </div>
           {showForm && (
-            <form onSubmit={handleAddTraveler} className="mt-2 grid grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-3">
+            <form onSubmit={handleAddTraveler} className="mt-2 grid grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-3">
               <input required placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
               <input placeholder="Passport number" value={form.passportNumber} onChange={(e) => setForm({ ...form, passportNumber: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
               <input type="date" placeholder="Passport expiry" value={form.passportExpiry} onChange={(e) => setForm({ ...form, passportExpiry: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
@@ -160,7 +160,7 @@ export default function LeadDetailPage() {
               <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Save traveler</button>
             </form>
           )}
-          <div className="mt-2 overflow-hidden bg-white">
+          <div className="mt-2 overflow-hidden bg-brand-50">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
                 <tr><th className="px-3 py-2">Name</th><th className="px-3 py-2">Passport</th><th className="px-3 py-2">Expiry</th><th className="px-3 py-2">Visa</th></tr>
@@ -182,7 +182,7 @@ export default function LeadDetailPage() {
 
         <div>
           <h2 className="text-sm font-semibold text-slate-700">Quotations</h2>
-          <div className="mt-2 overflow-hidden bg-white">
+          <div className="mt-2 overflow-hidden bg-brand-50">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
                 <tr><th className="px-3 py-2">Ref</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Total</th><th></th></tr>
@@ -206,7 +206,7 @@ export default function LeadDetailPage() {
       {customFieldDefs.length > 0 && (
         <div className="mt-6">
           <h2 className="text-sm font-semibold text-slate-700">Custom Fields</h2>
-          <form onSubmit={handleSaveCustomFields} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <form onSubmit={handleSaveCustomFields} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
             {customFieldDefs.map((d) => (
               <div key={d.id}>
                 <label className="mb-1 block text-xs font-medium text-slate-600">

@@ -95,7 +95,7 @@ export default function LeavePage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Leave</h1>
+        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Leave</h1>
         <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
           {showForm ? 'Cancel' : 'Request leave'}
         </button>
@@ -104,7 +104,7 @@ export default function LeavePage() {
 
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {balance.map((b) => (
-          <div key={b.type} className="border-l-4 border-l-blue-500 bg-white p-4">
+          <div key={b.type} className="border-l-4 border-l-blue-500 bg-brand-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">{b.type.charAt(0) + b.type.slice(1).toLowerCase()} leave</p>
             <p className="mt-1 text-2xl font-semibold text-slate-800">
               {b.remaining}
@@ -115,7 +115,7 @@ export default function LeavePage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
           <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             {TYPE_OPTIONS.map((t) => <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>)}
           </select>
@@ -129,7 +129,7 @@ export default function LeavePage() {
       )}
 
       <h2 className="mt-6 text-sm font-semibold text-white">My requests</h2>
-      <div className="mt-2 overflow-hidden bg-white">
+      <div className="mt-2 overflow-hidden bg-brand-50">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>
@@ -168,7 +168,7 @@ export default function LeavePage() {
       {canApprove && (
         <>
           <h2 className="mt-6 text-sm font-semibold text-white">Team requests</h2>
-          <div className="mt-2 overflow-hidden bg-white">
+          <div className="mt-2 overflow-hidden bg-brand-50">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
                 <tr>

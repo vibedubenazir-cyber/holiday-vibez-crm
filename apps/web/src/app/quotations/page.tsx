@@ -27,10 +27,10 @@ export default function QuotationsPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Quotations</h1>
+      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Quotations</h1>
       <p className="mt-1 text-sm text-blue-100">Start a quotation from a lead's page. Drafts are built here by selecting rate cards.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-      <div className="mt-4 overflow-hidden bg-white">
+      <div className="mt-4 overflow-hidden bg-brand-50">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>

@@ -91,7 +91,7 @@ export default function CmsPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Website CMS</h1>
+        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Website CMS</h1>
         {canManage && (
           <div className="flex gap-2">
             <button onClick={() => setShowSettings((s) => !s)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand">
@@ -111,7 +111,7 @@ export default function CmsPage() {
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {canManage && showSettings && (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+        <div className="mt-4 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <p className="text-sm font-medium text-slate-800">Site settings</p>
           <ul className="mt-2 space-y-1">
             {settings.map((s) => (
@@ -130,7 +130,7 @@ export default function CmsPage() {
         </div>
       )}
 
-      <div className="mt-4 flex gap-1 rounded-lg border border-slate-200 bg-white p-1 text-sm">
+      <div className="mt-4 flex gap-1 rounded-lg border border-slate-200 bg-brand-50 p-1 text-sm">
         {TYPE_TABS.map((t) => (
           <button
             key={t}
@@ -143,7 +143,7 @@ export default function CmsPage() {
       </div>
 
       {canManage && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2">
           <input required placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors sm:col-span-2" />
           <input placeholder="Subtitle" value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors sm:col-span-2" />
           <input placeholder="Image URL" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
@@ -160,7 +160,7 @@ export default function CmsPage() {
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {content.map((item) => (
-          <div key={item.id} className="rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <div key={item.id} className="rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <div className="flex items-start justify-between">
               <p className="font-medium text-slate-800">{item.title}</p>
               <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${item.active ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>

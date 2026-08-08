@@ -74,10 +74,10 @@ export default function AttendancePage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Attendance</h1>
+      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Attendance</h1>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-      <div className="mt-4 rounded-xl border border-slate-200 bg-white shadow-card transition-shadow hover:shadow-card-hover p-4">
+      <div className="mt-4 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
         <p className="text-sm font-medium text-slate-800">Today</p>
         {today ? (
           <p className="mt-1 text-sm text-slate-500">
@@ -107,7 +107,7 @@ export default function AttendancePage() {
       </div>
 
       {canSeeTeam && (
-        <div className="mt-4 overflow-hidden bg-white">
+        <div className="mt-4 overflow-hidden bg-brand-50">
           <div className="border-b border-slate-100 px-4 py-2 text-sm font-medium text-slate-800">Team attendance — this month</div>
           <table className="w-full text-sm">
             <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">

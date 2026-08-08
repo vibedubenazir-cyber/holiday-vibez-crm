@@ -87,13 +87,13 @@ export default function PayrollPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Payroll</h1>
+      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Payroll</h1>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {canManage && (
         <>
           <h2 className="mt-6 text-sm font-semibold text-white">Salary structures</h2>
-          <form onSubmit={handleSaveStructure} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <form onSubmit={handleSaveStructure} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card p-4 sm:grid-cols-2 lg:grid-cols-4">
             <select required value={structureForm.userId} onChange={(e) => setStructureForm({ ...structureForm, userId: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
               <option value="">Select employee</option>
               {employees.map((emp) => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
@@ -106,7 +106,7 @@ export default function PayrollPage() {
             </button>
           </form>
 
-          <div className="mt-2 overflow-hidden bg-white">
+          <div className="mt-2 overflow-hidden bg-brand-50">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
                 <tr>
@@ -133,7 +133,7 @@ export default function PayrollPage() {
           </div>
 
           <h2 className="mt-6 text-sm font-semibold text-white">Generate payslip</h2>
-          <form onSubmit={handleGenerate} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white shadow-card p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <form onSubmit={handleGenerate} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card p-4 sm:grid-cols-2 lg:grid-cols-4">
             <select required value={genForm.userId} onChange={(e) => setGenForm({ ...genForm, userId: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
               <option value="">Select employee</option>
               {employees.map((emp) => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
@@ -151,7 +151,7 @@ export default function PayrollPage() {
       )}
 
       <h2 className="mt-6 text-sm font-semibold text-white">My payslips</h2>
-      <div className="mt-2 overflow-hidden bg-white">
+      <div className="mt-2 overflow-hidden bg-brand-50">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
             <tr>
@@ -189,7 +189,7 @@ export default function PayrollPage() {
             <h2 className="text-sm font-semibold text-white">Team payslips</h2>
             <input type="month" value={teamMonth} onChange={(e) => setTeamMonth(e.target.value)} className="rounded-lg border border-slate-300 px-2 py-1 text-sm" />
           </div>
-          <div className="mt-2 overflow-hidden bg-white">
+          <div className="mt-2 overflow-hidden bg-brand-50">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
                 <tr>
