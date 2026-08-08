@@ -114,6 +114,7 @@ export class MarketingService {
   async checkBirthdaysAndAnniversaries() {
     const matches = await this.upcomingBirthdaysAndAnniversaries();
     const dueToday = matches; // upcoming() already scopes to "today or within window"; greeting fires same-day in practice via the 0-day match
+    const todayKey = new Date().toISOString().slice(0, 10);
     for (const match of dueToday) {
       const traveler = await this.prisma.traveler.findUnique({ where: { id: match.travelerId }, include: { lead: true } });
       if (!traveler) continue;
@@ -122,15 +123,24 @@ export class MarketingService {
         const now = new Date();
         return date.getDate() === now.getDate() && date.getMonth() === now.getMonth();
       };
-      if (isToday(traveler.dateOfBirth) || isToday(traveler.anniversaryDate)) {
-        await this.notifications.send({
-          channel: 'WHATSAPP',
-          triggerType: isToday(traveler.dateOfBirth) ? 'birthday_greeting' : 'anniversary_greeting',
-          recipient: traveler.phone ?? traveler.lead.phone,
-          relatedEntity: `traveler:${traveler.id}`,
-        });
-        this.logger.log(`Sent greeting to ${traveler.name}`);
-      }
+      const triggerType = isToday(traveler.dateOfBirth) ? 'birthday_greeting' : isToday(traveler.anniversaryDate) ? 'anniversary_greeting' : null;
+      if (!triggerType) continue;
+
+      // The sweep runs every few hours, so without a dedup check the same
+      // greeting would go out multiple times on the actual day. The date is
+      // baked into relatedEntity (rather than a static traveler:id key) so
+      // next year's birthday isn't blocked by this year's send.
+      const relatedEntity = `traveler:${traveler.id}:${triggerType}:${todayKey}`;
+      const alreadySent = await this.prisma.notification.findFirst({ where: { relatedEntity } });
+      if (alreadySent) continue;
+
+      await this.notifications.send({
+        channel: 'WHATSAPP',
+        triggerType,
+        recipient: traveler.phone ?? traveler.lead.phone,
+        relatedEntity,
+      });
+      this.logger.log(`Sent greeting to ${traveler.name}`);
     }
   }
 }

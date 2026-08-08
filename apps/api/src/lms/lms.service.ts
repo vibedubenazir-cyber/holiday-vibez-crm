@@ -67,6 +67,14 @@ export class LmsService {
       include: { progress: true, attempts: { orderBy: { attemptedAt: 'desc' } }, certificate: true },
     });
 
+    // Deactivated courses are hidden from the catalog (listCourses) for
+    // non-managers — this closes the gap where the direct-by-id route didn't
+    // enforce the same rule. Already-enrolled learners can still see their
+    // own progress/certificate on a course that's since been deactivated.
+    if (!course.active && !isManager && !enrollment) {
+      throw new NotFoundException('Course not found');
+    }
+
     return {
       id: course.id,
       title: course.title,
@@ -91,9 +99,10 @@ export class LmsService {
   }
 
   async enroll(courseId: string, userId: string) {
-    await this.requireCourse(courseId);
+    const course = await this.requireCourse(courseId);
     const existing = await this.prisma.enrollment.findUnique({ where: { courseId_userId: { courseId, userId } } });
     if (existing) return existing;
+    if (!course.active) throw new NotFoundException('Course not found');
     return this.prisma.enrollment.create({ data: { courseId, userId } });
   }
 

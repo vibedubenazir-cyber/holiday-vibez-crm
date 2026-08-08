@@ -82,7 +82,7 @@ export class AutomationService {
       candidateLeadIds = quotations.map((q) => q.leadId);
     } else if (rule.trigger === 'BOOKING_CONFIRMED') {
       const bookings = await this.prisma.booking.findMany({
-        where: { createdAt: { lte: cutoff } },
+        where: { status: 'CONFIRMED', createdAt: { lte: cutoff } },
         include: { quotation: true },
       });
       candidateLeadIds = bookings.map((b) => b.quotation.leadId);

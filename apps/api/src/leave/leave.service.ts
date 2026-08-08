@@ -27,6 +27,22 @@ export class LeaveService {
     if (endDate < startDate) {
       throw new BadRequestException('End date must be on or after the start date');
     }
+
+    // Overlap check against this user's own still-live requests — otherwise
+    // two overlapping ranges could both later be approved and double-count
+    // the same calendar days against the annual quota in balance().
+    const overlapping = await this.prisma.leaveRequest.findFirst({
+      where: {
+        userId,
+        status: { in: ['PENDING', 'APPROVED'] },
+        startDate: { lte: endDate },
+        endDate: { gte: startDate },
+      },
+    });
+    if (overlapping) {
+      throw new BadRequestException('You already have a pending or approved leave request that overlaps these dates');
+    }
+
     return this.prisma.leaveRequest.create({
       data: { userId, type: dto.type as LeaveType, startDate, endDate, reason: dto.reason },
     });
@@ -66,8 +82,21 @@ export class LeaveService {
     const request = await this.prisma.leaveRequest.findUnique({ where: { id }, include: { user: true } });
     if (!request) throw new NotFoundException('Leave request not found');
     if (request.status !== 'PENDING') throw new BadRequestException('This request has already been reviewed');
+    if (request.userId === reviewerId) {
+      throw new ForbiddenException('You cannot approve or reject your own leave request');
+    }
     if (actor.role === Role.BRANCH_MANAGER && actor.branchId !== request.user.branchId) {
       throw new ForbiddenException("You can only review your own branch's leave requests");
+    }
+    if (status === 'APPROVED' && request.type in ANNUAL_QUOTA) {
+      const balances = await this.balance(request.userId);
+      const row = balances.find((b) => b.type === request.type);
+      const requestedDays = daysInclusive(request.startDate, request.endDate);
+      if (row && requestedDays > row.remaining) {
+        throw new BadRequestException(
+          `Approving this would exceed the annual ${request.type} quota (${row.remaining} day(s) remaining, ${requestedDays} requested)`,
+        );
+      }
     }
     return this.prisma.leaveRequest.update({
       where: { id },
