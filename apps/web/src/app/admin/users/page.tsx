@@ -8,6 +8,21 @@ import { Role, UserStatus, type BranchDTO, type UserDTO } from '@holiday-vibez/s
 
 const ROLE_OPTIONS = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE, Role.AUDITOR];
 
+const ROLE_BADGE: Record<string, string> = {
+  DIRECTOR: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+  ADMIN: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
+  BRANCH_MANAGER: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300',
+  TRAVEL_CONSULTANT: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+  FINANCE: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+  AUDITOR: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
+};
+
+const STATUS_BADGE: Record<string, string> = {
+  ACTIVE: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+  ON_LEAVE: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+  INACTIVE: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+};
+
 export default function UsersPage() {
   const { user: me } = useAuth();
   const [users, setUsers] = useState<UserDTO[]>([]);
@@ -132,16 +147,17 @@ export default function UsersPage() {
           <tbody>
             {users.map((u) => (
               <tr key={u.id} className="border-t border-slate-100">
-                <td className="px-4 py-2">{u.name}</td>
-                <td className="px-4 py-2 text-slate-500">{u.email}</td>
-                <td className="px-4 py-2">{u.role}</td>
-                <td className="px-4 py-2">{branchName(u.branchId)}</td>
+                <td className="px-4 py-2 font-medium text-slate-800 dark:text-slate-100">{u.name}</td>
+                <td className="px-4 py-2 text-slate-500 dark:text-slate-400">{u.email}</td>
                 <td className="px-4 py-2">
-                  <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${
-                    u.status === 'ACTIVE' ? 'bg-blue-100 text-blue-700' :
-                    u.status === 'ON_LEAVE' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {u.status}
+                  <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[u.role] ?? 'bg-slate-200 text-slate-600'}`}>
+                    {u.role.replaceAll('_', ' ')}
+                  </span>
+                </td>
+                <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{branchName(u.branchId)}</td>
+                <td className="px-4 py-2">
+                  <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[u.status] ?? 'bg-slate-200 text-slate-600'}`}>
+                    {u.status.replaceAll('_', ' ')}
                   </span>
                 </td>
                 {isAdmin && (

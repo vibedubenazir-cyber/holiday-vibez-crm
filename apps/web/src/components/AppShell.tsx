@@ -18,6 +18,19 @@ const ROLE_LABELS: Record<string, string> = {
   AUDITOR: 'Auditor',
 };
 
+// Deterministic per-item accent so the sidebar reads as colorful without a
+// color field on NavItem — same href always gets the same dot color.
+const DOT_COLORS = [
+  'bg-cyan-400', 'bg-orange-400', 'bg-pink-400', 'bg-emerald-400', 'bg-amber-400',
+  'bg-purple-400', 'bg-sky-400', 'bg-rose-400', 'bg-teal-400', 'bg-indigo-400',
+];
+
+function dotColor(href: string) {
+  let hash = 0;
+  for (let i = 0; i < href.length; i++) hash = (hash * 31 + href.charCodeAt(i)) >>> 0;
+  return DOT_COLORS[hash % DOT_COLORS.length];
+}
+
 function initials(name: string) {
   return name
     .split(' ')
@@ -67,12 +80,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Link
         key={item.href}
         href={item.href}
-        className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+        className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
           active
             ? 'bg-white text-brand shadow-card'
             : 'text-white/80 hover:translate-x-0.5 hover:bg-white/10 hover:text-white'
         }`}
       >
+        <span className={`h-2 w-2 shrink-0 rounded-full ${dotColor(item.href)}`} />
         {item.label}
       </Link>
     );
