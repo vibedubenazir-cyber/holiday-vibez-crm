@@ -4,10 +4,54 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import {
+  LayoutDashboard,
+  UserPlus,
+  Inbox as InboxIcon,
+  FileText,
+  CheckCircle2,
+  Users,
+  Trophy,
+  Package,
+  Calendar,
+  Building2,
+  Route as RouteIcon,
+  LifeBuoy,
+  MessageSquare,
+  Megaphone,
+  Globe,
+  LayoutTemplate,
+  Zap,
+  UserCog,
+  Building,
+  Tags,
+  SlidersHorizontal,
+  HardDrive,
+  Database,
+  ShieldCheck,
+  CalendarCheck,
+  Plane,
+  Wallet,
+  ClipboardList,
+  Receipt,
+  BarChart3,
+  ArrowLeftRight,
+  Ticket,
+  Truck,
+  Landmark,
+  PiggyBank,
+  PieChart,
+  Scale,
+  Percent,
+  GraduationCap,
+  Award,
+  Circle,
+  type LucideIcon,
+} from 'lucide-react';
 import { Role } from '@holiday-vibez/shared';
 import { useAuth } from '@/lib/auth-context';
 import { FloatingChatWidget } from './FloatingChatWidget';
-import { MODULES, getSelectedModule, type ModuleId, type NavItem } from '@/lib/modules';
+import { MODULES, getSelectedModule, moduleForPath, setSelectedModule, type ModuleId, type NavItem } from '@/lib/modules';
 
 const ROLE_LABELS: Record<string, string> = {
   DIRECTOR: 'Director',
@@ -19,16 +63,64 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 // Deterministic per-item accent so the sidebar reads as colorful without a
-// color field on NavItem — same href always gets the same dot color.
-const DOT_COLORS = [
-  'bg-cyan-400', 'bg-orange-400', 'bg-pink-400', 'bg-emerald-400', 'bg-amber-400',
-  'bg-purple-400', 'bg-sky-400', 'bg-rose-400', 'bg-teal-400', 'bg-indigo-400',
+// color field on NavItem — same href always gets the same icon color.
+const ICON_COLORS = [
+  'text-cyan-300', 'text-orange-300', 'text-pink-300', 'text-emerald-300', 'text-amber-300',
+  'text-purple-300', 'text-sky-300', 'text-rose-300', 'text-teal-300', 'text-indigo-300',
 ];
 
-function dotColor(href: string) {
+function iconColor(href: string) {
   let hash = 0;
   for (let i = 0; i < href.length; i++) hash = (hash * 31 + href.charCodeAt(i)) >>> 0;
-  return DOT_COLORS[hash % DOT_COLORS.length];
+  return ICON_COLORS[hash % ICON_COLORS.length];
+}
+
+// One icon per route across every module's sidebar.
+const NAV_ICONS: Record<string, LucideIcon> = {
+  '/dashboard': LayoutDashboard,
+  '/leads': UserPlus,
+  '/inbox': InboxIcon,
+  '/quotations': FileText,
+  '/approvals': CheckCircle2,
+  '/clients': Users,
+  '/targets': Trophy,
+  '/packages': Package,
+  '/calendar': Calendar,
+  '/hotel-masters': Building2,
+  '/day-itineraries': RouteIcon,
+  '/support': LifeBuoy,
+  '/team-chat': MessageSquare,
+  '/marketing': Megaphone,
+  '/cms': Globe,
+  '/templates': LayoutTemplate,
+  '/automation': Zap,
+  '/admin/users': UserCog,
+  '/admin/branches': Building,
+  '/admin/rates': Tags,
+  '/custom-fields': SlidersHorizontal,
+  '/storage': HardDrive,
+  '/data-admin': Database,
+  '/security': ShieldCheck,
+  '/attendance': CalendarCheck,
+  '/leave': Plane,
+  '/payroll': Wallet,
+  '/bookings': ClipboardList,
+  '/expenses': Receipt,
+  '/reports': BarChart3,
+  '/currency': ArrowLeftRight,
+  '/coupons': Ticket,
+  '/suppliers': Truck,
+  '/accounts': Landmark,
+  '/petty-cash': PiggyBank,
+  '/budgets': PieChart,
+  '/bank-reconciliation': Scale,
+  '/dmc-commissions': Percent,
+  '/lms': GraduationCap,
+  '/lms/my-learning': Award,
+};
+
+function navIcon(href: string): LucideIcon {
+  return NAV_ICONS[href] ?? Circle;
 }
 
 function initials(name: string) {
@@ -54,6 +146,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [loading, user, router]);
 
   useEffect(() => {
+    // The route is authoritative — a bookmark, shared link, or browser
+    // back/forward into a different module's page must show that module's
+    // sidebar, not whatever localStorage last remembered from the picker.
+    const fromPath = moduleForPath(pathname);
+    if (fromPath) {
+      setModuleId(fromPath);
+      setSelectedModule(fromPath);
+      return;
+    }
     setModuleId(getSelectedModule() ?? 'CRM');
   }, [pathname]);
 
@@ -76,6 +177,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   function navLink(item: NavItem) {
     const active = pathname === item.href;
+    const Icon = navIcon(item.href);
     return (
       <Link
         key={item.href}
@@ -86,7 +188,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             : 'text-white/80 hover:translate-x-0.5 hover:bg-white/10 hover:text-white'
         }`}
       >
-        <span className={`h-2 w-2 shrink-0 rounded-full ${dotColor(item.href)}`} />
+        <Icon className={`h-4 w-4 shrink-0 ${active ? 'text-brand' : iconColor(item.href)}`} />
         {item.label}
       </Link>
     );
