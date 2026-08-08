@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { LeadSource, LeadStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateLeadDto, PublicCreateLeadDto, UpdateLeadDto } from './dto/lead.dto';
@@ -21,6 +21,12 @@ const OPEN_STATUSES: LeadStatus[] = [
   LeadStatus.PROPOSAL_CONFIRMED,
   LeadStatus.FOLLOW_UP,
 ];
+
+// Statuses a lead is considered "done" in — a new inquiry from the same phone
+// number reopens it into the follow-up queue instead of sitting invisible.
+// CONFIRMED is deliberately excluded: that person is an active customer, not
+// a lost one, so a fresh inquiry from them shouldn't reset their pipeline stage.
+const CLOSED_STATUSES: LeadStatus[] = [LeadStatus.JUNK_NOT_INTERESTED, LeadStatus.PLAN_DROPPED];
 
 // Lead uncontacted longer than this is SLA-breached and escalated (spec Section 6, step 3).
 const SLA_WINDOW_MINUTES = 30;
@@ -52,6 +58,13 @@ export class LeadsService {
   }
 
   async create(dto: CreateLeadDto) {
+    const duplicate = await this.findDuplicateByPhone(dto.phone);
+    if (duplicate) {
+      throw new ConflictException(
+        `A lead with this phone number already exists: ${duplicate.clientName} — ${duplicate.destination} (status: ${duplicate.status}, id: ${duplicate.id})`,
+      );
+    }
+
     const lead = await this.prisma.lead.create({
       data: {
         source: dto.source,
@@ -65,6 +78,25 @@ export class LeadsService {
       },
     });
     return this.autoAssign(lead.id);
+  }
+
+  // Compares by the last 10 digits so "+91-98765-43210", "9876543210", and
+  // "919876543210" are all recognized as the same number regardless of how a
+  // counsellor, CSV row, or ad platform formatted it. Scans in-memory rather than
+  // a DB query since phone isn't stored normalized — fine at current volume; a
+  // normalized-phone column + index would be the fix if the lead table grows large.
+  private normalizePhone(phone: string): string {
+    return phone.replace(/\D/g, '').slice(-10);
+  }
+
+  private async findDuplicateByPhone(phone: string) {
+    const normalized = this.normalizePhone(phone);
+    if (normalized.length < 10) return null;
+
+    const candidates = await this.prisma.lead.findMany({
+      select: { id: true, phone: true, clientName: true, destination: true, status: true },
+    });
+    return candidates.find((c) => this.normalizePhone(c.phone) === normalized) ?? null;
   }
 
   // CSV bulk import — same permission tier and create() path as a single lead (so
@@ -116,6 +148,19 @@ export class LeadsService {
   // Public Lead Capture API (spec Section 10) — website forms post here with no branch
   // specified, so we round-robin the branch by current open-lead load first.
   async createPublic(dto: PublicCreateLeadDto) {
+    // Unlike the staff-facing create() above, an ad platform or website form can't
+    // be shown an error — it just needs a 200. So instead of rejecting, reopen the
+    // existing lead into the follow-up queue (if it had gone cold) and hand it
+    // back unchanged otherwise, keeping "one lead = one timeline" instead of
+    // fragmenting this customer's history across two records.
+    const duplicate = await this.findDuplicateByPhone(dto.phone);
+    if (duplicate) {
+      return this.prisma.lead.update({
+        where: { id: duplicate.id },
+        data: CLOSED_STATUSES.includes(duplicate.status) ? { status: LeadStatus.NEW } : {},
+      });
+    }
+
     const branches = await this.prisma.branch.findMany();
     if (branches.length === 0) {
       throw new NotFoundException('No branches configured to receive leads');
