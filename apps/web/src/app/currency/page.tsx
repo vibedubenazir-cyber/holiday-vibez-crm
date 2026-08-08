@@ -12,7 +12,7 @@ export default function CurrencyPage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Record<string, string>>({});
-  const isAdmin = me?.role === Role.ADMIN;
+  const canManage = me?.role === Role.ADMIN || me?.role === Role.FINANCE;
 
   const [form, setForm] = useState({ code: '', rateToInr: '' });
 
@@ -39,7 +39,7 @@ export default function CurrencyPage() {
       setShowForm(false);
       await load();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Failed to add currency. Only Admin can manage currency rates.');
+      setError(err instanceof ApiError ? err.message : 'Failed to add currency. Only Admin/Finance can manage currency rates.');
     }
   }
 
@@ -70,7 +70,7 @@ export default function CurrencyPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Currency Exchange</h1>
-        {isAdmin && (
+        {canManage && (
           <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
             {showForm ? 'Cancel' : 'Add currency'}
           </button>
@@ -79,11 +79,11 @@ export default function CurrencyPage() {
       <p className="mt-1 text-sm text-blue-100">
         Rates against INR. API-sourced rates refresh automatically; manually-edited rates are never overwritten by the automatic feed.
       </p>
-      {!isAdmin && <p className="mt-1 text-xs text-blue-100">Read-only — only Admin can manage currency rates.</p>}
+      {!canManage && <p className="mt-1 text-xs text-blue-100">Read-only — only Admin/Finance can manage currency rates.</p>}
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-      {isAdmin && showForm && (
+      {canManage && showForm && (
         <form onSubmit={handleCreate} className="mt-4 flex gap-2 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <input required placeholder="Code (e.g. CAD)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" maxLength={3} />
           <input required type="number" step="0.0001" placeholder="Rate to INR" value={form.rateToInr} onChange={(e) => setForm({ ...form, rateToInr: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
@@ -100,7 +100,7 @@ export default function CurrencyPage() {
               <th className="px-4 py-2">Source</th>
               <th className="px-4 py-2">Last updated</th>
               <th className="px-4 py-2">Status</th>
-              {isAdmin && <th className="px-4 py-2 text-right">Actions</th>}
+              {canManage && <th className="px-4 py-2 text-right">Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -108,7 +108,7 @@ export default function CurrencyPage() {
               <tr key={r.id} className="border-t border-slate-100">
                 <td className="px-4 py-2 font-medium text-slate-800">{r.code}</td>
                 <td className="px-4 py-2">
-                  {isAdmin ? (
+                  {canManage ? (
                     <input
                       type="number"
                       step="0.0001"
@@ -131,7 +131,7 @@ export default function CurrencyPage() {
                     {r.active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                {isAdmin && (
+                {canManage && (
                   <td className="px-4 py-2 text-right">
                     {editing[r.id] !== undefined && (
                       <button onClick={() => handleSaveEdit(r)} className="mr-3 text-blue-600 hover:underline">Save</button>

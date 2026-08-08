@@ -19,13 +19,13 @@ export class CurrencyController {
     return this.currencyService.findAll();
   }
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.FINANCE)
   @Post()
   create(@Body() dto: CreateCurrencyRateDto) {
     return this.currencyService.create(dto);
   }
 
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.FINANCE)
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateCurrencyRateDto) {
     return this.currencyService.update(id, dto);

@@ -24,19 +24,19 @@ export class PaymentsController {
     return this.paymentsService.findAll(bookingId, branchId);
   }
 
-  @Roles(Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE)
   @Post('payments')
   create(@Body() dto: CreatePaymentDto) {
     return this.paymentsService.create(dto);
   }
 
-  @Roles(Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE)
   @Patch('payments/:id/mark-paid')
   markPaid(@Param('id') id: string) {
     return this.paymentsService.markPaid(id);
   }
 
-  @Roles(Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE)
   @Post('payments/:id/create-payment-link')
   createPaymentLink(@Param('id') id: string) {
     return this.paymentsService.createPaymentLink(id);
@@ -46,7 +46,9 @@ export class PaymentsController {
   @Get('finance/branch-pnl')
   branchPnl(@CurrentUser() user: AuthUser, @Query('branchId') branchId: string) {
     // Branch Manager can only ever see their own branch's P&L, regardless of what's queried.
-    const effectiveBranchId = user.role === Role.BRANCH_MANAGER ? (user.branchId ?? branchId) : branchId;
+    // resolveBranchScope(user) with no requestedBranchId either returns the
+    // manager's own branchId or throws — it never returns undefined here.
+    const effectiveBranchId = user.role === Role.BRANCH_MANAGER ? (resolveBranchScope(user) as string) : branchId;
     return this.paymentsService.branchPnl(effectiveBranchId);
   }
 }

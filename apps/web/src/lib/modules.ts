@@ -43,7 +43,7 @@ export const MODULES: ModuleDef[] = [
         items: [
           { href: '/packages', label: 'Packages', roles: ALL_ROLES },
           { href: '/calendar', label: 'Departure Calendar', roles: ALL_ROLES },
-          { href: '/hotel-masters', label: 'Hotel Masters', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
+          { href: '/hotel-masters', label: 'Hotel Masters', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
           { href: '/day-itineraries', label: 'Day Itinerary', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
           { href: '/support', label: 'Support Tickets', roles: ALL_ROLES },
           { href: '/team-chat', label: 'Team Chat', roles: ALL_ROLES },
@@ -135,6 +135,26 @@ export const MODULES: ModuleDef[] = [
 ];
 
 const STORAGE_KEY = 'hv_selected_module';
+
+// Bookmarking, sharing, or navigating back/forward across modules leaves
+// localStorage pointing at whatever module was last picked through the
+// module-picker UI — not necessarily the one the current URL belongs to.
+// This derives the module straight from the route so the sidebar always
+// matches what's actually on screen, regardless of how the user got there.
+export function moduleForPath(pathname: string): ModuleId | null {
+  let best: { id: ModuleId; length: number } | null = null;
+  for (const mod of MODULES) {
+    for (const group of mod.groups) {
+      for (const item of group.items) {
+        const matches = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        if (matches && (!best || item.href.length > best.length)) {
+          best = { id: mod.id, length: item.href.length };
+        }
+      }
+    }
+  }
+  return best?.id ?? null;
+}
 
 export function getSelectedModule(): ModuleId | null {
   if (typeof window === 'undefined') return null;

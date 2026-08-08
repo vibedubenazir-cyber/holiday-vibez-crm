@@ -38,7 +38,7 @@ export default function ReportsPage() {
   const [branches, setBranches] = useState<BranchDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const canViewPnL = me?.role === Role.DIRECTOR || me?.role === Role.ADMIN || me?.role === Role.BRANCH_MANAGER;
+  const canViewPnL = me?.role === Role.DIRECTOR || me?.role === Role.ADMIN || me?.role === Role.BRANCH_MANAGER || me?.role === Role.FINANCE || me?.role === Role.AUDITOR;
   const [pnlYear, setPnlYear] = useState(new Date().getFullYear());
   const [pnlBranchId, setPnlBranchId] = useState('');
   const [pnlRows, setPnlRows] = useState<MonthlyPnLRowDTO[]>([]);

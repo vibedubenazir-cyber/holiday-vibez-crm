@@ -20,7 +20,7 @@ export class InvoicesController {
     return this.invoicesService.findAllForBooking(bookingId);
   }
 
-  @Roles(Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE)
   @Post()
   create(@Param('bookingId') bookingId: string, @Body() dto: CreateInvoiceDto, @CurrentUser() user: AuthUser) {
     return this.invoicesService.create(bookingId, dto, user.id, user);
