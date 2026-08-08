@@ -8,20 +8,29 @@ import type { AccountsDashboardDTO, DailyLedgerDTO, GstReportDTO } from '@holida
 
 const now = new Date();
 
-function StatCard({ label, value, gradient }: { label: string; value: string; gradient: string }) {
+const ACCENTS = {
+  cyan: { border: 'border-t-cyan-500', text: 'text-cyan-600 dark:text-cyan-400' },
+  emerald: { border: 'border-t-emerald-500', text: 'text-emerald-600 dark:text-emerald-400' },
+  purple: { border: 'border-t-purple-500', text: 'text-purple-600 dark:text-purple-400' },
+  orange: { border: 'border-t-orange-500', text: 'text-orange-600 dark:text-orange-400' },
+  rose: { border: 'border-t-rose-500', text: 'text-rose-600 dark:text-rose-400' },
+} as const;
+
+function StatCard({ label, value, accent }: { label: string; value: string; accent: keyof typeof ACCENTS }) {
+  const c = ACCENTS[accent];
   return (
-    <div className={`overflow-hidden rounded-xl bg-gradient-to-br ${gradient} p-4 text-white shadow-card transition-transform hover:-translate-y-0.5 hover:shadow-card-hover`}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-white/80">{label}</p>
-      <p className="mt-1 text-xl font-bold">{value}</p>
+    <div className={`overflow-hidden rounded-xl border-t-4 ${c.border} bg-white p-4 shadow-card transition-shadow hover:shadow-card-hover dark:bg-slate-800`}>
+      <p className={`text-xs font-semibold uppercase tracking-wide ${c.text}`}>{label}</p>
+      <p className="mt-1 text-xl font-bold text-slate-800 dark:text-slate-100">{value}</p>
     </div>
   );
 }
 
 const QUICK_LINKS = [
-  { href: '/petty-cash', label: 'Petty Cash', gradient: 'from-cyan-500 to-blue-600' },
-  { href: '/budgets', label: 'Budget & Forecast', gradient: 'from-orange-500 to-amber-500' },
-  { href: '/bank-reconciliation', label: 'Bank Reconciliation', gradient: 'from-purple-500 to-fuchsia-600' },
-  { href: '/dmc-commissions', label: 'DMC Commissions', gradient: 'from-pink-500 to-rose-500' },
+  { href: '/petty-cash', label: 'Petty Cash' },
+  { href: '/budgets', label: 'Budget & Forecast' },
+  { href: '/bank-reconciliation', label: 'Bank Reconciliation' },
+  { href: '/dmc-commissions', label: 'DMC Commissions' },
 ];
 
 export default function AccountsDashboardPage() {
@@ -74,24 +83,24 @@ export default function AccountsDashboardPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-gradient-to-r from-brand to-indigo-600 px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">Accounts Dashboard</h1>
+      <h1 className="inline-block rounded-lg bg-white px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Accounts Dashboard</h1>
       <p className="mt-1 text-sm text-blue-100">Everything under Accounts, at a glance.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {dashboard && (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          <StatCard gradient="from-cyan-500 to-blue-600" label="Today's net cash flow" value={`₹${dashboard.todayNetCashFlow.toLocaleString('en-IN')}`} />
-          <StatCard gradient="from-emerald-500 to-teal-500" label="Petty cash balance" value={`₹${dashboard.pettyCashBalance.toLocaleString('en-IN')}`} />
-          <StatCard gradient="from-purple-500 to-fuchsia-600" label="GST collected (this month)" value={`₹${dashboard.gstCollectedThisMonth.toLocaleString('en-IN')}`} />
-          <StatCard gradient="from-orange-500 to-amber-500" label="Budgeted (this month)" value={`₹${dashboard.budgetedThisMonth.toLocaleString('en-IN')} · ${dashboard.budgetCategoryCount} categories`} />
-          <StatCard gradient={dashboard.unmatchedBankTransactions > 0 ? 'from-rose-500 to-red-500' : 'from-emerald-500 to-teal-500'} label="Unmatched bank lines" value={String(dashboard.unmatchedBankTransactions)} />
-          <StatCard gradient={dashboard.pendingDmcCommissions > 0 ? 'from-rose-500 to-red-500' : 'from-emerald-500 to-teal-500'} label="Pending DMC commissions" value={`${dashboard.pendingDmcCommissions} · ₹${dashboard.pendingDmcCommissionAmount.toLocaleString('en-IN')}`} />
+          <StatCard accent="cyan" label="Today's net cash flow" value={`₹${dashboard.todayNetCashFlow.toLocaleString('en-IN')}`} />
+          <StatCard accent="emerald" label="Petty cash balance" value={`₹${dashboard.pettyCashBalance.toLocaleString('en-IN')}`} />
+          <StatCard accent="purple" label="GST collected (this month)" value={`₹${dashboard.gstCollectedThisMonth.toLocaleString('en-IN')}`} />
+          <StatCard accent="orange" label="Budgeted (this month)" value={`₹${dashboard.budgetedThisMonth.toLocaleString('en-IN')} · ${dashboard.budgetCategoryCount} categories`} />
+          <StatCard accent={dashboard.unmatchedBankTransactions > 0 ? 'rose' : 'emerald'} label="Unmatched bank lines" value={String(dashboard.unmatchedBankTransactions)} />
+          <StatCard accent={dashboard.pendingDmcCommissions > 0 ? 'rose' : 'emerald'} label="Pending DMC commissions" value={`${dashboard.pendingDmcCommissions} · ₹${dashboard.pendingDmcCommissionAmount.toLocaleString('en-IN')}`} />
         </div>
       )}
 
       <div className="mt-4 flex flex-wrap gap-2">
         {QUICK_LINKS.map((l) => (
-          <Link key={l.href} href={l.href} className={`rounded-lg bg-gradient-to-r ${l.gradient} px-3 py-1.5 text-sm font-medium text-white shadow-card transition-transform hover:-translate-y-0.5 hover:shadow-card-hover`}>
+          <Link key={l.href} href={l.href} className="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-card hover:shadow-card-hover">
             {l.label} →
           </Link>
         ))}

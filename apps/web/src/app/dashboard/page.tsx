@@ -160,22 +160,22 @@ export default function DashboardPage() {
       </h2>
       <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Link href="/leads">
-          <DashCard gradient="from-cyan-500 to-blue-600" label={user?.role === Role.TRAVEL_CONSULTANT ? 'Assigned to you' : 'Total leads'} value={leads.length.toString()} />
+          <DashCard accent="cyan" label={user?.role === Role.TRAVEL_CONSULTANT ? 'Assigned to you' : 'Total leads'} value={leads.length.toString()} />
         </Link>
         <Link href="/quotations">
-          <DashCard gradient="from-orange-500 to-amber-500" label="Quotations" value={quotationCount === null ? '—' : quotationCount.toString()} />
+          <DashCard accent="orange" label="Quotations" value={quotationCount === null ? '—' : quotationCount.toString()} />
         </Link>
         <Link href="/bookings">
-          <DashCard gradient="from-pink-500 to-rose-500" label="Bookings" value={bookings.length.toString()} />
+          <DashCard accent="pink" label="Bookings" value={bookings.length.toString()} />
         </Link>
       </div>
 
       <h2 className="mt-8 text-sm font-semibold text-white">How interested are they?</h2>
       <div className="mt-2 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <DashCard gradient="from-red-500 to-orange-500" label="🔥 Hot" value={interestCounts.hot.toString()} />
-        <DashCard gradient="from-amber-500 to-yellow-500" label="🌤 Warm" value={interestCounts.warm.toString()} />
-        <DashCard gradient="from-sky-500 to-indigo-500" label="❄️ Cold" value={interestCounts.cold.toString()} />
-        <DashCard gradient="from-slate-500 to-slate-600" label="🗑 Junk / not interested" value={interestCounts.junk.toString()} />
+        <DashCard accent="red" label="🔥 Hot" value={interestCounts.hot.toString()} />
+        <DashCard accent="amber" label="🌤 Warm" value={interestCounts.warm.toString()} />
+        <DashCard accent="sky" label="❄️ Cold" value={interestCounts.cold.toString()} />
+        <DashCard accent="slate" label="🗑 Junk / not interested" value={interestCounts.junk.toString()} />
       </div>
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
@@ -352,11 +352,22 @@ export default function DashboardPage() {
   );
 }
 
-function DashCard({ label, value, gradient }: { label: string; value: string; gradient: string }) {
+const ACCENTS = {
+  cyan: { border: 'border-t-cyan-500', text: 'text-cyan-600 dark:text-cyan-400' },
+  orange: { border: 'border-t-orange-500', text: 'text-orange-600 dark:text-orange-400' },
+  pink: { border: 'border-t-pink-500', text: 'text-pink-600 dark:text-pink-400' },
+  red: { border: 'border-t-red-500', text: 'text-red-600 dark:text-red-400' },
+  amber: { border: 'border-t-amber-500', text: 'text-amber-600 dark:text-amber-400' },
+  sky: { border: 'border-t-sky-500', text: 'text-sky-600 dark:text-sky-400' },
+  slate: { border: 'border-t-slate-400', text: 'text-slate-500 dark:text-slate-400' },
+} as const;
+
+function DashCard({ label, value, accent }: { label: string; value: string; accent: keyof typeof ACCENTS }) {
+  const c = ACCENTS[accent];
   return (
-    <div className={`overflow-hidden rounded-xl bg-gradient-to-br ${gradient} p-4 text-white shadow-card transition-transform hover:-translate-y-0.5 hover:shadow-card-hover`}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-white/80">{label}</p>
-      <p className="mt-1 text-base font-medium">{value}</p>
+    <div className={`overflow-hidden rounded-xl border-t-4 ${c.border} bg-white p-4 shadow-card transition-shadow hover:shadow-card-hover dark:bg-slate-800`}>
+      <p className={`text-xs font-semibold uppercase tracking-wide ${c.text}`}>{label}</p>
+      <p className="mt-1 text-xl font-bold text-slate-800 dark:text-slate-100">{value}</p>
     </div>
   );
 }
