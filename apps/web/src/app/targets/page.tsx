@@ -15,6 +15,10 @@ export default function TargetsPage() {
   const [companyLeaderboard, setCompanyLeaderboard] = useState<LeaderboardRowDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const canSetTargets = me?.role === Role.DIRECTOR || me?.role === Role.BRANCH_MANAGER || me?.role === Role.ADMIN;
+  // Branch Manager/Consultant are always scoped to their own branch server-side
+  // (GET /targets/leaderboard/branch rejects any other branchId for them) — so
+  // only Director/Admin, who can view any branch, get a free picker here.
+  const canPickBranch = me?.role === Role.DIRECTOR || me?.role === Role.ADMIN;
 
   const [form, setForm] = useState({ scope: 'CONSULTANT' as 'CONSULTANT' | 'BRANCH', scopeId: '', period: 'MONTH', revenueTarget: '' });
 
@@ -23,7 +27,6 @@ export default function TargetsPage() {
       const [b, u] = await Promise.all([api.get<BranchDTO[]>('/branches'), api.get<UserDTO[]>('/users').catch(() => [])]);
       setBranches(b);
       setUsers(u);
-      if (!branchId && b.length) setBranchId(me?.branchId ?? b[0].id);
       const companyWide = me?.role === Role.DIRECTOR || me?.role === Role.ADMIN
         ? await api.get<LeaderboardRowDTO[]>('/targets/leaderboard/company')
         : [];
@@ -37,6 +40,15 @@ export default function TargetsPage() {
     loadStatic();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Waits on `me` too — on first mount the auth context may not have
+  // resolved the logged-in user yet, so defaulting off `me?.branchId` inside
+  // loadStatic() (which only ran once, on mount) could race and silently
+  // fall back to the first branch in the list instead of the user's own.
+  useEffect(() => {
+    if (branchId || branches.length === 0 || !me) return;
+    setBranchId(me.branchId ?? branches[0].id);
+  }, [branches, me, branchId]);
 
   useEffect(() => {
     if (!branchId) return;
@@ -74,9 +86,15 @@ export default function TargetsPage() {
 
       <div className="mt-4 flex items-center gap-3">
         <label className="text-sm text-slate-600">Branch:</label>
-        <select value={branchId} onChange={(e) => setBranchId(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
-          {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-        </select>
+        {canPickBranch ? (
+          <select value={branchId} onChange={(e) => setBranchId(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
+            {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        ) : (
+          <span className="rounded-lg bg-brand-50 px-3 py-2 text-sm font-medium text-slate-700 shadow-card">
+            {branches.find((b) => b.id === branchId)?.name ?? '—'}
+          </span>
+        )}
       </div>
 
       {canSetTargets && (
