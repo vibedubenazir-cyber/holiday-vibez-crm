@@ -91,14 +91,14 @@ export default function TargetsPage() {
             {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
         ) : (
-          <span className="rounded-lg bg-brand-50 px-3 py-2 text-sm font-medium text-slate-700 shadow-card">
+          <span className="rounded-lg bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-700 shadow-card">
             {branches.find((b) => b.id === branchId)?.name ?? '—'}
           </span>
         )}
       </div>
 
       {canSetTargets && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
           <select value={form.scope} onChange={(e) => setForm({ ...form, scope: e.target.value as 'CONSULTANT' | 'BRANCH', scopeId: '' })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             <option value="CONSULTANT">Consultant target</option>
             <option value="BRANCH">Branch target</option>
@@ -124,9 +124,9 @@ export default function TargetsPage() {
       )}
 
       <h2 className="mt-6 text-sm font-semibold text-slate-700">Branch leaderboard</h2>
-      <div className="mt-2 overflow-hidden bg-brand-50">
+      <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr><th className="px-4 py-2">Consultant</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Achieved</th><th className="px-4 py-2">%</th></tr>
           </thead>
           <tbody>
@@ -150,9 +150,9 @@ export default function TargetsPage() {
       {companyLeaderboard.length > 0 && (
         <>
           <h2 className="mt-6 text-sm font-semibold text-slate-700">Company-wide (branches)</h2>
-          <div className="mt-2 overflow-hidden bg-brand-50">
+          <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
             <table className="w-full text-sm">
-              <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+              <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
                 <tr><th className="px-4 py-2">Branch</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Achieved</th></tr>
               </thead>
               <tbody>

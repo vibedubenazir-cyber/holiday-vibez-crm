@@ -73,19 +73,19 @@ export default function ExpensesPage() {
       <div className="flex items-center justify-between">
         <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Accounts & Finance — Expenses</h1>
         {canManage && (
-          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
+          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
             {showForm ? 'Cancel' : 'Log expense'}
           </button>
         )}
       </div>
-      <p className="mt-1 text-sm text-blue-100">Branch Manager sees their own branch; Admin/Director/Finance see and log expenses for any branch.</p>
-      {!canManage && <p className="mt-1 text-xs text-blue-100">Read-only — auditor access.</p>}
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Branch Manager sees their own branch; Admin/Director/Finance see and log expenses for any branch.</p>
+      {!canManage && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Read-only — auditor access.</p>}
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {summary.map((s) => (
-          <div key={s.category} className="rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-3">
+          <div key={s.category} className="rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-brand">{s.category}</p>
             <p className="mt-1 text-base font-medium text-slate-800">₹{s.total.toLocaleString('en-IN')}</p>
           </div>
@@ -94,7 +94,7 @@ export default function ExpensesPage() {
       </div>
 
       {canManage && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
           {needsBranchPicker && (
             <select value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
               {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -112,9 +112,9 @@ export default function ExpensesPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden bg-brand-50">
+      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
               <th className="px-4 py-2">Date</th>
               <th className="px-4 py-2">Branch</th>

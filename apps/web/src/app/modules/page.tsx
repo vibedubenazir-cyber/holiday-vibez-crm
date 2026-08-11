@@ -63,7 +63,7 @@ export default function ModulesPage() {
             <button
               key={m.id}
               onClick={() => handleSelect(m.id, m.homeHref)}
-              className="flex flex-col items-start gap-2 rounded-xl bg-brand-50 p-6 text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover"
+              className="flex flex-col items-start gap-2 rounded-xl bg-white dark:bg-slate-800 p-6 text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover"
             >
               <span className="text-3xl">{MODULE_ICONS[m.id] ?? '📁'}</span>
               <span className="text-lg font-bold text-brand">{m.label}</span>

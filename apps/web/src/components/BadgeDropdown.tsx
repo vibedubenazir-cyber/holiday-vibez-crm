@@ -62,7 +62,7 @@ export function BadgeDropdown({
       </button>
 
       {open && !disabled && (
-        <div className="absolute left-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-lg border border-slate-200 bg-brand-50 py-1 shadow-lg dark:border-slate-600 dark:bg-slate-800">
+        <div className="absolute left-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-600 dark:bg-slate-800">
           {options.map((o) => (
             <button
               key={o.value}

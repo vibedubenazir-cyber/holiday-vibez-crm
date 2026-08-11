@@ -31,10 +31,10 @@ export default function MyLearningPage() {
   return (
     <AppShell>
       <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">My Learning & Certificates</h1>
-      <p className="mt-1 text-sm text-blue-100">Your enrolled courses, progress, and earned certificates.</p>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Your enrolled courses, progress, and earned certificates.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-      <div className="mt-4 overflow-hidden bg-brand-50 dark:bg-slate-800">
+      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40">
             <tr>
@@ -78,10 +78,10 @@ export default function MyLearningPage() {
         </table>
       </div>
 
-      <p className="mt-6 text-xs font-medium uppercase tracking-wide text-white/70">Certificates</p>
+      <p className="mt-6 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Certificates</p>
       <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {certificates.map((c) => (
-          <div key={c.id} className="rounded-lg bg-brand-50 p-4 shadow-card dark:bg-slate-800">
+          <div key={c.id} className="rounded-lg bg-white p-4 shadow-card dark:bg-slate-800">
             <p className="text-2xl">🎓</p>
             <p className="mt-1 font-medium text-slate-800 dark:text-slate-100">{c.courseTitle}</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">{c.certNo}</p>

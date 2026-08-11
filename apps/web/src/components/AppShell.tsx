@@ -62,19 +62,6 @@ const ROLE_LABELS: Record<string, string> = {
   AUDITOR: 'Auditor',
 };
 
-// Deterministic per-item accent so the sidebar reads as colorful without a
-// color field on NavItem — same href always gets the same icon color.
-const ICON_COLORS = [
-  'text-cyan-300', 'text-orange-300', 'text-pink-300', 'text-emerald-300', 'text-amber-300',
-  'text-purple-300', 'text-sky-300', 'text-rose-300', 'text-teal-300', 'text-indigo-300',
-];
-
-function iconColor(href: string) {
-  let hash = 0;
-  for (let i = 0; i < href.length; i++) hash = (hash * 31 + href.charCodeAt(i)) >>> 0;
-  return ICON_COLORS[hash % ICON_COLORS.length];
-}
-
 // One icon per route across every module's sidebar.
 const NAV_ICONS: Record<string, LucideIcon> = {
   '/dashboard': LayoutDashboard,
@@ -188,7 +175,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             : 'text-white/80 hover:translate-x-0.5 hover:bg-white/10 hover:text-white'
         }`}
       >
-        <Icon className={`h-4 w-4 shrink-0 ${active ? 'text-brand' : iconColor(item.href)}`} />
+        <Icon className={`h-4 w-4 shrink-0 ${active ? 'text-brand' : 'text-white/70'}`} />
         {item.label}
       </Link>
     );
@@ -242,7 +229,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </button>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-brand-700 via-brand to-brand-600 p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-brand-50 p-6 dark:bg-slate-950">{children}</main>
       </div>
       <FloatingChatWidget />
     </div>

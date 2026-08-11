@@ -92,8 +92,8 @@ export default function PayrollPage() {
 
       {canManage && (
         <>
-          <h2 className="mt-6 text-sm font-semibold text-white">Salary structures</h2>
-          <form onSubmit={handleSaveStructure} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <h2 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-100">Salary structures</h2>
+          <form onSubmit={handleSaveStructure} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card p-4 sm:grid-cols-2 lg:grid-cols-4">
             <select required value={structureForm.userId} onChange={(e) => setStructureForm({ ...structureForm, userId: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
               <option value="">Select employee</option>
               {employees.map((emp) => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
@@ -106,9 +106,9 @@ export default function PayrollPage() {
             </button>
           </form>
 
-          <div className="mt-2 overflow-hidden bg-brand-50">
+          <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
             <table className="w-full text-sm">
-              <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+              <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
                 <tr>
                   <th className="px-4 py-2">Employee</th>
                   <th className="px-4 py-2">Basic</th>
@@ -132,8 +132,8 @@ export default function PayrollPage() {
             </table>
           </div>
 
-          <h2 className="mt-6 text-sm font-semibold text-white">Generate payslip</h2>
-          <form onSubmit={handleGenerate} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <h2 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-100">Generate payslip</h2>
+          <form onSubmit={handleGenerate} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card p-4 sm:grid-cols-2 lg:grid-cols-4">
             <select required value={genForm.userId} onChange={(e) => setGenForm({ ...genForm, userId: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
               <option value="">Select employee</option>
               {employees.map((emp) => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
@@ -144,16 +144,16 @@ export default function PayrollPage() {
               Generate
             </button>
           </form>
-          <p className="mt-1 text-xs text-blue-100">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Present days and paid-leave days come from Attendance and approved Leave requests for that month; remaining days are treated as loss-of-pay and deducted pro-rata from basic salary.
           </p>
         </>
       )}
 
-      <h2 className="mt-6 text-sm font-semibold text-white">My payslips</h2>
-      <div className="mt-2 overflow-hidden bg-brand-50">
+      <h2 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-100">My payslips</h2>
+      <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
               <th className="px-4 py-2">Month</th>
               <th className="px-4 py-2">Present days</th>
@@ -186,12 +186,12 @@ export default function PayrollPage() {
       {canSeeTeam && (
         <>
           <div className="mt-6 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-white">Team payslips</h2>
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Team payslips</h2>
             <input type="month" value={teamMonth} onChange={(e) => setTeamMonth(e.target.value)} className="rounded-lg border border-slate-300 px-2 py-1 text-sm" />
           </div>
-          <div className="mt-2 overflow-hidden bg-brand-50">
+          <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
             <table className="w-full text-sm">
-              <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+              <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
                 <tr>
                   <th className="px-4 py-2">Employee</th>
                   <th className="px-4 py-2">Month</th>

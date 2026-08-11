@@ -53,13 +53,13 @@ export default function DataAdminPage() {
   return (
     <AppShell>
       <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Data Admin</h1>
-      <p className="mt-1 text-sm text-blue-100">Operational health stats and a searchable log of every create/update/delete action across the CRM.</p>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Operational health stats and a searchable log of every create/update/delete action across the CRM.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {stats && (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {(Object.keys(STAT_LABELS) as (keyof DataAdminStatsDTO)[]).map((key, i) => (
-            <div key={key} className={`border-l-4 ${STAT_BORDER_COLORS[i % STAT_BORDER_COLORS.length]} bg-brand-50 p-4`}>
+            <div key={key} className={`border-l-4 ${STAT_BORDER_COLORS[i % STAT_BORDER_COLORS.length]} bg-white dark:bg-slate-800 p-4`}>
               <p className="text-2xl font-semibold text-slate-800">{stats[key]}</p>
               <p className="text-xs text-slate-500">{STAT_LABELS[key]}</p>
             </div>
@@ -77,9 +77,9 @@ export default function DataAdminPage() {
         />
       </div>
 
-      <div className="mt-3 overflow-hidden bg-brand-50">
+      <div className="mt-3 overflow-hidden bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
               <th className="px-4 py-2">When</th>
               <th className="px-4 py-2">User</th>

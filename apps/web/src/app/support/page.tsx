@@ -91,14 +91,14 @@ export default function SupportPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Support Tickets</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
+        <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
           {showForm ? 'Cancel' : 'New ticket'}
         </button>
       </div>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-4">
           <select required value={form.leadId} onChange={(e) => setForm({ ...form, leadId: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             <option value="">Select lead…</option>
             {leads.map((l) => <option key={l.id} value={l.id}>{l.clientName} · {l.destination}</option>)}
@@ -121,16 +121,16 @@ export default function SupportPage() {
       )}
 
       <div className="mt-4 flex items-center gap-2">
-        <span className="text-sm text-blue-100">Filter:</span>
+        <span className="text-sm text-slate-500 dark:text-slate-400">Filter:</span>
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
           <option value="">All statuses</option>
           {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
 
-      <div className="mt-2 overflow-hidden bg-brand-50">
+      <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
               <th className="px-4 py-2">Subject</th>
               <th className="px-4 py-2">Lead</th>

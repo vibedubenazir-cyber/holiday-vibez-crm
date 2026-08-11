@@ -211,7 +211,7 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className={`flex ${compact ? 'h-full' : ''} gap-2`} style={compact ? undefined : { height: '65vh' }}>
-      <div className={`${sidebarWidth} shrink-0 overflow-y-auto rounded-xl bg-brand-50 shadow-card dark:bg-slate-800`}>
+      <div className={`${sidebarWidth} shrink-0 overflow-y-auto rounded-xl bg-white shadow-card dark:bg-slate-800`}>
         <div className="flex border-b border-slate-100 dark:border-slate-700">
           <button
             onClick={() => setTab('channels')}
@@ -243,8 +243,8 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
                 <li key={c.id}>
                   <button
                     onClick={() => setSelectedId(c.id)}
-                    className={`flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-sm hover:bg-brand-50 dark:hover:bg-slate-700 ${
-                      selectedId === c.id ? 'bg-brand-50 dark:bg-slate-700' : ''
+                    className={`flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-sm hover:bg-white dark:hover:bg-slate-700 ${
+                      selectedId === c.id ? 'bg-white dark:bg-slate-700' : ''
                     }`}
                   >
                     <span className="truncate font-medium text-slate-800 dark:text-slate-100">{channelDisplayName(c, me?.id)}</span>
@@ -264,7 +264,7 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
                   <button
                     onClick={() => !isMe && handleOpenDirect(p.userId)}
                     disabled={isMe}
-                    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${isMe ? '' : 'hover:bg-brand-50 dark:hover:bg-slate-700'}`}
+                    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${isMe ? '' : 'hover:bg-white dark:hover:bg-slate-700'}`}
                     title={isMe ? undefined : `Message ${p.name}`}
                   >
                     <PresenceDot status={p.status} />
@@ -285,7 +285,7 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
         )}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-brand-50 shadow-card dark:bg-slate-800">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-white shadow-card dark:bg-slate-800">
         {error && <p className="px-3 pt-2 text-xs text-red-600">{error}</p>}
         {selectedChannel ? (
           <>
@@ -329,7 +329,7 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-600 hover:border-brand-200 hover:bg-brand-50 hover:text-brand disabled:opacity-60 dark:border-slate-600 dark:text-slate-300"
+                className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-600 hover:border-brand-200 hover:bg-white dark:hover:bg-slate-800 hover:text-brand disabled:opacity-60 dark:border-slate-600 dark:text-slate-300"
                 title="Attach a file"
               >
                 {uploading ? '…' : '📎'}
@@ -358,7 +358,7 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
 
       {showNewGroup && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-xl bg-brand-50 p-5 shadow-card dark:bg-slate-800">
+          <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-card dark:bg-slate-800">
             <h2 className="text-lg font-semibold text-slate-800 dark:text-white">New group channel</h2>
             <input
               type="text"

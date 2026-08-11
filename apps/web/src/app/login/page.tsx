@@ -47,7 +47,7 @@ export default function LoginPage() {
   if (twoFactorUserId) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-700 via-brand to-brand-600 px-4">
-        <div className="w-full max-w-sm rounded-2xl bg-brand-50 p-8 shadow-2xl">
+        <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-800 p-8 shadow-2xl">
           <div className="mb-6 text-center">
             <Image src="/logo.png" alt="Holiday Vibez" width={220} height={55} className="mx-auto h-auto w-48" priority />
             <p className="mt-2 text-sm text-slate-500">Enter the 6-digit code from your authenticator app</p>
@@ -97,11 +97,11 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-700 via-brand to-brand-600 px-4">
-      <div className="w-full max-w-sm rounded-2xl bg-brand-50 p-8 shadow-2xl">
+      <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-800 p-8 shadow-2xl">
         <div className="mb-6 text-center">
           <Image src="/logo.png" alt="Holiday Vibez" width={220} height={55} className="mx-auto h-auto w-48" priority />
           <p className="mt-3 text-lg font-bold tracking-tight text-brand">Holiday Vibez CRM</p>
-          <p className="mt-1 text-sm text-blue-100">Sign in to your account</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Sign in to your account</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

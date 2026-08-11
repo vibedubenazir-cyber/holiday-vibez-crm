@@ -69,20 +69,20 @@ export default function RatesPage() {
         {isAdmin && (
           <button
             onClick={() => setShowForm((s) => !s)}
-            className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105"
+            className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700"
           >
             {showForm ? 'Cancel' : 'Add rate'}
           </button>
         )}
       </div>
       {!isAdmin && (
-        <p className="mt-1 text-xs text-blue-100">Read-only — only Admin can create or edit rate cards.</p>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Read-only — only Admin can create or edit rate cards.</p>
       )}
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {isAdmin && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
           <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             {TYPE_OPTIONS.map((t) => (
               <option key={t} value={t}>{t}</option>
@@ -99,9 +99,9 @@ export default function RatesPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden bg-brand-50">
+      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
               <th className="px-4 py-2">Type</th>
               <th className="px-4 py-2">Destination</th>

@@ -148,29 +148,29 @@ export default function DashboardPage() {
           <h1 className="inline-block rounded-lg bg-gradient-to-r from-brand to-indigo-600 px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">
             Welcome, {user?.name}
           </h1>
-          <p className="mt-1 text-sm text-blue-100">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {user?.role.replaceAll('_', ' ')}
             {branchName ? ` · ${branchName} branch` : ''} — here&apos;s what&apos;s happening across your workspace right now.
           </p>
         </div>
       </div>
 
-      <h2 className="mt-6 text-sm font-semibold text-white">
+      <h2 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-100">
         {user?.role === Role.TRAVEL_CONSULTANT ? 'Leads assigned to you' : 'Your workspace at a glance'}
       </h2>
       <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Link href="/leads">
-          <DashCard accent="cyan" label={user?.role === Role.TRAVEL_CONSULTANT ? 'Assigned to you' : 'Total leads'} value={leads.length.toString()} />
+          <DashCard accent="blue-light" label={user?.role === Role.TRAVEL_CONSULTANT ? 'Assigned to you' : 'Total leads'} value={leads.length.toString()} />
         </Link>
         <Link href="/quotations">
-          <DashCard accent="orange" label="Quotations" value={quotationCount === null ? '—' : quotationCount.toString()} />
+          <DashCard accent="blue" label="Quotations" value={quotationCount === null ? '—' : quotationCount.toString()} />
         </Link>
         <Link href="/bookings">
-          <DashCard accent="pink" label="Bookings" value={bookings.length.toString()} />
+          <DashCard accent="blue-deep" label="Bookings" value={bookings.length.toString()} />
         </Link>
       </div>
 
-      <h2 className="mt-8 text-sm font-semibold text-white">How interested are they?</h2>
+      <h2 className="mt-8 text-sm font-semibold text-slate-800 dark:text-slate-100">How interested are they?</h2>
       <div className="mt-2 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <DashCard accent="red" label="🔥 Hot" value={interestCounts.hot.toString()} />
         <DashCard accent="amber" label="🌤 Warm" value={interestCounts.warm.toString()} />
@@ -179,21 +179,21 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-white">Lead status breakdown — {rangeLabel}</h2>
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Lead status breakdown — {rangeLabel}</h2>
         <div className="flex flex-wrap items-center gap-2">
           {(['today', 'month', 'year', 'custom'] as RangeKey[]).map((r) => (
             <button
               key={r}
               onClick={() => setRange(r)}
               className={`rounded-lg px-3 py-1.5 text-xs font-semibold shadow-card transition-colors ${
-                range === r ? 'bg-brand-50 text-brand' : 'bg-white/20 text-white hover:bg-white/30'
+                range === r ? 'bg-white dark:bg-slate-800 text-brand' : 'text-slate-500 hover:bg-white hover:text-brand dark:text-slate-400 dark:hover:bg-slate-800'
               }`}
             >
               {r === 'today' ? 'Day' : r === 'month' ? 'Month' : r === 'year' ? 'Year' : 'Custom'}
             </button>
           ))}
           {range === 'custom' && (
-            <div className="flex items-center gap-1.5 rounded-lg bg-brand-50 px-2 py-1 shadow-card">
+            <div className="flex items-center gap-1.5 rounded-lg bg-white dark:bg-slate-800 px-2 py-1 shadow-card">
               <input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} className="rounded-md border-none text-xs focus:outline-none focus:ring-2 focus:ring-brand-100" />
               <span className="text-xs text-slate-400">to</span>
               <input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} className="rounded-md border-none text-xs focus:outline-none focus:ring-2 focus:ring-brand-100" />
@@ -204,7 +204,7 @@ export default function DashboardPage() {
 
       <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {(Object.keys(BUCKET_META) as Bucket[]).map((b) => (
-          <div key={b} className={`rounded-xl bg-brand-50 p-4 shadow-card ring-1 ${BUCKET_META[b].ring} dark:bg-slate-800`}>
+          <div key={b} className={`rounded-xl bg-white p-4 shadow-card ring-1 ${BUCKET_META[b].ring} dark:bg-slate-800`}>
             <p className={`text-xs font-semibold uppercase tracking-wide ${BUCKET_META[b].text}`}>{BUCKET_META[b].label}</p>
             <p className="mt-1 text-2xl font-bold text-slate-800 dark:text-slate-100">{bucketCounts[b]}</p>
             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
@@ -217,7 +217,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="mt-4 rounded-xl bg-brand-50 p-4 shadow-card dark:bg-slate-800">
+      <div className="mt-4 rounded-xl bg-white p-4 shadow-card dark:bg-slate-800">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Full status breakdown · {totalInRange} lead{totalInRange === 1 ? '' : 's'} · {conversionPct}% converted to bookings
@@ -234,9 +234,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <h2 className="mt-8 text-sm font-semibold text-white">Operations right now</h2>
+      <h2 className="mt-8 text-sm font-semibold text-slate-800 dark:text-slate-100">Operations right now</h2>
       <div className="mt-2 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="rounded-xl bg-brand-50 p-4 shadow-card dark:bg-slate-800">
+        <div className="rounded-xl bg-white p-4 shadow-card dark:bg-slate-800">
           <p className="text-xs font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-400">SLA breached · needs attention</p>
           <p className="mt-1 text-2xl font-bold text-slate-800 dark:text-slate-100">{slaBreachedOpen.length}</p>
           <ul className="mt-2 space-y-1">
@@ -248,7 +248,7 @@ export default function DashboardPage() {
             {slaBreachedOpen.length === 0 && <li className="text-xs text-slate-400">All caught up.</li>}
           </ul>
         </div>
-        <div className="rounded-xl bg-brand-50 p-4 shadow-card dark:bg-slate-800">
+        <div className="rounded-xl bg-white p-4 shadow-card dark:bg-slate-800">
           <p className="text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">Follow-ups due · hot leads</p>
           <p className="mt-1 text-2xl font-bold text-slate-800 dark:text-slate-100">{followUpsDue.length} <span className="text-sm font-normal text-slate-400">/ {hotLeads.length} hot</span></p>
           <ul className="mt-2 space-y-1">
@@ -260,7 +260,7 @@ export default function DashboardPage() {
             {followUpsDue.length === 0 && <li className="text-xs text-slate-400">Nothing pending.</li>}
           </ul>
         </div>
-        <div className="rounded-xl bg-brand-50 p-4 shadow-card dark:bg-slate-800">
+        <div className="rounded-xl bg-white p-4 shadow-card dark:bg-slate-800">
           <p className="text-xs font-semibold uppercase tracking-wide text-teal-600 dark:text-teal-400">Departures in next 14 days</p>
           <p className="mt-1 text-2xl font-bold text-slate-800 dark:text-slate-100">{upcomingDepartures.length}</p>
           <ul className="mt-2 space-y-1">
@@ -278,30 +278,30 @@ export default function DashboardPage() {
 
       {target && (user?.role === Role.TRAVEL_CONSULTANT || user?.role === Role.BRANCH_MANAGER) && (
         <>
-          <h2 className="mt-8 text-sm font-semibold text-white">
+          <h2 className="mt-8 text-sm font-semibold text-slate-800 dark:text-slate-100">
             {user.role === Role.TRAVEL_CONSULTANT ? 'Your performance' : 'Your branch performance'} · {target.period.toLowerCase()}
           </h2>
           <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="rounded-xl bg-brand-50 p-4 shadow-card dark:bg-slate-800">
+            <div className="rounded-xl bg-white p-4 shadow-card dark:bg-slate-800">
               <p className="text-xs font-semibold uppercase tracking-wide text-brand">Revenue achieved</p>
               <p className="mt-1 text-xl font-bold text-slate-800 dark:text-slate-100">
                 ₹{target.revenueAchieved.toLocaleString('en-IN')} <span className="text-sm font-normal text-slate-400">/ ₹{target.revenueTarget.toLocaleString('en-IN')}</span>
               </p>
               <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-brand to-indigo-500"
+                  className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-400"
                   style={{ width: `${Math.min(100, target.revenueTarget > 0 ? (target.revenueAchieved / target.revenueTarget) * 100 : 0)}%` }}
                 />
               </div>
             </div>
-            <div className="rounded-xl bg-brand-50 p-4 shadow-card dark:bg-slate-800">
-              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Bookings this period</p>
+            <div className="rounded-xl bg-white p-4 shadow-card dark:bg-slate-800">
+              <p className="text-xs font-semibold uppercase tracking-wide text-brand-500 dark:text-brand-300">Bookings this period</p>
               <p className="mt-1 text-xl font-bold text-slate-800 dark:text-slate-100">
                 {bookingsInRange} <span className="text-sm font-normal text-slate-400">/ {target.bookingTarget} target</span>
               </p>
               <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
+                  className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-200"
                   style={{ width: `${Math.min(100, target.bookingTarget > 0 ? (bookingsInRange / target.bookingTarget) * 100 : 0)}%` }}
                 />
               </div>
@@ -312,8 +312,8 @@ export default function DashboardPage() {
 
       {companyLeaderboard.length > 0 && (user?.role === Role.DIRECTOR || user?.role === Role.ADMIN) && (
         <>
-          <h2 className="mt-8 text-sm font-semibold text-white">Company performance by branch</h2>
-          <div className="mt-2 overflow-hidden rounded-xl bg-brand-50 shadow-card dark:bg-slate-800">
+          <h2 className="mt-8 text-sm font-semibold text-slate-800 dark:text-slate-100">Company performance by branch</h2>
+          <div className="mt-2 overflow-hidden rounded-xl bg-white shadow-card dark:bg-slate-800">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-700/50 dark:text-brand-200">
                 <tr>
@@ -332,7 +332,7 @@ export default function DashboardPage() {
                     <td className="px-4 py-2">
                       <div className="h-2 w-32 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-brand to-indigo-500"
+                          className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-400"
                           style={{ width: `${Math.min(100, row.revenueTarget > 0 ? (row.revenueAchieved / row.revenueTarget) * 100 : 0)}%` }}
                         />
                       </div>
@@ -345,17 +345,17 @@ export default function DashboardPage() {
         </>
       )}
 
-      <p className="mt-8 text-xs text-blue-100">
-        Looking for revenue, margin, and branch targets? Head to <Link href="/reports" className="font-semibold text-white hover:underline">Reports</Link>.
+      <p className="mt-8 text-xs text-slate-500 dark:text-slate-400">
+        Looking for revenue, margin, and branch targets? Head to <Link href="/reports" className="font-semibold text-brand hover:underline">Reports</Link>.
       </p>
     </AppShell>
   );
 }
 
 const ACCENTS = {
-  cyan: { border: 'border-t-cyan-500', text: 'text-cyan-600 dark:text-cyan-400' },
-  orange: { border: 'border-t-orange-500', text: 'text-orange-600 dark:text-orange-400' },
-  pink: { border: 'border-t-pink-500', text: 'text-pink-600 dark:text-pink-400' },
+  'blue-light': { border: 'border-t-brand-300', text: 'text-brand-500 dark:text-brand-300' },
+  blue: { border: 'border-t-brand-500', text: 'text-brand-600 dark:text-brand-300' },
+  'blue-deep': { border: 'border-t-brand-700', text: 'text-brand-700 dark:text-brand-200' },
   red: { border: 'border-t-red-500', text: 'text-red-600 dark:text-red-400' },
   amber: { border: 'border-t-amber-500', text: 'text-amber-600 dark:text-amber-400' },
   sky: { border: 'border-t-sky-500', text: 'text-sky-600 dark:text-sky-400' },
@@ -365,7 +365,7 @@ const ACCENTS = {
 function DashCard({ label, value, accent }: { label: string; value: string; accent: keyof typeof ACCENTS }) {
   const c = ACCENTS[accent];
   return (
-    <div className={`overflow-hidden rounded-xl border-t-4 ${c.border} bg-brand-50 p-4 shadow-card transition-shadow hover:shadow-card-hover dark:bg-slate-800`}>
+    <div className={`overflow-hidden rounded-xl border-t-4 ${c.border} bg-white p-4 shadow-card transition-shadow hover:shadow-card-hover dark:bg-slate-800`}>
       <p className={`text-xs font-semibold uppercase tracking-wide ${c.text}`}>{label}</p>
       <p className="mt-1 text-xl font-bold text-slate-800 dark:text-slate-100">{value}</p>
     </div>

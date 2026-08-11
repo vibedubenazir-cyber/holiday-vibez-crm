@@ -96,19 +96,19 @@ export default function PackagesPage() {
       <div className="flex items-center justify-between">
         <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Packages</h1>
         {canManage && (
-          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
+          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
             {showForm ? 'Cancel' : 'Add package'}
           </button>
         )}
       </div>
-      <p className="mt-1 text-sm text-blue-100">
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Reusable itinerary templates. Consultants can build a ready-costed draft quotation from any package in one click.
       </p>
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {canManage && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
           <input required placeholder="Package name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           <input required placeholder="Destination" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           <input placeholder="Theme (e.g. Honeymoon)" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
@@ -123,7 +123,7 @@ export default function PackagesPage() {
 
       <div className="mt-4 space-y-3">
         {packages.map((p) => (
-          <div key={p.id} className="rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <div key={p.id} className="rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-slate-800">{p.name} · {p.destination}</p>

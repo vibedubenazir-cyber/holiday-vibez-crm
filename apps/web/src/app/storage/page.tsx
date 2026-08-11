@@ -57,12 +57,12 @@ export default function StoragePage() {
   return (
     <AppShell>
       <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">File Storage</h1>
-      <p className="mt-1 text-sm text-blue-100">
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Upload an image or PDF to get back a URL you can paste into CMS content, package cover images, and other fields
         that accept a URL. Max 5MB.
       </p>
 
-      <div className="mt-4 max-w-xl rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-5">
+      <div className="mt-4 max-w-xl rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-5">
         <input
           type="file"
           accept=".png,.jpg,.jpeg,.gif,.webp,.pdf"
@@ -87,7 +87,7 @@ export default function StoragePage() {
               />
               <button
                 onClick={handleCopy}
-                className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:border-brand-200 hover:bg-brand-50 hover:text-brand"
+                className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:border-brand-200 hover:bg-white dark:hover:bg-slate-800 hover:text-brand"
               >
                 {copied ? 'Copied!' : 'Copy URL'}
               </button>

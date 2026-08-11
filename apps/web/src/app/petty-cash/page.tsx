@@ -73,18 +73,18 @@ export default function PettyCashPage() {
       <div className="flex items-center justify-between">
         <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Petty Cash</h1>
         {canManage && (
-          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
+          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
             {showForm ? 'Cancel' : 'Add entry'}
           </button>
         )}
       </div>
-      <p className="mt-1 text-sm text-blue-100">Cash-in-hand movements. Current balance: ₹{balance.toLocaleString('en-IN')}</p>
-      {!canManage && <p className="mt-1 text-xs text-blue-100">Read-only — auditor access.</p>}
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Cash-in-hand movements. Current balance: ₹{balance.toLocaleString('en-IN')}</p>
+      {!canManage && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Read-only — auditor access.</p>}
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {canManage && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
+        <form onSubmit={handleCreate} className="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
           {needsBranchPicker && (
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-slate-500">Branch</label>
@@ -120,9 +120,9 @@ export default function PettyCashPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden bg-brand-50">
+      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
               <th className="px-4 py-2">Date</th>
               {needsBranchPicker && <th className="px-4 py-2">Branch</th>}

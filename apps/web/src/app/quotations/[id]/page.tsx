@@ -267,27 +267,27 @@ export default function QuotationDetailPage() {
                 href={`/quote/${id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand"
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-brand-200 hover:bg-white dark:hover:bg-slate-800 hover:text-brand"
               >
                 View quotation
               </a>
               <button
                 onClick={handleCopyClientLink}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand"
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-brand-200 hover:bg-white dark:hover:bg-slate-800 hover:text-brand"
               >
                 {linkCopied ? 'Copied!' : 'Copy client link'}
               </button>
               <button
                 onClick={handleSendToClient}
                 disabled={sending}
-                className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105 disabled:opacity-60"
+                className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:opacity-60"
               >
                 {sending ? 'Sending...' : sent ? 'Sent!' : 'Send to client (WhatsApp + Email)'}
               </button>
             </>
           )}
           {isDraft && (
-            <button onClick={handleSubmit} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
+            <button onClick={handleSubmit} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
               Submit for approval
             </button>
           )}
@@ -297,7 +297,7 @@ export default function QuotationDetailPage() {
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {isSent && (
-        <form onSubmit={handleCreateBooking} className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
+        <form onSubmit={handleCreateBooking} className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <div>
             <label className="block text-xs text-slate-500">Departure date</label>
             <input
@@ -316,7 +316,7 @@ export default function QuotationDetailPage() {
 
       {isDraft && (
         <div className="mt-4 space-y-3">
-          <div className="rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <div className="rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <button onClick={() => setShowHotelSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
               {showHotelSearch ? 'Hide hotel search' : '+ Search hotels (live)'}
             </button>
@@ -371,7 +371,7 @@ export default function QuotationDetailPage() {
             )}
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <div className="rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <button onClick={() => setShowFlightSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
               {showFlightSearch ? 'Hide flight search' : '+ Search flights (live)'}
             </button>
@@ -420,7 +420,7 @@ export default function QuotationDetailPage() {
             )}
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <div className="rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <button onClick={() => setShowTransferSearch((s) => !s)} className="text-sm font-medium text-brand hover:underline">
               {showTransferSearch ? 'Hide transfer search' : '+ Search transfers (live)'}
             </button>
@@ -470,7 +470,7 @@ export default function QuotationDetailPage() {
       )}
 
       {isDraft && (
-        <form onSubmit={handleAddItem} className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
+        <form onSubmit={handleAddItem} className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <div className="flex-1 min-w-[220px]">
             <label className="block text-xs text-slate-500">Rate card</label>
             <select value={selectedRate} onChange={(e) => setSelectedRate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
@@ -489,9 +489,9 @@ export default function QuotationDetailPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden bg-brand-50">
+      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
               <th className="px-4 py-2">Item</th>
               <th className="px-4 py-2">Unit amount</th>

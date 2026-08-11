@@ -3,8 +3,7 @@
 @tailwind utilities;
 
 body {
-  @apply bg-gradient-to-br from-slate-50 via-brand-50/40 to-slate-50 text-slate-900 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100;
-  background-attachment: fixed;
+  @apply bg-brand-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
 }
 
 * {

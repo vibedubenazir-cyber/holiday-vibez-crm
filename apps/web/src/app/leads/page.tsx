@@ -207,25 +207,25 @@ export default function LeadsPage() {
               {importing ? 'Importing…' : 'Bulk import (CSV)'}
             </button>
             <input ref={fileInputRef} type="file" accept=".csv,text/csv" onChange={handleBulkImport} className="hidden" />
-            <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
+            <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
               {showForm ? 'Cancel' : 'Add lead'}
             </button>
           </div>
         )}
       </div>
       {canCreate && (
-        <p className="mt-1 text-xs text-blue-100">
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           CSV columns: source,clientName,phone,email,destination,branch — source must be one of {SOURCE_OPTIONS.join(', ')}; branch must match an existing branch name.
         </p>
       )}
-      <p className="mt-1 text-xs text-blue-100">
+      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
         SLA: whether this lead was contacted within the required response-time window. "Breached" means it wasn't — follow up as soon as possible.
       </p>
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       {importError && <p className="mt-3 text-sm text-red-600">{importError}</p>}
       {importResults && (
-        <div className="mt-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-3 text-sm">
+        <div className="mt-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-3 text-sm">
           <p className="font-medium text-slate-700">
             Imported {importResults.filter((r) => r.success).length} of {importResults.length} rows
           </p>
@@ -238,7 +238,7 @@ export default function LeadsPage() {
       )}
 
       {canCreate && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
           <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             {SOURCE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -259,7 +259,7 @@ export default function LeadsPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden rounded-xl bg-brand-50 shadow-card dark:bg-slate-800">
+      <div className="mt-4 overflow-hidden rounded-xl bg-white shadow-card dark:bg-slate-800">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>

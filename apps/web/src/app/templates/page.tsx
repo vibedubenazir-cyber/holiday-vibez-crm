@@ -45,20 +45,20 @@ export default function TemplatesPage() {
       <div className="flex items-center justify-between">
         <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Templates</h1>
         {canManage && (
-          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-gradient-to-r from-brand to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-card transition-all hover:shadow-card-hover hover:brightness-105">
+          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
             {showForm ? 'Cancel' : 'Add template'}
           </button>
         )}
       </div>
-      <p className="mt-1 text-sm text-blue-100">
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Reusable WhatsApp/email message templates, selectable from the Inbox compose box.
       </p>
-      {!canManage && <p className="mt-1 text-xs text-blue-100">Read-only — only Admin/Director can manage templates.</p>}
+      {!canManage && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Read-only — only Admin/Director can manage templates.</p>}
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {canManage && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2">
+        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2">
           <select value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
             <option value={NotificationChannel.WHATSAPP}>WhatsApp</option>
             <option value={NotificationChannel.EMAIL}>Email</option>
@@ -76,12 +76,12 @@ export default function TemplatesPage() {
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {templates.map((t) => (
-          <div key={t.id} className="rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-4">
+          <div key={t.id} className="rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
             <div className="flex items-center justify-between">
               <p className="font-medium text-slate-800">{t.name}</p>
-              <span className="rounded-lg bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">{t.channel}</span>
+              <span className="rounded-lg bg-white dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-brand-700">{t.channel}</span>
             </div>
-            {t.subject && <p className="mt-1 text-xs text-blue-100">Subject: {t.subject}</p>}
+            {t.subject && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Subject: {t.subject}</p>}
             <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">{t.body}</p>
           </div>
         ))}

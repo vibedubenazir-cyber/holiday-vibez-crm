@@ -99,9 +99,9 @@ export default function SecurityPage() {
     <AppShell>
       <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Security</h1>
 
-      <section className="mt-4 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-5">
+      <section className="mt-4 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-5">
         <h2 className="text-sm font-semibold text-slate-800">Two-Factor Authentication</h2>
-        <p className="mt-1 text-sm text-blue-100">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Require a 6-digit authenticator app code in addition to your password when signing in.
         </p>
         {twoFactorError && <p className="mt-2 text-sm text-red-600">{twoFactorError}</p>}
@@ -163,9 +163,9 @@ export default function SecurityPage() {
         )}
       </section>
 
-      <section className="mt-4 rounded-xl border border-slate-200 bg-brand-50 shadow-card transition-shadow hover:shadow-card-hover p-5">
+      <section className="mt-4 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-5">
         <h2 className="text-sm font-semibold text-slate-800">Push Notifications</h2>
-        <p className="mt-1 text-sm text-blue-100">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Get a browser notification for lead assignments, SLA breaches, and quotation approvals.
         </p>
 
@@ -200,13 +200,13 @@ export default function SecurityPage() {
         )}
       </section>
 
-      <h2 className="mt-8 text-sm font-semibold text-white">Active Sessions</h2>
-      <p className="mt-1 text-sm text-blue-100">Devices currently signed in to your account. Revoke any you don't recognize.</p>
+      <h2 className="mt-8 text-sm font-semibold text-slate-800 dark:text-slate-100">Active Sessions</h2>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Devices currently signed in to your account. Revoke any you don't recognize.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-      <div className="mt-4 overflow-hidden bg-brand-50">
+      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700">
+          <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr><th className="px-4 py-2">Device</th><th className="px-4 py-2">IP</th><th className="px-4 py-2">Since</th><th className="px-4 py-2"></th></tr>
           </thead>
           <tbody>
