@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
+import { useAuth } from '@/lib/auth-context';
 import { api, ApiError } from '@/lib/api';
-import { BookingStatus } from '@holiday-vibez/shared';
+import { BookingStatus, Role } from '@holiday-vibez/shared';
 import type { BookingDTO, InvoiceDTO, VoucherDTO, ReviewDTO, TripFeedbackDTO, InsurancePolicyDTO, SupplierDTO } from '@holiday-vibez/shared';
 
 const PAYMENT_TYPE_COLORS: Record<string, string> = {
@@ -22,7 +23,23 @@ const BOOKING_STATUS_COLORS: Record<string, string> = {
   COMPLETED: 'bg-blue-700 text-white',
 };
 
+// Mirrors the backend @Roles() decorators exactly (payments.controller.ts,
+// bookings.controller.ts, vouchers.controller.ts, invoices.controller.ts,
+// reviews/feedback/insurance.controller.ts) so a role never sees a write
+// control the API would 403 for.
+const PAYMENT_MANAGE_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE];
+const STATUS_CHANGE_ROLES = [Role.TRAVEL_CONSULTANT, Role.ADMIN, Role.BRANCH_MANAGER];
+const VOUCHER_ROLES = [Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT];
+const INVOICE_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE];
+const REVIEW_FEEDBACK_INSURANCE_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT];
+
 export default function BookingsPage() {
+  const { user: me } = useAuth();
+  const canManagePayments = !!me && PAYMENT_MANAGE_ROLES.includes(me.role);
+  const canChangeStatus = !!me && STATUS_CHANGE_ROLES.includes(me.role);
+  const canGenerateVoucher = !!me && VOUCHER_ROLES.includes(me.role);
+  const canGenerateInvoice = !!me && INVOICE_ROLES.includes(me.role);
+  const canAddReviewFeedbackInsurance = !!me && REVIEW_FEEDBACK_INSURANCE_ROLES.includes(me.role);
   const [bookings, setBookings] = useState<BookingDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -201,7 +218,7 @@ export default function BookingsPage() {
   return (
     <AppShell>
       <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Bookings & Payments</h1>
-      <p className="mt-1 text-sm text-blue-100">
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Bookings are created from approved (SENT) quotations. Generate a payment link to send the customer a real hosted-checkout
         page (Razorpay), or use "Mark paid" for offline/cash payments already received — either way, payments feed branch P&L
         and target achievement automatically once paid.
@@ -210,19 +227,25 @@ export default function BookingsPage() {
 
       <div className="mt-4 space-y-4">
         {bookings.map((b) => (
-          <div key={b.id} className="rounded-lg border-l-4 border-l-blue-500 bg-brand-50 p-5 shadow-card dark:bg-slate-800">
+          <div key={b.id} className="rounded-lg border-l-4 border-l-blue-500 bg-white p-5 shadow-card dark:bg-slate-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-slate-800 dark:text-slate-100">{b.quotation?.lead?.clientName} · {b.quotation?.lead?.destination}</p>
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
                   Departs {new Date(b.departureDate).toLocaleDateString()} ·
-                  <select
-                    value={b.status}
-                    onChange={(e) => handleStatusChange(b.id, e.target.value)}
-                    className={`rounded-lg border-none px-2 py-0.5 text-xs font-medium ${BOOKING_STATUS_COLORS[b.status] ?? 'bg-slate-100 text-slate-600'}`}
-                  >
-                    {BOOKING_STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  {canChangeStatus ? (
+                    <select
+                      value={b.status}
+                      onChange={(e) => handleStatusChange(b.id, e.target.value)}
+                      className={`rounded-lg border-none px-2 py-0.5 text-xs font-medium ${BOOKING_STATUS_COLORS[b.status] ?? 'bg-slate-100 text-slate-600'}`}
+                    >
+                      {BOOKING_STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  ) : (
+                    <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${BOOKING_STATUS_COLORS[b.status] ?? 'bg-slate-100 text-slate-600'}`}>
+                      {b.status}
+                    </span>
+                  )}
                   · Total ₹{Number(b.quotation?.totalAmount ?? 0).toLocaleString('en-IN')}
                 </p>
               </div>
@@ -273,7 +296,7 @@ export default function BookingsPage() {
                             )}
                           </td>
                           <td className="px-3 py-2.5 text-right">
-                            {!p.paidAt && (
+                            {!p.paidAt && canManagePayments && (
                               <div className="flex flex-wrap items-center justify-end gap-3">
                                 {p.gatewayLinkUrl ? (
                                   <button onClick={() => handleCopyLink(p.id, p.gatewayLinkUrl!)} className="text-brand hover:underline">
@@ -301,6 +324,7 @@ export default function BookingsPage() {
                   </table>
                 </div>
 
+                {canManagePayments && (
                 <div className="mt-3 flex flex-wrap items-end gap-3 rounded-lg border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-700 dark:bg-slate-900/30">
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Type</label>
@@ -344,6 +368,7 @@ export default function BookingsPage() {
                   )}
                   <button onClick={() => handleAddPayment(b.id)} className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add payment</button>
                 </div>
+                )}
 
                 <div className="mt-4 border-t border-slate-100 pt-3">
                   <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Vouchers</p>
@@ -356,9 +381,11 @@ export default function BookingsPage() {
                     ))}
                     {(!vouchers[b.id] || vouchers[b.id].length === 0) && <li className="text-sm text-slate-400">None generated yet.</li>}
                   </ul>
-                  <button onClick={() => handleGenerateVoucher(b.id)} className="mt-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand">
-                    Generate voucher
-                  </button>
+                  {canGenerateVoucher && (
+                    <button onClick={() => handleGenerateVoucher(b.id)} className="mt-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:border-brand-200 hover:bg-white dark:hover:bg-slate-800 hover:text-brand">
+                      Generate voucher
+                    </button>
+                  )}
                 </div>
 
                 <div className="mt-4 border-t border-slate-100 pt-3">
@@ -377,19 +404,21 @@ export default function BookingsPage() {
                     ))}
                     {(!invoices[b.id] || invoices[b.id].length === 0) && <li className="text-sm text-slate-400">None generated yet.</li>}
                   </ul>
-                  <div className="mt-2 flex flex-wrap items-end gap-2">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs font-medium text-slate-500">GST %</label>
-                      <input type="number" min={0} max={100} step="0.01" value={invoiceForm.gstRate} onChange={(e) => setInvoiceForm({ ...invoiceForm, gstRate: e.target.value })} className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                  {canGenerateInvoice && (
+                    <div className="mt-2 flex flex-wrap items-end gap-2">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-slate-500">GST %</label>
+                        <input type="number" min={0} max={100} step="0.01" value={invoiceForm.gstRate} onChange={(e) => setInvoiceForm({ ...invoiceForm, gstRate: e.target.value })} className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-slate-500">Customer GSTIN</label>
+                        <input type="text" placeholder="Optional (B2B)" value={invoiceForm.customerGstin} onChange={(e) => setInvoiceForm({ ...invoiceForm, customerGstin: e.target.value.toUpperCase() })} className="w-40 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      </div>
+                      <button onClick={() => handleGenerateInvoice(b.id)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:border-brand-200 hover:bg-white dark:hover:bg-slate-800 hover:text-brand">
+                        Generate invoice
+                      </button>
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs font-medium text-slate-500">Customer GSTIN</label>
-                      <input type="text" placeholder="Optional (B2B)" value={invoiceForm.customerGstin} onChange={(e) => setInvoiceForm({ ...invoiceForm, customerGstin: e.target.value.toUpperCase() })} className="w-40 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                    </div>
-                    <button onClick={() => handleGenerateInvoice(b.id)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand">
-                      Generate invoice
-                    </button>
-                  </div>
+                  )}
                 </div>
 
                 <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-700">
@@ -404,13 +433,15 @@ export default function BookingsPage() {
                     ))}
                     {(!reviews[b.id] || reviews[b.id].length === 0) && <li className="text-sm text-slate-400">No reviews yet.</li>}
                   </ul>
-                  <div className="mt-2 flex items-end gap-2">
-                    <select value={reviewForm.rating} onChange={(e) => setReviewForm({ ...reviewForm, rating: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
-                      {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} ★</option>)}
-                    </select>
-                    <input type="text" placeholder="Comment (optional)" value={reviewForm.comment} onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })} className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                    <button onClick={() => handleAddReview(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add review</button>
-                  </div>
+                  {canAddReviewFeedbackInsurance && (
+                    <div className="mt-2 flex items-end gap-2">
+                      <select value={reviewForm.rating} onChange={(e) => setReviewForm({ ...reviewForm, rating: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
+                        {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} ★</option>)}
+                      </select>
+                      <input type="text" placeholder="Comment (optional)" value={reviewForm.comment} onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })} className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      <button onClick={() => handleAddReview(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add review</button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-700">
@@ -427,16 +458,18 @@ export default function BookingsPage() {
                     ))}
                     {(!feedback[b.id] || feedback[b.id].length === 0) && <li className="text-sm text-slate-400">No feedback submitted yet.</li>}
                   </ul>
-                  <div className="mt-2 flex flex-wrap items-end gap-2">
-                    <select value={feedbackForm.overallSatisfaction} onChange={(e) => setFeedbackForm({ ...feedbackForm, overallSatisfaction: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
-                      {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>Overall {n}/5</option>)}
-                    </select>
-                    <input type="number" min={1} max={5} placeholder="Hotel" value={feedbackForm.hotelRating} onChange={(e) => setFeedbackForm({ ...feedbackForm, hotelRating: e.target.value })} className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                    <input type="number" min={1} max={5} placeholder="Transport" value={feedbackForm.transportRating} onChange={(e) => setFeedbackForm({ ...feedbackForm, transportRating: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                    <input type="number" min={1} max={5} placeholder="Guide" value={feedbackForm.guideRating} onChange={(e) => setFeedbackForm({ ...feedbackForm, guideRating: e.target.value })} className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                    <input type="text" placeholder="Comments" value={feedbackForm.comments} onChange={(e) => setFeedbackForm({ ...feedbackForm, comments: e.target.value })} className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                    <button onClick={() => handleAddFeedback(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add feedback</button>
-                  </div>
+                  {canAddReviewFeedbackInsurance && (
+                    <div className="mt-2 flex flex-wrap items-end gap-2">
+                      <select value={feedbackForm.overallSatisfaction} onChange={(e) => setFeedbackForm({ ...feedbackForm, overallSatisfaction: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
+                        {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>Overall {n}/5</option>)}
+                      </select>
+                      <input type="number" min={1} max={5} placeholder="Hotel" value={feedbackForm.hotelRating} onChange={(e) => setFeedbackForm({ ...feedbackForm, hotelRating: e.target.value })} className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      <input type="number" min={1} max={5} placeholder="Transport" value={feedbackForm.transportRating} onChange={(e) => setFeedbackForm({ ...feedbackForm, transportRating: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      <input type="number" min={1} max={5} placeholder="Guide" value={feedbackForm.guideRating} onChange={(e) => setFeedbackForm({ ...feedbackForm, guideRating: e.target.value })} className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      <input type="text" placeholder="Comments" value={feedbackForm.comments} onChange={(e) => setFeedbackForm({ ...feedbackForm, comments: e.target.value })} className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      <button onClick={() => handleAddFeedback(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add feedback</button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-700">
@@ -450,15 +483,17 @@ export default function BookingsPage() {
                     ))}
                     {(!policies[b.id] || policies[b.id].length === 0) && <li className="text-sm text-slate-400">No policy added yet.</li>}
                   </ul>
-                  <div className="mt-2 flex flex-wrap items-end gap-2">
-                    <input type="text" placeholder="Provider" value={policyForm.provider} onChange={(e) => setPolicyForm({ ...policyForm, provider: e.target.value })} className="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                    <input type="text" placeholder="Policy #" value={policyForm.policyNumber} onChange={(e) => setPolicyForm({ ...policyForm, policyNumber: e.target.value })} className="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                    <input type="number" placeholder="Premium" value={policyForm.premiumAmount} onChange={(e) => setPolicyForm({ ...policyForm, premiumAmount: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                    <input type="number" placeholder="Coverage" value={policyForm.coverageAmount} onChange={(e) => setPolicyForm({ ...policyForm, coverageAmount: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                    <input type="date" value={policyForm.startDate} onChange={(e) => setPolicyForm({ ...policyForm, startDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                    <input type="date" value={policyForm.endDate} onChange={(e) => setPolicyForm({ ...policyForm, endDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                    <button onClick={() => handleAddPolicy(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add policy</button>
-                  </div>
+                  {canAddReviewFeedbackInsurance && (
+                    <div className="mt-2 flex flex-wrap items-end gap-2">
+                      <input type="text" placeholder="Provider" value={policyForm.provider} onChange={(e) => setPolicyForm({ ...policyForm, provider: e.target.value })} className="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      <input type="text" placeholder="Policy #" value={policyForm.policyNumber} onChange={(e) => setPolicyForm({ ...policyForm, policyNumber: e.target.value })} className="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      <input type="number" placeholder="Premium" value={policyForm.premiumAmount} onChange={(e) => setPolicyForm({ ...policyForm, premiumAmount: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      <input type="number" placeholder="Coverage" value={policyForm.coverageAmount} onChange={(e) => setPolicyForm({ ...policyForm, coverageAmount: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      <input type="date" value={policyForm.startDate} onChange={(e) => setPolicyForm({ ...policyForm, startDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      <input type="date" value={policyForm.endDate} onChange={(e) => setPolicyForm({ ...policyForm, endDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+                      <button onClick={() => handleAddPolicy(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add policy</button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
