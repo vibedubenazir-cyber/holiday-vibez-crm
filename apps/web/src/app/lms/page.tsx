@@ -14,7 +14,7 @@ export default function LmsCoursesPage() {
   const [showForm, setShowForm] = useState(false);
   const isManager = me?.role === Role.ADMIN || me?.role === Role.DIRECTOR;
 
-  const [form, setForm] = useState({ title: '', description: '', category: '' });
+  const [form, setForm] = useState({ title: '', description: '', category: '', imageUrl: '' });
 
   async function load() {
     try {
@@ -33,8 +33,13 @@ export default function LmsCoursesPage() {
     e.preventDefault();
     setError(null);
     try {
-      await api.post('/lms/courses', { title: form.title, description: form.description, category: form.category || undefined });
-      setForm({ title: '', description: '', category: '' });
+      await api.post('/lms/courses', {
+        title: form.title,
+        description: form.description,
+        category: form.category || undefined,
+        imageUrl: form.imageUrl || undefined,
+      });
+      setForm({ title: '', description: '', category: '', imageUrl: '' });
       setShowForm(false);
       await load();
     } catch (err) {
@@ -70,6 +75,10 @@ export default function LmsCoursesPage() {
             <label className="text-xs font-medium text-slate-500">Description</label>
             <input required placeholder="What staff will learn" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           </div>
+          <div className="flex flex-1 flex-col gap-1">
+            <label className="text-xs font-medium text-slate-500">Image URL</label>
+            <input placeholder="Optional destination photo" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          </div>
           <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Create</button>
         </form>
       )}
@@ -79,18 +88,24 @@ export default function LmsCoursesPage() {
           <Link
             key={c.id}
             href={`/lms/${c.id}`}
-            className="flex flex-col gap-2 rounded-lg bg-white p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover dark:bg-slate-800"
+            className="flex flex-col overflow-hidden rounded-lg bg-white shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover dark:bg-slate-800"
           >
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-slate-800 dark:text-slate-100">{c.title}</span>
-              {!c.active && <span className="rounded-lg bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">Inactive</span>}
-            </div>
-            <p className="line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{c.description}</p>
-            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
-              {c.category && <span className="rounded-lg bg-white dark:bg-slate-800 px-2 py-0.5 font-medium text-brand-700">{c.category}</span>}
-              <span>{c.lessonCount} lesson{c.lessonCount === 1 ? '' : 's'}</span>
-              {c.hasQuiz && <span>· Quiz</span>}
-              <span>· {c.enrollmentCount} enrolled</span>
+            {c.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={c.imageUrl} alt={c.title} className="h-32 w-full object-cover" />
+            )}
+            <div className="flex flex-col gap-2 p-4">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-slate-800 dark:text-slate-100">{c.title}</span>
+                {!c.active && <span className="rounded-lg bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600">Inactive</span>}
+              </div>
+              <p className="line-clamp-2 text-sm text-slate-500 dark:text-slate-400">{c.description}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
+                {c.category && <span className="rounded-lg bg-brand-50 dark:bg-slate-700 px-2 py-0.5 font-medium text-brand-700 dark:text-brand-200">{c.category}</span>}
+                <span>{c.lessonCount} lesson{c.lessonCount === 1 ? '' : 's'}</span>
+                {c.hasQuiz && <span>· Quiz</span>}
+                <span>· {c.enrollmentCount} enrolled</span>
+              </div>
             </div>
           </Link>
         ))}

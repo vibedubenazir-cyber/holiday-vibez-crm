@@ -679,6 +679,7 @@ export interface CourseDTO {
   title: string;
   description: string;
   category: string | null;
+  imageUrl: string | null;
   active: boolean;
   createdBy: string;
   createdAt: string;
@@ -725,6 +726,7 @@ export interface CourseDetailDTO {
   title: string;
   description: string;
   category: string | null;
+  imageUrl: string | null;
   active: boolean;
   lessons: LessonDTO[];
   quizQuestions: QuizQuestionDTO[];
@@ -740,6 +742,7 @@ export interface MyLearningRowDTO {
   courseId: string;
   title: string;
   category: string | null;
+  imageUrl: string | null;
   enrolledAt: string;
   completedAt: string | null;
   totalLessons: number;

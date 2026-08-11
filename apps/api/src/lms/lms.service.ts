@@ -19,6 +19,7 @@ export class LmsService {
       title: c.title,
       description: c.description,
       category: c.category,
+      imageUrl: c.imageUrl,
       active: c.active,
       createdBy: c.createdBy,
       createdAt: c.createdAt,
@@ -29,7 +30,9 @@ export class LmsService {
   }
 
   async createCourse(dto: CreateCourseDto, createdBy: string) {
-    return this.prisma.course.create({ data: { title: dto.title, description: dto.description, category: dto.category, createdBy } });
+    return this.prisma.course.create({
+      data: { title: dto.title, description: dto.description, category: dto.category, imageUrl: dto.imageUrl, createdBy },
+    });
   }
 
   async updateCourse(courseId: string, dto: UpdateCourseDto) {
@@ -80,6 +83,7 @@ export class LmsService {
       title: course.title,
       description: course.description,
       category: course.category,
+      imageUrl: course.imageUrl,
       active: course.active,
       lessons: course.lessons,
       // Never leak the answer key to non-managers — front-end quiz form only needs text+options.
@@ -150,6 +154,7 @@ export class LmsService {
       courseId: e.courseId,
       title: e.course.title,
       category: e.course.category,
+      imageUrl: e.course.imageUrl,
       enrolledAt: e.enrolledAt,
       completedAt: e.completedAt,
       totalLessons: e.course.lessons.length,

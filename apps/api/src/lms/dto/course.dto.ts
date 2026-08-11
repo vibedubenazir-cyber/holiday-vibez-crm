@@ -10,6 +10,10 @@ export class CreateCourseDto {
   @IsOptional()
   @IsString()
   category?: string;
+
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 }
 
 export class UpdateCourseDto {
@@ -24,6 +28,10 @@ export class UpdateCourseDto {
   @IsOptional()
   @IsString()
   category?: string;
+
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 
   @IsOptional()
   @IsBoolean()

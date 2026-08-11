@@ -1137,6 +1137,7 @@ model Course {
   title       String
   description String
   category    String?
+  imageUrl    String?
   active      Boolean  @default(true)
   createdBy   String
   createdAt   DateTime @default(now())

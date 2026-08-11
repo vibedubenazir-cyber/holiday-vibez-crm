@@ -16,6 +16,7 @@ import {
   type QuotationSummaryDTO,
   type TargetDTO,
   type LeaderboardRowDTO,
+  type MyLearningRowDTO,
 } from '@holiday-vibez/shared';
 
 type RangeKey = 'today' | 'month' | 'year' | 'custom';
@@ -57,6 +58,7 @@ export default function DashboardPage() {
   const [branchName, setBranchName] = useState<string | null>(null);
   const [target, setTarget] = useState<TargetDTO | null>(null);
   const [companyLeaderboard, setCompanyLeaderboard] = useState<LeaderboardRowDTO[]>([]);
+  const [myLearning, setMyLearning] = useState<MyLearningRowDTO[]>([]);
   const [range, setRange] = useState<RangeKey>('month');
   const now = useMemo(() => new Date(), []);
   const [customFrom, setCustomFrom] = useState(toInputDate(startOfMonth(now)));
@@ -75,6 +77,9 @@ export default function DashboardPage() {
       api.get<TargetDTO[]>(`/targets?scope=BRANCH&scopeId=${user.branchId}`).then((rows) => setTarget(rows[0] ?? null)).catch(() => undefined);
     } else if (user?.role === Role.DIRECTOR || user?.role === Role.ADMIN) {
       api.get<LeaderboardRowDTO[]>('/targets/leaderboard/company').then(setCompanyLeaderboard).catch(() => undefined);
+    }
+    if (user?.role === Role.TRAVEL_CONSULTANT || user?.role === Role.BRANCH_MANAGER) {
+      api.get<MyLearningRowDTO[]>('/lms/me/learning').then(setMyLearning).catch(() => undefined);
     }
   }, [user]);
 
@@ -305,6 +310,29 @@ export default function DashboardPage() {
                   style={{ width: `${Math.min(100, target.bookingTarget > 0 ? (bookingsInRange / target.bookingTarget) * 100 : 0)}%` }}
                 />
               </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {(user?.role === Role.TRAVEL_CONSULTANT || user?.role === Role.BRANCH_MANAGER) && myLearning.length > 0 && (
+        <>
+          <h2 className="mt-8 text-sm font-semibold text-slate-800 dark:text-slate-100">Training & certification</h2>
+          <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="rounded-xl bg-white p-4 shadow-card dark:bg-slate-800">
+              <p className="text-xs font-semibold uppercase tracking-wide text-brand">Courses completed</p>
+              <p className="mt-1 text-xl font-bold text-slate-800 dark:text-slate-100">
+                {myLearning.filter((c) => c.completedAt).length} <span className="text-sm font-normal text-slate-400">/ {myLearning.length} enrolled</span>
+              </p>
+            </div>
+            <div className="rounded-xl bg-white p-4 shadow-card dark:bg-slate-800">
+              <p className="text-xs font-semibold uppercase tracking-wide text-brand-500 dark:text-brand-300">Certificates earned</p>
+              <p className="mt-1 text-xl font-bold text-slate-800 dark:text-slate-100">{myLearning.filter((c) => c.certificate).length}</p>
+            </div>
+            <div className="rounded-xl bg-white p-4 shadow-card dark:bg-slate-800">
+              <p className="text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-brand-200">In progress</p>
+              <p className="mt-1 text-xl font-bold text-slate-800 dark:text-slate-100">{myLearning.filter((c) => !c.completedAt).length}</p>
+              <Link href="/lms/my-learning" className="mt-1 inline-block text-xs text-brand hover:underline">View my learning →</Link>
             </div>
           </div>
         </>

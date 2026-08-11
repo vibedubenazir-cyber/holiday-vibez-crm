@@ -49,7 +49,15 @@ export default function MyLearningPage() {
               const pct = r.totalLessons === 0 ? 0 : Math.round((r.completedLessons / r.totalLessons) * 100);
               return (
                 <tr key={r.enrollmentId} className="border-t border-slate-100 dark:border-slate-700">
-                  <td className="px-4 py-2.5 font-medium text-slate-800 dark:text-slate-100">{r.title}</td>
+                  <td className="px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      {r.imageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={r.imageUrl} alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover" />
+                      )}
+                      <span className="font-medium text-slate-800 dark:text-slate-100">{r.title}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <div className="h-2 w-32 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700">

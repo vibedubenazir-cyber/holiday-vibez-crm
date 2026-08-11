@@ -1,5 +1,6 @@
 import { PrismaClient, Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { DESTINATION_COURSES } from './lms-destination-courses';
 
 const prisma = new PrismaClient();
 
@@ -310,6 +311,22 @@ async function main() {
       },
     ],
   });
+
+  for (const course of DESTINATION_COURSES) {
+    await prisma.course.create({
+      data: {
+        title: course.title,
+        description: course.description,
+        category: course.category,
+        imageUrl: course.imageUrl,
+        createdBy: director.id,
+        lessons: { createMany: { data: course.lessons.map((l, i) => ({ title: l.title, content: l.content, order: i })) } },
+        quizQuestions: {
+          createMany: { data: course.quiz.map((q, i) => ({ text: q.text, options: q.options, correctIndex: q.correctIndex, order: i })) },
+        },
+      },
+    });
+  }
 
   console.log('Seed complete.');
   console.log(`Director:   director@holidayvibez.com / ${DEFAULT_PASSWORD}`);
