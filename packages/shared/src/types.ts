@@ -1,4 +1,4 @@
-import { BookingStatus, LeadSource, LeadStatus, LeadTemperature, LeaveStatus, LeaveType, QuotationStatus, Role, UserStatus } from './enums';
+import { AssignmentScope, BookingStatus, LeadSource, LeadStatus, LeadTemperature, LeaveStatus, LeaveType, QuotationStatus, Role, UserStatus } from './enums';
 
 export interface UserDTO {
   id: string;
@@ -733,6 +733,7 @@ export interface CourseDetailDTO {
   enrolled: boolean;
   completedLessonIds: string[];
   completedAt: string | null;
+  dueDate: string | null;
   latestAttempt: QuizAttemptDTO | null;
   certificate: CertificateDTO | null;
 }
@@ -745,9 +746,44 @@ export interface MyLearningRowDTO {
   imageUrl: string | null;
   enrolledAt: string;
   completedAt: string | null;
+  dueDate: string | null;
   totalLessons: number;
   completedLessons: number;
   certificate: CertificateDTO | null;
+}
+
+export interface CourseAssignmentDTO {
+  id: string;
+  courseId: string;
+  courseTitle: string;
+  scope: AssignmentScope;
+  scopeId: string;
+  scopeLabel: string;
+  dueDate: string | null;
+  assignedBy: string;
+  assignedByName: string;
+  assignedAt: string;
+  notes: string | null;
+  userCount: number;
+}
+
+export interface TrainingCompletionRowDTO {
+  enrollmentId: string;
+  userId: string;
+  userName: string;
+  userRole: string;
+  branchId: string | null;
+  branchName: string | null;
+  courseId: string;
+  courseTitle: string;
+  courseCategory: string | null;
+  enrolledAt: string;
+  dueDate: string | null;
+  completedAt: string | null;
+  assigned: boolean;
+  overdue: boolean;
+  latestScore: number | null;
+  certNo: string | null;
 }
 
 export interface PettyCashEntryDTO {

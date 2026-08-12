@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@ne
 import { Role } from '@prisma/client';
 import { LmsService } from './lms.service';
 import { CreateCourseDto, CreateLessonDto, CreateQuizQuestionDto, SubmitQuizDto, UpdateCourseDto } from './dto/course.dto';
+import { CreateAssignmentDto } from './dto/assignment.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -10,6 +11,9 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 type AuthUser = { id: string; role: Role; branchId: string | null };
 const ALL_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT];
 const MANAGER_ROLES: Role[] = [Role.DIRECTOR, Role.ADMIN];
+// Branch Managers may assign training within their own branch (see Targets
+// module precedent) even though they can't author course content.
+const ASSIGNER_ROLES: Role[] = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER];
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('lms')
@@ -81,5 +85,23 @@ export class LmsController {
   @Get('me/certificates')
   myCertificates(@CurrentUser() user: AuthUser) {
     return this.lmsService.myCertificates(user.id);
+  }
+
+  @Roles(...ASSIGNER_ROLES)
+  @Post('assignments')
+  createAssignment(@CurrentUser() user: AuthUser, @Body() dto: CreateAssignmentDto) {
+    return this.lmsService.createAssignment(dto, user.id, user);
+  }
+
+  @Roles(...ASSIGNER_ROLES)
+  @Get('assignments')
+  listAssignments(@CurrentUser() user: AuthUser) {
+    return this.lmsService.listAssignments(user);
+  }
+
+  @Roles(...ASSIGNER_ROLES)
+  @Get('reports/completion')
+  completionReport(@CurrentUser() user: AuthUser, @Query('courseId') courseId?: string, @Query('branchId') branchId?: string) {
+    return this.lmsService.completionReport(user, { courseId, branchId });
   }
 }

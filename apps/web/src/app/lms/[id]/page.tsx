@@ -144,6 +144,11 @@ export default function CourseDetailPage() {
             Progress: {course.completedLessonIds.length} / {course.lessons.length} lessons complete
             {course.latestAttempt && !course.latestAttempt.passed && ` · last quiz attempt: ${course.latestAttempt.score}% (not passed, try again)`}
           </p>
+          {course.dueDate && (
+            <p className={`mt-1 text-xs font-medium ${new Date(course.dueDate) < new Date() ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}`}>
+              {new Date(course.dueDate) < new Date() ? 'Overdue — ' : 'Due '}{new Date(course.dueDate).toLocaleDateString()}
+            </p>
+          )}
         </div>
       )}
 

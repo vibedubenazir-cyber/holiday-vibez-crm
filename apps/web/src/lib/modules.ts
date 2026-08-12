@@ -18,6 +18,10 @@ const ALL_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_C
 // below rather than folded into FINANCE_ROLES.
 const FINANCE_ROLES = [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.FINANCE];
 const FINANCE_READ_ROLES = [...FINANCE_ROLES, Role.AUDITOR];
+// LMS module only — Branch Manager can assign training within their own
+// branch even though course-authoring stays Admin/Director-only (see Targets
+// module precedent for branch-scoped manager actions).
+const LMS_ASSIGNER_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER];
 
 export const MODULES: ModuleDef[] = [
   {
@@ -128,6 +132,13 @@ export const MODULES: ModuleDef[] = [
         items: [
           { href: '/lms', label: 'Courses', roles: ALL_ROLES },
           { href: '/lms/my-learning', label: 'My Learning & Certificates', roles: ALL_ROLES },
+        ],
+      },
+      {
+        title: 'Manage',
+        items: [
+          { href: '/lms/assign', label: 'Assign Training', roles: LMS_ASSIGNER_ROLES },
+          { href: '/lms/reports', label: 'Completion Report', roles: LMS_ASSIGNER_ROLES },
         ],
       },
     ],

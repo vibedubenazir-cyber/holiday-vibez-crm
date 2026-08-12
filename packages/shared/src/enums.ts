@@ -235,3 +235,9 @@ export enum CommissionStatus {
   PENDING = 'PENDING',
   RECEIVED = 'RECEIVED',
 }
+
+export enum AssignmentScope {
+  CONSULTANT = 'CONSULTANT',
+  BRANCH = 'BRANCH',
+  ROLE = 'ROLE',
+}

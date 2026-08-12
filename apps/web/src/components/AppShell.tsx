@@ -45,6 +45,8 @@ import {
   Percent,
   GraduationCap,
   Award,
+  UserCheck,
+  ClipboardCheck,
   Circle,
   type LucideIcon,
 } from 'lucide-react';
@@ -104,6 +106,8 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   '/dmc-commissions': Percent,
   '/lms': GraduationCap,
   '/lms/my-learning': Award,
+  '/lms/assign': UserCheck,
+  '/lms/reports': ClipboardCheck,
 };
 
 function navIcon(href: string): LucideIcon {

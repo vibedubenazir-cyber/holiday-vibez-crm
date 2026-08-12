@@ -69,8 +69,13 @@ export default function MyLearningPage() {
                   <td className="px-4 py-2.5">
                     {r.completedAt ? (
                       <span className="rounded-lg bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">Completed</span>
+                    ) : r.dueDate && new Date(r.dueDate) < new Date() ? (
+                      <span className="rounded-lg bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Overdue</span>
                     ) : (
                       <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">In progress</span>
+                    )}
+                    {!r.completedAt && r.dueDate && (
+                      <div className="mt-0.5 text-[11px] text-slate-400">Due {new Date(r.dueDate).toLocaleDateString()}</div>
                     )}
                   </td>
                   <td className="px-4 py-2.5 text-right">

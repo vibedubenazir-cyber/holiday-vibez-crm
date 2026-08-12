@@ -1146,6 +1146,7 @@ model Course {
   lessons       Lesson[]
   quizQuestions QuizQuestion[]
   enrollments   Enrollment[]
+  assignments   CourseAssignment[]
 
   @@map("lms_courses")
 }
@@ -1178,13 +1179,18 @@ model QuizQuestion {
 }
 
 model Enrollment {
-  id          String    @id @default(uuid())
-  courseId    String
-  course      Course    @relation(fields: [courseId], references: [id])
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
-  enrolledAt  DateTime  @default(now())
-  completedAt DateTime?
+  id           String    @id @default(uuid())
+  courseId     String
+  course       Course    @relation(fields: [courseId], references: [id])
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  enrolledAt   DateTime  @default(now())
+  completedAt  DateTime?
+  // Set when this enrollment was created (or its due date updated) by a
+  // manager assignment rather than self-enrollment — see CourseAssignment.
+  // Null means the learner enrolled themselves.
+  dueDate      DateTime?
+  assignedById String?
 
   progress    LessonProgress[]
   attempts    QuizAttempt[]
@@ -1192,6 +1198,34 @@ model Enrollment {
 
   @@unique([courseId, userId])
   @@map("lms_enrollments")
+}
+
+// Audit record of a manager assigning a course to a scope of learners
+// (a single consultant, a whole branch, or every user with a given role).
+// Assigning materializes/updates an Enrollment row (with dueDate +
+// assignedById) for every user the scope resolves to at assignment time —
+// this is a point-in-time snapshot, not a live rule, so someone who joins
+// the branch/role afterward won't automatically be covered without a new
+// assignment. That mirrors how Target.scope/scopeId already works elsewhere
+// in this schema.
+enum AssignmentScope {
+  CONSULTANT
+  BRANCH
+  ROLE
+}
+
+model CourseAssignment {
+  id         String          @id @default(uuid())
+  courseId   String
+  course     Course          @relation(fields: [courseId], references: [id])
+  scope      AssignmentScope
+  scopeId    String
+  dueDate    DateTime?
+  assignedBy String
+  assignedAt DateTime        @default(now())
+  notes      String?
+
+  @@map("lms_course_assignments")
 }
 
 model LessonProgress {

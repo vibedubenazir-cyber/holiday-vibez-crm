@@ -1,12 +1,20 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { AssignmentScope, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { resolveBranchScope } from '../common/branch-scope.util';
 import { CreateCourseDto, CreateLessonDto, CreateQuizQuestionDto, SubmitQuizDto, UpdateCourseDto } from './dto/course.dto';
+import { CreateAssignmentDto } from './dto/assignment.dto';
 
 const PASS_THRESHOLD = 0.7;
+type ActingUser = { id: string; role: Role; branchId: string | null };
 
 @Injectable()
 export class LmsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async listCourses(includeInactive: boolean) {
     const courses = await this.prisma.course.findMany({
@@ -97,6 +105,7 @@ export class LmsService {
       enrolled: !!enrollment,
       completedLessonIds: enrollment?.progress.map((p) => p.lessonId) ?? [],
       completedAt: enrollment?.completedAt ?? null,
+      dueDate: enrollment?.dueDate ?? null,
       latestAttempt: enrollment?.attempts[0] ?? null,
       certificate: enrollment?.certificate ?? null,
     };
@@ -157,6 +166,7 @@ export class LmsService {
       imageUrl: e.course.imageUrl,
       enrolledAt: e.enrolledAt,
       completedAt: e.completedAt,
+      dueDate: e.dueDate,
       totalLessons: e.course.lessons.length,
       completedLessons: e.progress.length,
       certificate: e.certificate,
@@ -175,6 +185,178 @@ export class LmsService {
       issuedAt: c.issuedAt,
       courseId: c.courseId,
       courseTitle: c.enrollment.course.title,
+    }));
+  }
+
+  async createAssignment(dto: CreateAssignmentDto, assignedBy: string, actingUser: ActingUser) {
+    const course = await this.requireCourse(dto.courseId);
+
+    // Branch Managers may only assign within their own branch — no org-wide
+    // ROLE assignments, and a CONSULTANT/BRANCH target must resolve inside
+    // their branch. Mirrors how Targets restricts Branch Manager scope.
+    if (actingUser.role === Role.BRANCH_MANAGER) {
+      if (dto.scope === AssignmentScope.ROLE) {
+        throw new ForbiddenException('Branch managers cannot assign training by role');
+      }
+      if (dto.scope === AssignmentScope.BRANCH && dto.scopeId !== actingUser.branchId) {
+        throw new ForbiddenException('Branch managers can only assign training to their own branch');
+      }
+    }
+
+    const userIds = await this.resolveScopeUserIds(dto.scope, dto.scopeId);
+
+    if (actingUser.role === Role.BRANCH_MANAGER && dto.scope === AssignmentScope.CONSULTANT) {
+      const target = await this.prisma.user.findUnique({ where: { id: dto.scopeId } });
+      if (!target || target.branchId !== actingUser.branchId) {
+        throw new ForbiddenException('Branch managers can only assign training to consultants in their own branch');
+      }
+    }
+
+    if (userIds.length === 0) {
+      throw new BadRequestException('No users matched this assignment scope');
+    }
+
+    const dueDate = dto.dueDate ? new Date(dto.dueDate) : null;
+
+    const assignment = await this.prisma.courseAssignment.create({
+      data: {
+        courseId: dto.courseId,
+        scope: dto.scope,
+        scopeId: dto.scopeId,
+        dueDate,
+        assignedBy,
+        notes: dto.notes,
+      },
+    });
+
+    await Promise.all(
+      userIds.map((userId) =>
+        this.prisma.enrollment.upsert({
+          where: { courseId_userId: { courseId: dto.courseId, userId } },
+          create: { courseId: dto.courseId, userId, dueDate, assignedById: assignedBy },
+          update: dueDate ? { dueDate, assignedById: assignedBy } : { assignedById: assignedBy },
+        }),
+      ),
+    );
+
+    await Promise.all(
+      userIds.map((userId) =>
+        this.notifications.send({
+          channel: 'PUSH',
+          triggerType: 'course_assigned',
+          recipient: userId,
+          relatedEntity: `course:${dto.courseId}`,
+          subject: 'New training assigned',
+          body: dueDate
+            ? `You've been assigned "${course.title}" — due ${dueDate.toDateString()}`
+            : `You've been assigned "${course.title}"`,
+        }),
+      ),
+    );
+
+    return assignment;
+  }
+
+  private async resolveScopeUserIds(scope: AssignmentScope, scopeId: string): Promise<string[]> {
+    if (scope === AssignmentScope.CONSULTANT) {
+      const user = await this.prisma.user.findUnique({ where: { id: scopeId } });
+      if (!user || user.status !== 'ACTIVE') return [];
+      return [user.id];
+    }
+    if (scope === AssignmentScope.BRANCH) {
+      const users = await this.prisma.user.findMany({ where: { branchId: scopeId, status: 'ACTIVE' }, select: { id: true } });
+      return users.map((u) => u.id);
+    }
+    // ROLE
+    const users = await this.prisma.user.findMany({ where: { role: scopeId as Role, status: 'ACTIVE' }, select: { id: true } });
+    return users.map((u) => u.id);
+  }
+
+  async listAssignments(actingUser: ActingUser) {
+    // Branch Managers only ever see assignments they could have created
+    // themselves (own-branch BRANCH assignments, or CONSULTANT assignments
+    // targeting someone in their branch) — org-wide ROLE assignments made
+    // by an Admin/Director are out of scope for this view.
+    const branchScope = actingUser.role === Role.BRANCH_MANAGER ? actingUser.branchId : undefined;
+    const branchUserIds = branchScope ? new Set(await this.resolveScopeUserIds(AssignmentScope.BRANCH, branchScope)) : null;
+
+    const assignments = await this.prisma.courseAssignment.findMany({
+      where: branchUserIds
+        ? { OR: [{ scope: AssignmentScope.BRANCH, scopeId: branchScope! }, { scope: AssignmentScope.CONSULTANT, scopeId: { in: [...branchUserIds] } }] }
+        : undefined,
+      include: { course: { select: { title: true, category: true } } },
+      orderBy: { assignedAt: 'desc' },
+      take: 200,
+    });
+
+    const assignerIds = [...new Set(assignments.map((a) => a.assignedBy))];
+    const assigners = await this.prisma.user.findMany({ where: { id: { in: assignerIds } }, select: { id: true, name: true } });
+    const assignerNames = new Map(assigners.map((a) => [a.id, a.name]));
+
+    return Promise.all(
+      assignments.map(async (a) => {
+        const userIds = await this.resolveScopeUserIds(a.scope, a.scopeId);
+        let scopeLabel = a.scopeId;
+        if (a.scope === AssignmentScope.CONSULTANT) {
+          const u = await this.prisma.user.findUnique({ where: { id: a.scopeId }, select: { name: true } });
+          scopeLabel = u?.name ?? a.scopeId;
+        } else if (a.scope === AssignmentScope.BRANCH) {
+          const b = await this.prisma.branch.findUnique({ where: { id: a.scopeId }, select: { name: true } });
+          scopeLabel = b?.name ?? a.scopeId;
+        }
+        return {
+          id: a.id,
+          courseId: a.courseId,
+          courseTitle: a.course.title,
+          scope: a.scope,
+          scopeId: a.scopeId,
+          scopeLabel,
+          dueDate: a.dueDate,
+          assignedBy: a.assignedBy,
+          assignedByName: assignerNames.get(a.assignedBy) ?? a.assignedBy,
+          assignedAt: a.assignedAt,
+          notes: a.notes,
+          userCount: userIds.length,
+        };
+      }),
+    );
+  }
+
+  async completionReport(actingUser: ActingUser, filters: { courseId?: string; branchId?: string }) {
+    const branchId = resolveBranchScope(actingUser, filters.branchId);
+
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: {
+        courseId: filters.courseId,
+        user: branchId ? { branchId } : undefined,
+      },
+      include: {
+        course: { select: { title: true, category: true } },
+        user: { select: { id: true, name: true, role: true, branch: { select: { id: true, name: true } } } },
+        attempts: { orderBy: { attemptedAt: 'desc' }, take: 1 },
+        certificate: true,
+      },
+      orderBy: { enrolledAt: 'desc' },
+    });
+
+    const now = new Date();
+    return enrollments.map((e) => ({
+      enrollmentId: e.id,
+      userId: e.user.id,
+      userName: e.user.name,
+      userRole: e.user.role,
+      branchId: e.user.branch?.id ?? null,
+      branchName: e.user.branch?.name ?? null,
+      courseId: e.courseId,
+      courseTitle: e.course.title,
+      courseCategory: e.course.category,
+      enrolledAt: e.enrolledAt,
+      dueDate: e.dueDate,
+      completedAt: e.completedAt,
+      assigned: !!e.assignedById,
+      overdue: !!e.dueDate && !e.completedAt && e.dueDate < now,
+      latestScore: e.attempts[0]?.score ?? null,
+      certNo: e.certificate?.certNo ?? null,
     }));
   }
 
