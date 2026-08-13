@@ -23,3 +23,9 @@ export class CreateExpenseDto {
   @IsDateString()
   expenseDate!: string;
 }
+
+export class ReviewExpenseDto {
+  @IsOptional()
+  @IsString()
+  comment?: string;
+}

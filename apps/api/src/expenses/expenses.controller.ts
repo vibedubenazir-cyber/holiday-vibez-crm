@@ -1,7 +1,7 @@
-import { BadRequestException, Body, Controller, ForbiddenException, Get, Post, Query, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { BadRequestException, Body, Controller, ForbiddenException, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ExpenseStatus, Role } from '@prisma/client';
 import { ExpensesService } from './expenses.service';
-import { CreateExpenseDto } from './dto/expense.dto';
+import { CreateExpenseDto, ReviewExpenseDto } from './dto/expense.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -9,6 +9,10 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { resolveBranchScope } from '../common/branch-scope.util';
 
 type AuthUser = { id: string; role: Role; branchId: string | null };
+// Expenses can be logged by Branch Manager or Finance as well as Admin/Director,
+// so approval sign-off is reserved for the two roles above both of those —
+// otherwise a Branch Manager could just approve their own branch's spend.
+const APPROVER_ROLES = [Role.DIRECTOR, Role.ADMIN];
 
 // Consultants have no access at all — Accounts & Finance is a Manager/Admin/Director/Finance module.
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -18,9 +22,9 @@ export class ExpensesController {
 
   @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.FINANCE, Role.AUDITOR)
   @Get()
-  findAll(@CurrentUser() user: AuthUser, @Query('branchId') branchId?: string) {
-    if (user.role === Role.BRANCH_MANAGER) return this.expensesService.findAll({ branchId: resolveBranchScope(user) });
-    return this.expensesService.findAll({ branchId });
+  findAll(@CurrentUser() user: AuthUser, @Query('branchId') branchId?: string, @Query('status') status?: ExpenseStatus) {
+    if (user.role === Role.BRANCH_MANAGER) return this.expensesService.findAll({ branchId: resolveBranchScope(user), status });
+    return this.expensesService.findAll({ branchId, status });
   }
 
   @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.FINANCE, Role.AUDITOR)
@@ -39,5 +43,17 @@ export class ExpensesController {
       throw new ForbiddenException("You can only log expenses for your own branch");
     }
     return this.expensesService.create(dto, branchId, user.id);
+  }
+
+  @Roles(...APPROVER_ROLES)
+  @Patch(':id/approve')
+  approve(@Param('id') id: string, @CurrentUser() user: AuthUser, @Body() dto: ReviewExpenseDto) {
+    return this.expensesService.review(id, 'APPROVED', user.id, dto.comment);
+  }
+
+  @Roles(...APPROVER_ROLES)
+  @Patch(':id/reject')
+  reject(@Param('id') id: string, @CurrentUser() user: AuthUser, @Body() dto: ReviewExpenseDto) {
+    return this.expensesService.review(id, 'REJECTED', user.id, dto.comment);
   }
 }

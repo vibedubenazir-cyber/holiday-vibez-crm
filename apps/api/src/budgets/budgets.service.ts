@@ -23,6 +23,7 @@ export class BudgetsService {
       this.prisma.expense.findMany({
         where: {
           branchId: filter.branchId,
+          status: 'APPROVED',
           expenseDate: { gte: new Date(filter.year, filter.month - 1, 1), lt: new Date(filter.year, filter.month, 1) },
         },
       }),

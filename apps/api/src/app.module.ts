@@ -47,6 +47,14 @@ import { PettyCashModule } from './petty-cash/petty-cash.module';
 import { BudgetsModule } from './budgets/budgets.module';
 import { BankReconciliationModule } from './bank-reconciliation/bank-reconciliation.module';
 import { DmcCommissionsModule } from './dmc-commissions/dmc-commissions.module';
+import { EmployeesModule } from './employees/employees.module';
+import { ExitManagementModule } from './exit-management/exit-management.module';
+import { PerformanceModule } from './performance/performance.module';
+import { ReimbursementsModule } from './reimbursements/reimbursements.module';
+import { HrSettingsModule } from './hr-settings/hr-settings.module';
+import { ComplianceModule } from './compliance/compliance.module';
+import { HrHelpdeskModule } from './hr-helpdesk/hr-helpdesk.module';
+import { GrievancesModule } from './grievances/grievances.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -99,6 +107,14 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     BudgetsModule,
     BankReconciliationModule,
     DmcCommissionsModule,
+    EmployeesModule,
+    ExitManagementModule,
+    PerformanceModule,
+    ReimbursementsModule,
+    HrSettingsModule,
+    ComplianceModule,
+    HrHelpdeskModule,
+    GrievancesModule,
   ],
   providers: [
     PrismaService,

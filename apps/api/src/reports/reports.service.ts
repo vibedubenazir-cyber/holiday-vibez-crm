@@ -101,6 +101,7 @@ export class ReportsService {
       this.prisma.expense.findMany({
         where: {
           expenseDate: { gte: yearStart, lt: yearEnd },
+          status: 'APPROVED',
           ...(branchId ? { branchId } : {}),
         },
       }),
@@ -223,7 +224,7 @@ export class ReportsService {
         include: { booking: { include: { quotation: { include: { lead: true } } } } },
       }),
       this.prisma.expense.findMany({
-        where: { expenseDate: { gte: dayStart, lte: dayEnd }, ...(branchId ? { branchId } : {}) },
+        where: { expenseDate: { gte: dayStart, lte: dayEnd }, status: 'APPROVED', ...(branchId ? { branchId } : {}) },
       }),
       this.prisma.pettyCashEntry.findMany({
         where: { entryDate: { gte: dayStart, lte: dayEnd }, ...(branchId ? { branchId } : {}) },

@@ -270,6 +270,21 @@ model User {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
+  // HR profile fields — Employee Directory / Org Chart. All optional since
+  // existing seeded/onboarded users won't have these set retroactively.
+  designation           String?
+  employeeCode          String?   @unique
+  dateOfJoining         DateTime?
+  profilePhotoUrl       String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  reportsToId           String?
+  reportsTo             User?     @relation("ReportsTo", fields: [reportsToId], references: [id])
+  // Used by the Compliance Calendar to surface upcoming probation
+  // confirmations — set alongside dateOfJoining, not auto-computed, since
+  // probation length can vary per hire (contractor conversions, etc).
+  probationEndDate     DateTime?
+
   managedBranch     Branch?    @relation("BranchManager")
   assignedLeads     Lead[]     @relation("AssignedConsultant")
   quotationsCreated Quotation[] @relation("QuotationConsultant")
@@ -286,8 +301,185 @@ model User {
   teamChannelMemberships TeamChannelMember[]
   teamMessagesSent       TeamMessage[]
   courseEnrollments      Enrollment[]
+  directReports          User[]              @relation("ReportsTo")
+  exitRecord              ExitRecord?
+  performanceReviewsReceived PerformanceReview[] @relation("RevieweeReviews")
+  performanceReviewsGiven    PerformanceReview[] @relation("ReviewerReviews")
+  reimbursementClaims        ReimbursementClaim[] @relation("ReimbursementClaimant")
+  reimbursementReviews       ReimbursementClaim[] @relation("ReimbursementReviewer")
+  hrTicketsRaised            HrTicket[]          @relation("HrTicketsRaised")
+  hrTicketsAssigned          HrTicket[]          @relation("HrTicketsAssigned")
+  grievancesRaised           GrievanceReport[]   @relation("GrievancesRaised")
+  grievancesHandled          GrievanceReport[]   @relation("GrievancesHandled")
 
   @@map("users")
+}
+
+// Key-value HR configuration — mirrors SiteSetting's shape exactly. Backs
+// real behavior (LeaveService reads quota keys from here) rather than being
+// a settings screen with knobs that don't do anything.
+model HrSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("hr_settings")
+}
+
+enum HrTicketCategory {
+  IT_ACCESS
+  PAYROLL_QUERY
+  BENEFITS
+  WORKPLACE
+  OTHER
+}
+
+// Internal employee helpdesk — distinct from SupportTicket, which is
+// customer-facing (raised against a Lead). Mirrors its shape otherwise.
+model HrTicket {
+  id             String           @id @default(uuid())
+  userId         String
+  user           User             @relation("HrTicketsRaised", fields: [userId], references: [id])
+  category       HrTicketCategory
+  subject        String
+  description    String
+  priority       TicketPriority   @default(MEDIUM)
+  status         TicketStatus     @default(OPEN)
+  assignedToId   String?
+  assignedTo     User?            @relation("HrTicketsAssigned", fields: [assignedToId], references: [id])
+  resolutionNote String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@map("hr_tickets")
+}
+
+enum GrievanceCategory {
+  GENERAL_GRIEVANCE
+  POSH_COMPLAINT
+}
+
+enum GrievanceStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  RESOLVED
+}
+
+// Deliberately NOT branch-scoped like other HR modules — a POSH complaint
+// may be about the employee's own branch manager, so visibility is
+// Admin/Director only, never Branch Manager. See grievances.controller.ts.
+model GrievanceReport {
+  id              String            @id @default(uuid())
+  userId          String
+  user            User              @relation("GrievancesRaised", fields: [userId], references: [id])
+  category        GrievanceCategory
+  description     String
+  against         String?
+  status          GrievanceStatus   @default(SUBMITTED)
+  resolutionNotes String?
+  handledById     String?
+  handledBy       User?             @relation("GrievancesHandled", fields: [handledById], references: [id])
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("hr_grievance_reports")
+}
+
+enum ExitType {
+  RESIGNATION
+  TERMINATION
+}
+
+enum ExitStatus {
+  PENDING
+  CLEARED
+}
+
+// Point-in-time record of one employee's offboarding — not a repeatable
+// workflow, hence the 1:1 with User (a rehire after a prior exit would need
+// a fresh User row, matching how the rest of this schema treats identity).
+model ExitRecord {
+  id                 String     @id @default(uuid())
+  userId             String     @unique
+  user               User       @relation(fields: [userId], references: [id])
+  type               ExitType
+  noticeDate         DateTime
+  lastWorkingDate    DateTime
+  reason             String
+  status             ExitStatus @default(PENDING)
+  exitInterviewNotes String?
+  clearedById        String?
+  clearedAt          DateTime?
+  createdAt          DateTime   @default(now())
+
+  @@map("hr_exit_records")
+}
+
+enum PerformanceRating {
+  NEEDS_IMPROVEMENT
+  MEETS_EXPECTATIONS
+  EXCEEDS_EXPECTATIONS
+  OUTSTANDING
+}
+
+enum PerformanceReviewStatus {
+  DRAFT
+  SUBMITTED
+  ACKNOWLEDGED
+}
+
+model PerformanceReview {
+  id           String             @id @default(uuid())
+  userId       String
+  user         User               @relation("RevieweeReviews", fields: [userId], references: [id])
+  reviewerId   String
+  reviewer     User               @relation("ReviewerReviews", fields: [reviewerId], references: [id])
+  period       String
+  rating       PerformanceRating?
+  strengths    String?
+  improvements String?
+  goals        String?
+  status       PerformanceReviewStatus       @default(DRAFT)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@unique([userId, period])
+  @@map("hr_performance_reviews")
+}
+
+enum ReimbursementCategory {
+  TRAVEL
+  CLIENT_ENTERTAINMENT
+  SUPPLIES
+  OTHER
+}
+
+enum ReimbursementStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+model ReimbursementClaim {
+  id            String                 @id @default(uuid())
+  userId        String
+  user          User                   @relation("ReimbursementClaimant", fields: [userId], references: [id])
+  category      ReimbursementCategory
+  description   String
+  amount        Decimal                @db.Decimal(14, 2)
+  expenseDate   DateTime
+  receiptUrl    String?
+  status        ReimbursementStatus    @default(PENDING)
+  reviewedById  String?
+  reviewer      User?                  @relation("ReimbursementReviewer", fields: [reviewedById], references: [id])
+  reviewedAt    DateTime?
+  reviewComment String?
+  paidAt        DateTime?
+  createdAt     DateTime               @default(now())
+
+  @@map("hr_reimbursement_claims")
 }
 
 model Branch {
@@ -722,7 +914,21 @@ model Expense {
   createdBy   String
   createdAt   DateTime        @default(now())
 
+  // Logging an expense no longer makes it real spend on its own — it sits
+  // PENDING until an Admin/Director approves it. Reports/budgets/ledger only
+  // count APPROVED expenses (see reports.service.ts, budgets.service.ts).
+  status        ExpenseStatus @default(PENDING)
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewComment String?
+
   @@map("expenses")
+}
+
+enum ExpenseStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model Attendance {

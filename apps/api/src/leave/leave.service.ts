@@ -1,15 +1,21 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { LeaveStatus, LeaveType, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { HrSettingsService, HR_SETTING_KEYS } from '../hr-settings/hr-settings.service';
 import { CreateLeaveDto } from './dto/create-leave.dto';
 
-// Fixed annual quotas (days/calendar year) — no per-employee configuration in
-// this pass, matching the rest of the CRM's no-config-screen-for-everything
-// bias. UNPAID has no quota to exhaust.
-const ANNUAL_QUOTA: Record<string, number> = {
+// Built-in fallback quotas (days/calendar year) — used until an Admin/
+// Director overrides them on the HRMS Settings page (see HrSettingsService).
+// UNPAID has no quota to exhaust.
+const DEFAULT_QUOTA: Record<string, number> = {
   SICK: 10,
   CASUAL: 12,
   ANNUAL: 18,
+};
+const QUOTA_KEYS: Record<string, string> = {
+  SICK: HR_SETTING_KEYS.LEAVE_QUOTA_SICK,
+  CASUAL: HR_SETTING_KEYS.LEAVE_QUOTA_CASUAL,
+  ANNUAL: HR_SETTING_KEYS.LEAVE_QUOTA_ANNUAL,
 };
 
 function daysInclusive(start: Date, end: Date): number {
@@ -19,7 +25,14 @@ function daysInclusive(start: Date, end: Date): number {
 
 @Injectable()
 export class LeaveService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly hrSettings: HrSettingsService,
+  ) {}
+
+  private getQuota(type: string): Promise<number> {
+    return this.hrSettings.getNumber(QUOTA_KEYS[type], DEFAULT_QUOTA[type]);
+  }
 
   async create(userId: string, dto: CreateLeaveDto) {
     const startDate = new Date(dto.startDate);
@@ -70,12 +83,17 @@ export class LeaveService {
     for (const req of approved) {
       if (req.type in used) used[req.type] += daysInclusive(req.startDate, req.endDate);
     }
-    return Object.keys(ANNUAL_QUOTA).map((type) => ({
-      type,
-      quota: ANNUAL_QUOTA[type],
-      used: used[type] ?? 0,
-      remaining: ANNUAL_QUOTA[type] - (used[type] ?? 0),
-    }));
+    return Promise.all(
+      Object.keys(DEFAULT_QUOTA).map(async (type) => {
+        const quota = await this.getQuota(type);
+        return {
+          type,
+          quota,
+          used: used[type] ?? 0,
+          remaining: quota - (used[type] ?? 0),
+        };
+      }),
+    );
   }
 
   async review(id: string, status: 'APPROVED' | 'REJECTED', reviewerId: string, comment: string | undefined, actor: { role: Role; branchId: string | null }) {
@@ -88,7 +106,7 @@ export class LeaveService {
     if (actor.role === Role.BRANCH_MANAGER && actor.branchId !== request.user.branchId) {
       throw new ForbiddenException("You can only review your own branch's leave requests");
     }
-    if (status === 'APPROVED' && request.type in ANNUAL_QUOTA) {
+    if (status === 'APPROVED' && request.type in QUOTA_KEYS) {
       const balances = await this.balance(request.userId);
       const row = balances.find((b) => b.type === request.type);
       const requestedDays = daysInclusive(request.startDate, request.endDate);

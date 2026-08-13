@@ -1,4 +1,25 @@
-import { AssignmentScope, BookingStatus, LeadSource, LeadStatus, LeadTemperature, LeaveStatus, LeaveType, QuotationStatus, Role, UserStatus } from './enums';
+import {
+  AssignmentScope,
+  BookingStatus,
+  ExitStatus,
+  ExitType,
+  ExpenseStatus,
+  GrievanceCategory,
+  GrievanceStatus,
+  HrTicketCategory,
+  LeadSource,
+  LeadStatus,
+  LeadTemperature,
+  LeaveStatus,
+  LeaveType,
+  PerformanceRating,
+  PerformanceReviewStatus,
+  QuotationStatus,
+  ReimbursementCategory,
+  ReimbursementStatus,
+  Role,
+  UserStatus,
+} from './enums';
 
 export interface UserDTO {
   id: string;
@@ -245,6 +266,10 @@ export interface ExpenseDTO {
   currency: string;
   expenseDate: string;
   createdBy: string;
+  status: ExpenseStatus;
+  reviewedById: string | null;
+  reviewedAt: string | null;
+  reviewComment: string | null;
 }
 
 export interface AttendanceDTO {
@@ -884,4 +909,126 @@ export interface AccountsDashboardDTO {
   unmatchedBankTransactions: number;
   pendingDmcCommissions: number;
   pendingDmcCommissionAmount: number;
+}
+
+export interface EmployeeDTO {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: Role;
+  branchId: string | null;
+  branchName: string | null;
+  designation: string | null;
+  employeeCode: string | null;
+  dateOfJoining: string | null;
+  profilePhotoUrl: string | null;
+  reportsToId: string | null;
+  reportsToName: string | null;
+}
+
+export interface OrgChartNodeDTO {
+  id: string;
+  name: string;
+  role: Role;
+  designation: string | null;
+  profilePhotoUrl: string | null;
+  reportsToId: string | null;
+  children: OrgChartNodeDTO[];
+}
+
+export interface ExitRecordDTO {
+  id: string;
+  userId: string;
+  user?: { id: string; name: string; role: Role; branchId: string | null };
+  type: ExitType;
+  noticeDate: string;
+  lastWorkingDate: string;
+  reason: string;
+  status: ExitStatus;
+  exitInterviewNotes: string | null;
+  clearedById: string | null;
+  clearedAt: string | null;
+  createdAt: string;
+}
+
+export interface PerformanceReviewDTO {
+  id: string;
+  userId: string;
+  user?: { name: string; branchId: string | null };
+  reviewerId: string;
+  reviewer?: { name: string };
+  period: string;
+  rating: PerformanceRating | null;
+  strengths: string | null;
+  improvements: string | null;
+  goals: string | null;
+  status: PerformanceReviewStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReimbursementClaimDTO {
+  id: string;
+  userId: string;
+  user?: { name: string; branchId: string | null };
+  category: ReimbursementCategory;
+  description: string;
+  amount: number;
+  expenseDate: string;
+  receiptUrl: string | null;
+  status: ReimbursementStatus;
+  reviewedById: string | null;
+  reviewedAt: string | null;
+  reviewComment: string | null;
+  paidAt: string | null;
+  createdAt: string;
+}
+
+export interface HrSettingDTO {
+  id: string;
+  key: string;
+  value: string;
+  updatedAt: string;
+}
+
+export interface ComplianceCalendarRowDTO {
+  type: 'PROBATION_END' | 'EXIT';
+  userId: string;
+  userName: string;
+  branchId: string | null;
+  branchName: string | null;
+  date: string;
+  detail: string;
+}
+
+export interface HrTicketDTO {
+  id: string;
+  userId: string;
+  user?: { name: string; branchId: string | null };
+  category: HrTicketCategory;
+  subject: string;
+  description: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+  assignedToId: string | null;
+  assignedTo?: { name: string } | null;
+  resolutionNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GrievanceReportDTO {
+  id: string;
+  userId: string;
+  user?: { name: string; branchId: string | null; branch?: { name: string } | null };
+  category: GrievanceCategory;
+  description: string;
+  against: string | null;
+  status: GrievanceStatus;
+  resolutionNotes: string | null;
+  handledById: string | null;
+  handledBy?: { name: string } | null;
+  createdAt: string;
+  updatedAt: string;
 }

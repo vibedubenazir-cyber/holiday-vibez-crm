@@ -241,3 +241,65 @@ export enum AssignmentScope {
   BRANCH = 'BRANCH',
   ROLE = 'ROLE',
 }
+
+export enum ExitType {
+  RESIGNATION = 'RESIGNATION',
+  TERMINATION = 'TERMINATION',
+}
+
+export enum ExitStatus {
+  PENDING = 'PENDING',
+  CLEARED = 'CLEARED',
+}
+
+export enum PerformanceRating {
+  NEEDS_IMPROVEMENT = 'NEEDS_IMPROVEMENT',
+  MEETS_EXPECTATIONS = 'MEETS_EXPECTATIONS',
+  EXCEEDS_EXPECTATIONS = 'EXCEEDS_EXPECTATIONS',
+  OUTSTANDING = 'OUTSTANDING',
+}
+
+export enum PerformanceReviewStatus {
+  DRAFT = 'DRAFT',
+  SUBMITTED = 'SUBMITTED',
+  ACKNOWLEDGED = 'ACKNOWLEDGED',
+}
+
+export enum ReimbursementCategory {
+  TRAVEL = 'TRAVEL',
+  CLIENT_ENTERTAINMENT = 'CLIENT_ENTERTAINMENT',
+  SUPPLIES = 'SUPPLIES',
+  OTHER = 'OTHER',
+}
+
+export enum ReimbursementStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  PAID = 'PAID',
+}
+
+export enum HrTicketCategory {
+  IT_ACCESS = 'IT_ACCESS',
+  PAYROLL_QUERY = 'PAYROLL_QUERY',
+  BENEFITS = 'BENEFITS',
+  WORKPLACE = 'WORKPLACE',
+  OTHER = 'OTHER',
+}
+
+export enum GrievanceCategory {
+  GENERAL_GRIEVANCE = 'GENERAL_GRIEVANCE',
+  POSH_COMPLAINT = 'POSH_COMPLAINT',
+}
+
+export enum GrievanceStatus {
+  SUBMITTED = 'SUBMITTED',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+  RESOLVED = 'RESOLVED',
+}
+
+export enum ExpenseStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}

@@ -85,9 +85,24 @@ export const MODULES: ModuleDef[] = [
       {
         title: 'Human Resources',
         items: [
+          { href: '/employees', label: 'Employee Directory', roles: ALL_ROLES },
           { href: '/attendance', label: 'Attendance', roles: ALL_ROLES },
           { href: '/leave', label: 'Leave', roles: ALL_ROLES },
           { href: '/payroll', label: 'Payroll', roles: ALL_ROLES },
+          { href: '/reimbursements', label: 'Reimbursement', roles: ALL_ROLES },
+          { href: '/performance', label: 'Performance', roles: ALL_ROLES },
+          { href: '/exit-management', label: 'Exit Management', roles: ALL_ROLES },
+        ],
+      },
+      {
+        title: 'Compliance & Admin',
+        items: [
+          { href: '/hr-settings', label: 'HR Settings', roles: ALL_ROLES },
+          { href: '/permissions', label: 'Permissions & Rules', roles: ALL_ROLES },
+          { href: '/compliance-calendar', label: 'Compliance Calendar', roles: [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER] },
+          { href: '/hr-helpdesk', label: 'HR Helpdesk', roles: ALL_ROLES },
+          { href: '/grievances', label: 'Grievances & POSH', roles: ALL_ROLES },
+          { href: '/hr-audit-log', label: 'HR Audit Log', roles: [Role.ADMIN, Role.DIRECTOR] },
         ],
       },
     ],
