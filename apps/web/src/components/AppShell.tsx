@@ -81,6 +81,10 @@ const ROLE_LABELS: Record<string, string> = {
 const NAV_ICONS: Record<string, LucideIcon> = {
   '/holidays': CalendarDays,
   '/assets': Briefcase,
+  '/onboarding': UserCheck,
+  '/roster': CalendarCheck,
+  '/appraisals': Award,
+  '/employee-documents': ClipboardList,
   '/dashboard': LayoutDashboard,
   '/leads': UserPlus,
   '/inbox': InboxIcon,

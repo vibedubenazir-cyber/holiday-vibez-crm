@@ -87,13 +87,17 @@ export const MODULES: ModuleDef[] = [
         title: 'Human Resources',
         items: [
           { href: '/employees', label: 'Employee Directory', roles: ALL_ROLES },
+          { href: '/onboarding', label: 'Onboarding', roles: ALL_ROLES },
           { href: '/attendance', label: 'Attendance', roles: ALL_ROLES },
+          { href: '/roster', label: 'Roster', roles: ALL_ROLES },
           { href: '/leave', label: 'Leave', roles: ALL_ROLES },
           { href: '/payroll', label: 'Payroll', roles: ALL_ROLES },
           { href: '/reimbursements', label: 'Reimbursement', roles: ALL_ROLES },
           { href: '/performance', label: 'Performance', roles: ALL_ROLES },
+          { href: '/appraisals', label: 'Appraisals', roles: ALL_ROLES },
           { href: '/exit-management', label: 'Exit Management', roles: ALL_ROLES },
           { href: '/assets', label: 'Assets', roles: ALL_ROLES },
+          { href: '/employee-documents', label: 'Employee Documents', roles: ALL_ROLES },
         ],
       },
       {
