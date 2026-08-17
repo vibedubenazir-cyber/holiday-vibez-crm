@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { ContactFooter } from '@/components/ContactFooter';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
 
@@ -125,6 +126,8 @@ export default function PublicQuotationPage() {
         <p className="mt-8 border-t border-slate-200 pt-4 text-xs text-slate-400">
           This quotation is valid for 7 days from the date above. Prices are subject to availability at the time of booking.
         </p>
+
+        <ContactFooter />
       </div>
 
       <style>{`

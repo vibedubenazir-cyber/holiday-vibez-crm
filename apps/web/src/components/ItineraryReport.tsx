@@ -1,4 +1,5 @@
 import { absoluteUploadUrl } from '@/lib/upload';
+import { ContactFooter } from './ContactFooter';
 
 // Only the type-specific field the client report surfaces. The full shape
 // lives in ItineraryEventDetails (shared) — this component deliberately reads
@@ -327,31 +328,14 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
             body ? (
               <div key={heading}>
                 <h3 className="text-base font-bold text-brand">{heading}</h3>
-                <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{body}</p>
+                <DescriptionBlock text={body} className="mt-1 text-sm text-slate-600" />
               </div>
             ) : null,
           )}
         </div>
       )}
 
-      <div className="mt-10 flex flex-wrap items-center justify-between gap-6 border-t border-slate-100 pt-6">
-        <div className="flex items-center gap-3">
-          <span className="text-base font-bold text-brand">holiday vibez</span>
-          {data.consultant && (
-            <div className="border-l border-slate-200 pl-3 text-xs text-slate-600">
-              <p className="font-semibold text-slate-700">{data.consultant.name}</p>
-              {data.consultant.phone && <p>Phone: {data.consultant.phone}</p>}
-              {data.consultant.email && <p>Email: {data.consultant.email}</p>}
-            </div>
-          )}
-        </div>
-        <div className="text-right text-xs text-slate-600">
-          <p className="font-semibold text-slate-700">HOLIDAY VIBEZ PRIVATE LIMITED</p>
-          <p>Phone: 9645123446</p>
-          <p>Email: holidays@holidayvibez.com</p>
-          <p>Address: 2nd floor, ANANDHAM ELITE, 1, MRTS ROAD, 1st Main Rd, Velachery, Chennai, Tamil Nadu 600042</p>
-        </div>
-      </div>
+      <ContactFooter consultant={data.consultant} />
     </div>
   );
 }
