@@ -24,6 +24,12 @@ import {
   ItineraryPlanStatus,
   ItineraryEventType,
   UserStatus,
+  RegularisationStatus,
+  EmployeeDocumentType,
+  AssetType,
+  AssetStatus,
+  AppraisalCycleStatus,
+  AppraisalStatus,
 } from './enums';
 
 export interface UserDTO {
@@ -1395,4 +1401,135 @@ export interface WebsitePackageCardDTO {
   isSpecial: boolean;
   aboutPackage: string | null;
   theme: string | null;
+}
+
+// --- HRMS phase 3 -----------------------------------------------------------
+
+export interface HolidayDTO {
+  id: string;
+  name: string;
+  date: string;
+  branchId: string | null;
+  branch?: { id: string; name: string } | null;
+}
+
+export interface AttendanceRegularisationDTO {
+  id: string;
+  userId: string;
+  user?: { id: string; name: string; employeeCode: string | null; branchId: string | null };
+  date: string;
+  requestedCheckInAt: string | null;
+  requestedCheckOutAt: string | null;
+  reason: string;
+  status: RegularisationStatus;
+  reviewedById: string | null;
+  reviewedAt: string | null;
+  reviewComment: string | null;
+  createdAt: string;
+}
+
+export interface ShiftDTO {
+  id: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  graceMinutes: number;
+  branchId: string | null;
+  active: boolean;
+}
+
+export interface RosterEntryDTO {
+  id: string;
+  userId: string;
+  user?: { id: string; name: string; employeeCode: string | null; branchId: string | null };
+  date: string;
+  shiftId: string | null;
+  shift?: ShiftDTO | null;
+  isWeekOff: boolean;
+}
+
+export interface EmployeeDocumentDTO {
+  id: string;
+  userId: string;
+  user?: { id: string; name: string; employeeCode: string | null; branchId: string | null };
+  type: EmployeeDocumentType;
+  title: string;
+  fileUrl: string;
+  number: string | null;
+  issuedOn: string | null;
+  expiresOn: string | null;
+  uploadedById: string;
+  createdAt: string;
+}
+
+export interface OnboardingTaskDTO {
+  id: string;
+  userId: string;
+  title: string;
+  description: string | null;
+  dueDate: string | null;
+  completed: boolean;
+  completedAt: string | null;
+  completedById: string | null;
+  sortOrder: number;
+}
+
+export interface OnboardingProgressDTO {
+  user: { id: string; name: string; employeeCode: string | null; dateOfJoining: string | null; branchId: string | null };
+  total: number;
+  done: number;
+  pending: number;
+}
+
+export interface AssetDTO {
+  id: string;
+  assetTag: string;
+  type: AssetType;
+  name: string;
+  serialNumber: string | null;
+  purchaseDate: string | null;
+  branchId: string | null;
+  status: AssetStatus;
+  assignedToId: string | null;
+  assignedTo?: { id: string; name: string; employeeCode: string | null } | null;
+  assignedAt: string | null;
+  returnedAt: string | null;
+  notes: string | null;
+}
+
+export interface AppraisalCycleDTO {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  status: AppraisalCycleStatus;
+  _count?: { appraisals: number };
+}
+
+export interface AppraisalGoalDTO {
+  id: string;
+  appraisalId: string;
+  title: string;
+  weightPct: number;
+  selfRating: number | null;
+  managerRating: number | null;
+  comments: string | null;
+  sortOrder: number;
+}
+
+export interface AppraisalDTO {
+  id: string;
+  cycleId: string;
+  cycle?: AppraisalCycleDTO;
+  userId: string;
+  user?: { id: string; name: string; employeeCode: string | null; designation: string | null; branchId?: string | null };
+  managerId: string | null;
+  manager?: { id: string; name: string } | null;
+  status: AppraisalStatus;
+  selfComments: string | null;
+  managerComments: string | null;
+  finalRating: number | null;
+  submittedAt: string | null;
+  completedAt: string | null;
+  goals: AppraisalGoalDTO[];
 }

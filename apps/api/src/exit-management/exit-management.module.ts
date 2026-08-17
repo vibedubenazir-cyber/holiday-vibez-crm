@@ -3,9 +3,10 @@ import { ExitManagementController } from './exit-management.controller';
 import { ExitManagementService } from './exit-management.service';
 import { PrismaService } from '../prisma.service';
 import { AuthModule } from '../auth/auth.module';
+import { AssetsModule } from '../assets/assets.module';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, AssetsModule],
   controllers: [ExitManagementController],
   providers: [ExitManagementService, PrismaService],
 })

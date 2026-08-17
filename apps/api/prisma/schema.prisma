@@ -290,33 +290,43 @@ model User {
   // probation length can vary per hire (contractor conversions, etc).
   probationEndDate      DateTime?
 
-  managedBranch              Branch?              @relation("BranchManager")
-  assignedLeads              Lead[]               @relation("AssignedConsultant")
-  quotationsCreated          Quotation[]          @relation("QuotationConsultant")
-  quotationsApproved         Quotation[]          @relation("QuotationApprover")
+  managedBranch              Branch?                    @relation("BranchManager")
+  assignedLeads              Lead[]                     @relation("AssignedConsultant")
+  quotationsCreated          Quotation[]                @relation("QuotationConsultant")
+  quotationsApproved         Quotation[]                @relation("QuotationApprover")
   sessions                   Session[]
   auditLogs                  AuditLog[]
   attendance                 Attendance[]
   messagesSent               Message[]
-  leaveRequests              LeaveRequest[]       @relation("LeaveRequests")
-  leaveReviews               LeaveRequest[]       @relation("LeaveReviews")
-  salaryStructure            SalaryStructure?     @relation("SalaryStructure")
-  payslips                   Payslip[]            @relation("Payslips")
-  assignedTickets            SupportTicket[]      @relation("AssignedTickets")
+  leaveRequests              LeaveRequest[]             @relation("LeaveRequests")
+  leaveReviews               LeaveRequest[]             @relation("LeaveReviews")
+  salaryStructure            SalaryStructure?           @relation("SalaryStructure")
+  payslips                   Payslip[]                  @relation("Payslips")
+  assignedTickets            SupportTicket[]            @relation("AssignedTickets")
   teamChannelMemberships     TeamChannelMember[]
   teamMessagesSent           TeamMessage[]
   courseEnrollments          Enrollment[]
-  directReports              User[]               @relation("ReportsTo")
+  directReports              User[]                     @relation("ReportsTo")
   exitRecord                 ExitRecord?
-  performanceReviewsReceived PerformanceReview[]  @relation("RevieweeReviews")
-  performanceReviewsGiven    PerformanceReview[]  @relation("ReviewerReviews")
-  reimbursementClaims        ReimbursementClaim[] @relation("ReimbursementClaimant")
-  reimbursementReviews       ReimbursementClaim[] @relation("ReimbursementReviewer")
-  hrTicketsRaised            HrTicket[]           @relation("HrTicketsRaised")
-  hrTicketsAssigned          HrTicket[]           @relation("HrTicketsAssigned")
-  grievancesRaised           GrievanceReport[]    @relation("GrievancesRaised")
-  grievancesHandled          GrievanceReport[]    @relation("GrievancesHandled")
+  performanceReviewsReceived PerformanceReview[]        @relation("RevieweeReviews")
+  performanceReviewsGiven    PerformanceReview[]        @relation("ReviewerReviews")
+  reimbursementClaims        ReimbursementClaim[]       @relation("ReimbursementClaimant")
+  reimbursementReviews       ReimbursementClaim[]       @relation("ReimbursementReviewer")
+  hrTicketsRaised            HrTicket[]                 @relation("HrTicketsRaised")
+  hrTicketsAssigned          HrTicket[]                 @relation("HrTicketsAssigned")
+  grievancesRaised           GrievanceReport[]          @relation("GrievancesRaised")
+  grievancesHandled          GrievanceReport[]          @relation("GrievancesHandled")
   itineraryPlans             ItineraryPlan[]
+  regularisationRequests     AttendanceRegularisation[] @relation("RegularisationRequests")
+  regularisationReviews      AttendanceRegularisation[] @relation("RegularisationReviews")
+  rosterEntries              RosterEntry[]              @relation("RosterEntries")
+  employeeDocuments          EmployeeDocument[]         @relation("EmployeeDocuments")
+  employeeDocumentsUploaded  EmployeeDocument[]         @relation("EmployeeDocumentsUploaded")
+  onboardingTasks            OnboardingTask[]           @relation("OnboardingTasks")
+  onboardingTasksCompleted   OnboardingTask[]           @relation("OnboardingTasksCompleted")
+  assetsAssigned             Asset[]                    @relation("AssetsAssigned")
+  appraisals                 Appraisal[]                @relation("Appraisals")
+  appraisalsAsManager        Appraisal[]                @relation("AppraisalsAsManager")
 
   @@map("users")
 }
@@ -508,6 +518,9 @@ model Branch {
   pettyCashEntries PettyCashEntry[]
   budgets          Budget[]
   bankTransactions BankTransaction[]
+  holidays         Holiday[]
+  shifts           Shift[]
+  assets           Asset[]
 
   @@map("branches")
 }
@@ -1852,4 +1865,238 @@ model DmcCommission {
   createdAt  DateTime         @default(now())
 
   @@map("dmc_commissions")
+}
+
+// ---------------------------------------------------------------------------
+// HRMS phase 3 — holidays, rostering, attendance regularisation, employee
+// documents, onboarding, asset tracking and appraisal cycles.
+// ---------------------------------------------------------------------------
+
+// Public holidays. branchId null = observed org-wide; set = that branch only
+// (Kerala observes Onam, Maharashtra Gudi Padwa). Leave day-counting and
+// attendance both consult this so a holiday never burns a leave day.
+model Holiday {
+  id        String   @id @default(uuid())
+  name      String
+  date      DateTime @db.Date
+  branchId  String?
+  branch    Branch?  @relation(fields: [branchId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([date, branchId])
+  @@map("holidays")
+}
+
+enum RegularisationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// A missed or wrong punch. Consultants at airports and site visits forget
+// constantly, and without this the day is permanently an unfixable absence.
+model AttendanceRegularisation {
+  id                  String               @id @default(uuid())
+  userId              String
+  user                User                 @relation("RegularisationRequests", fields: [userId], references: [id])
+  date                DateTime             @db.Date
+  requestedCheckInAt  DateTime?
+  requestedCheckOutAt DateTime?
+  reason              String
+  status              RegularisationStatus @default(PENDING)
+  reviewedById        String?
+  reviewedBy          User?                @relation("RegularisationReviews", fields: [reviewedById], references: [id])
+  reviewedAt          DateTime?
+  reviewComment       String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@unique([userId, date])
+  @@map("attendance_regularisations")
+}
+
+model Shift {
+  id            String        @id @default(uuid())
+  name          String
+  startTime     String // "09:00"
+  endTime       String // "18:00"
+  graceMinutes  Int           @default(10)
+  branchId      String?
+  branch        Branch?       @relation(fields: [branchId], references: [id])
+  active        Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  rosterEntries RosterEntry[]
+
+  @@map("shifts")
+}
+
+// One row per employee per day. A null shift with isWeekOff true is the
+// weekly off; a null shift with isWeekOff false means "no roster published".
+model RosterEntry {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation("RosterEntries", fields: [userId], references: [id])
+  date      DateTime @db.Date
+  shiftId   String?
+  shift     Shift?   @relation(fields: [shiftId], references: [id])
+  isWeekOff Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@map("roster_entries")
+}
+
+enum EmployeeDocumentType {
+  AADHAAR
+  PAN
+  PASSPORT
+  OFFER_LETTER
+  CONTRACT
+  EDUCATION_CERTIFICATE
+  BANK_PROOF
+  OTHER
+}
+
+// Mirrors the traveler passport/visa expiry tracking already used on the CRM
+// side, so staff document expiry gets the same treatment as customers'.
+model EmployeeDocument {
+  id           String               @id @default(uuid())
+  userId       String
+  user         User                 @relation("EmployeeDocuments", fields: [userId], references: [id])
+  type         EmployeeDocumentType
+  title        String
+  fileUrl      String
+  number       String?
+  issuedOn     DateTime?            @db.Date
+  expiresOn    DateTime?            @db.Date
+  uploadedById String
+  uploadedBy   User                 @relation("EmployeeDocumentsUploaded", fields: [uploadedById], references: [id])
+  createdAt    DateTime             @default(now())
+
+  @@map("employee_documents")
+}
+
+// The joining-side counterpart to ExitRecord's clearance checklist.
+model OnboardingTask {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation("OnboardingTasks", fields: [userId], references: [id])
+  title         String
+  description   String?
+  dueDate       DateTime? @db.Date
+  completed     Boolean   @default(false)
+  completedAt   DateTime?
+  completedById String?
+  completedBy   User?     @relation("OnboardingTasksCompleted", fields: [completedById], references: [id])
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("onboarding_tasks")
+}
+
+enum AssetType {
+  LAPTOP
+  DESKTOP
+  PHONE
+  SIM_CARD
+  MONITOR
+  ACCESS_CARD
+  OTHER
+}
+
+enum AssetStatus {
+  AVAILABLE
+  ASSIGNED
+  RETURNED
+  RETIRED
+}
+
+// Exit clearance checks this: an employee holding unreturned assets should
+// not be cleared, which today nothing enforces.
+model Asset {
+  id           String      @id @default(uuid())
+  assetTag     String      @unique
+  type         AssetType
+  name         String
+  serialNumber String?
+  purchaseDate DateTime?   @db.Date
+  branchId     String?
+  branch       Branch?     @relation(fields: [branchId], references: [id])
+  status       AssetStatus @default(AVAILABLE)
+  assignedToId String?
+  assignedTo   User?       @relation("AssetsAssigned", fields: [assignedToId], references: [id])
+  assignedAt   DateTime?
+  returnedAt   DateTime?
+  notes        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("assets")
+}
+
+enum AppraisalCycleStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+enum AppraisalStatus {
+  NOT_STARTED
+  SELF_REVIEW
+  MANAGER_REVIEW
+  COMPLETED
+}
+
+model AppraisalCycle {
+  id         String               @id @default(uuid())
+  name       String
+  startDate  DateTime             @db.Date
+  endDate    DateTime             @db.Date
+  status     AppraisalCycleStatus @default(DRAFT)
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  appraisals Appraisal[]
+
+  @@map("appraisal_cycles")
+}
+
+// Unlike the existing ad-hoc PerformanceReview, an Appraisal belongs to a
+// cycle and walks a self-review -> manager-review -> completed workflow.
+model Appraisal {
+  id              String          @id @default(uuid())
+  cycleId         String
+  cycle           AppraisalCycle  @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User            @relation("Appraisals", fields: [userId], references: [id])
+  managerId       String?
+  manager         User?           @relation("AppraisalsAsManager", fields: [managerId], references: [id])
+  status          AppraisalStatus @default(NOT_STARTED)
+  selfComments    String?
+  managerComments String?
+  finalRating     Int?
+  submittedAt     DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  goals           AppraisalGoal[]
+
+  @@unique([cycleId, userId])
+  @@map("appraisals")
+}
+
+model AppraisalGoal {
+  id            String    @id @default(uuid())
+  appraisalId   String
+  appraisal     Appraisal @relation(fields: [appraisalId], references: [id], onDelete: Cascade)
+  title         String
+  weightPct     Int       @default(0)
+  selfRating    Int?
+  managerRating Int?
+  comments      String?
+  sortOrder     Int       @default(0)
+
+  @@map("appraisal_goals")
 }

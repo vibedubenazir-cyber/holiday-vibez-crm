@@ -2,10 +2,14 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { ExitType } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateExitRecordDto } from './dto/exit-record.dto';
+import { AssetsService } from '../assets/assets.service';
 
 @Injectable()
 export class ExitManagementService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly assets: AssetsService,
+  ) {}
 
   private async create(userId: string, type: ExitType, dto: CreateExitRecordDto) {
     const existing = await this.prisma.exitRecord.findUnique({ where: { userId } });
@@ -50,6 +54,17 @@ export class ExitManagementService {
     if (record.status === 'CLEARED') throw new BadRequestException('This exit has already been cleared');
     if (record.userId === clearedById) {
       throw new BadRequestException('You cannot clear your own exit record');
+    }
+
+    // Clearance is the point of no return — it deactivates the account, after
+    // which nobody is chasing the leaver for the laptop. Block it while
+    // company property is still outstanding, and name what's missing.
+    const outstanding = await this.assets.outstandingFor(record.userId);
+    if (outstanding.length > 0) {
+      const list = outstanding.map((a) => `${a.assetTag} (${a.name})`).join(', ');
+      throw new BadRequestException(
+        `Cannot clear this exit — ${outstanding.length} asset(s) still assigned: ${list}. Mark them returned first.`,
+      );
     }
 
     await this.prisma.user.update({ where: { id: record.userId }, data: { status: 'INACTIVE' } });

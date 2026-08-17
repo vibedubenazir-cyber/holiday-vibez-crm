@@ -18,6 +18,12 @@ import { InvoicesModule } from './invoices/invoices.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { LeaveModule } from './leave/leave.module';
+import { HrCalendarModule } from './hr-calendar/hr-calendar.module';
+import { AssetsModule } from './assets/assets.module';
+import { AppraisalsModule } from './appraisals/appraisals.module';
+import { RosterModule } from './roster/roster.module';
+import { OnboardingModule } from './onboarding/onboarding.module';
+import { EmployeeDocumentsModule } from './employee-documents/employee-documents.module';
 import { PayrollModule } from './payroll/payroll.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
 import { InboxModule } from './inbox/inbox.module';
@@ -81,6 +87,12 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     ExpensesModule,
     AttendanceModule,
     LeaveModule,
+    HrCalendarModule,
+    AssetsModule,
+    AppraisalsModule,
+    RosterModule,
+    OnboardingModule,
+    EmployeeDocumentsModule,
     PayrollModule,
     LoyaltyModule,
     InboxModule,

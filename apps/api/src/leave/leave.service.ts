@@ -3,6 +3,7 @@ import { LeaveStatus, LeaveType, Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { HrSettingsService, HR_SETTING_KEYS } from '../hr-settings/hr-settings.service';
 import { CreateLeaveDto } from './dto/create-leave.dto';
+import { HrCalendarService } from '../hr-calendar/hr-calendar.service';
 
 // Built-in fallback quotas (days/calendar year) — used until an Admin/
 // Director overrides them on the HRMS Settings page (see HrSettingsService).
@@ -38,7 +39,33 @@ export class LeaveService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly hrSettings: HrSettingsService,
+    private readonly hrCalendar: HrCalendarService,
   ) {}
+
+  // Days a leave request actually costs the employee: calendar days in the
+  // range minus any public holiday falling inside it. Before holidays
+  // existed, a Diwali-spanning leave silently burned quota for a day nobody
+  // was expected to work — the single most disputed thing in HR.
+  //
+  // Takes a pre-fetched holiday set rather than querying per call: this runs
+  // once per approved request inside a Serializable transaction, and N
+  // queries there would both slow the txn and widen its conflict window.
+  private countChargeable(start: Date, end: Date, holidays: Set<string>, rangeStart?: Date, rangeEnd?: Date): number {
+    const from = rangeStart && start < rangeStart ? new Date(rangeStart) : new Date(start);
+    const to = rangeEnd && end >= rangeEnd ? new Date(rangeEnd.getTime() - 86400000) : new Date(end);
+    if (to < from) return 0;
+
+    let days = 0;
+    for (const d = new Date(from); d <= to; d.setUTCDate(d.getUTCDate() + 1)) {
+      if (!holidays.has(d.toISOString().slice(0, 10))) days++;
+    }
+    return days;
+  }
+
+  private async branchOf(userId: string): Promise<string | null> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { branchId: true } });
+    return user?.branchId ?? null;
+  }
 
   private getQuota(type: string): Promise<number> {
     return this.hrSettings.getNumber(QUOTA_KEYS[type], DEFAULT_QUOTA[type]);
@@ -92,9 +119,10 @@ export class LeaveService {
     const approved = await this.prisma.leaveRequest.findMany({
       where: { userId, status: 'APPROVED', startDate: { lt: yearEnd }, endDate: { gte: yearStart } },
     });
+    const holidays = await this.hrCalendar.holidayDatesBetween(yearStart, yearEnd, await this.branchOf(userId));
     const used: Record<string, number> = { SICK: 0, CASUAL: 0, ANNUAL: 0 };
     for (const req of approved) {
-      if (req.type in used) used[req.type] += daysInclusiveWithinRange(req.startDate, req.endDate, yearStart, yearEnd);
+      if (req.type in used) used[req.type] += this.countChargeable(req.startDate, req.endDate, holidays, yearStart, yearEnd);
     }
     return Promise.all(
       Object.keys(DEFAULT_QUOTA).map(async (type) => {
@@ -144,10 +172,11 @@ export class LeaveService {
             const approved = await tx.leaveRequest.findMany({
               where: { userId: request.userId, type: request.type, status: 'APPROVED', startDate: { lt: yearEnd }, endDate: { gte: yearStart } },
             });
-            const used = approved.reduce((sum, r) => sum + daysInclusiveWithinRange(r.startDate, r.endDate, yearStart, yearEnd), 0);
+            const holidays = await this.hrCalendar.holidayDatesBetween(yearStart, yearEnd, await this.branchOf(request.userId));
+            const used = approved.reduce((sum, r) => sum + this.countChargeable(r.startDate, r.endDate, holidays, yearStart, yearEnd), 0);
             const quota = await this.getQuota(request.type);
             const remaining = quota - used;
-            const requestedDays = daysInclusiveWithinRange(request.startDate, request.endDate, yearStart, yearEnd);
+            const requestedDays = this.countChargeable(request.startDate, request.endDate, holidays, yearStart, yearEnd);
             if (requestedDays > remaining) {
               throw new BadRequestException(
                 `Approving this would exceed the annual ${request.type} quota (${remaining} day(s) remaining, ${requestedDays} requested)`,

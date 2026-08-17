@@ -14,6 +14,8 @@ import {
   Trophy,
   Package,
   Calendar,
+  CalendarDays,
+  Briefcase,
   Building2,
   Route as RouteIcon,
   LifeBuoy,
@@ -77,6 +79,8 @@ const ROLE_LABELS: Record<string, string> = {
 
 // One icon per route across every module's sidebar.
 const NAV_ICONS: Record<string, LucideIcon> = {
+  '/holidays': CalendarDays,
+  '/assets': Briefcase,
   '/dashboard': LayoutDashboard,
   '/leads': UserPlus,
   '/inbox': InboxIcon,

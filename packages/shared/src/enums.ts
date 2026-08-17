@@ -349,3 +349,52 @@ export enum ItineraryEventType {
   LEISURE = 'LEISURE',
   CRUISE = 'CRUISE',
 }
+
+// --- HRMS phase 3 -----------------------------------------------------------
+
+export enum RegularisationStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
+export enum EmployeeDocumentType {
+  AADHAAR = 'AADHAAR',
+  PAN = 'PAN',
+  PASSPORT = 'PASSPORT',
+  OFFER_LETTER = 'OFFER_LETTER',
+  CONTRACT = 'CONTRACT',
+  EDUCATION_CERTIFICATE = 'EDUCATION_CERTIFICATE',
+  BANK_PROOF = 'BANK_PROOF',
+  OTHER = 'OTHER',
+}
+
+export enum AssetType {
+  LAPTOP = 'LAPTOP',
+  DESKTOP = 'DESKTOP',
+  PHONE = 'PHONE',
+  SIM_CARD = 'SIM_CARD',
+  MONITOR = 'MONITOR',
+  ACCESS_CARD = 'ACCESS_CARD',
+  OTHER = 'OTHER',
+}
+
+export enum AssetStatus {
+  AVAILABLE = 'AVAILABLE',
+  ASSIGNED = 'ASSIGNED',
+  RETURNED = 'RETURNED',
+  RETIRED = 'RETIRED',
+}
+
+export enum AppraisalCycleStatus {
+  DRAFT = 'DRAFT',
+  ACTIVE = 'ACTIVE',
+  CLOSED = 'CLOSED',
+}
+
+export enum AppraisalStatus {
+  NOT_STARTED = 'NOT_STARTED',
+  SELF_REVIEW = 'SELF_REVIEW',
+  MANAGER_REVIEW = 'MANAGER_REVIEW',
+  COMPLETED = 'COMPLETED',
+}
