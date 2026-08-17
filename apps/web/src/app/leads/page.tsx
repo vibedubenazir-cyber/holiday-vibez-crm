@@ -4,6 +4,7 @@ import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/AppShell';
 import { BadgeDropdown, type BadgeDropdownOption } from '@/components/BadgeDropdown';
+import { PhoneInput } from '@/components/PhoneInput';
 import { useAuth } from '@/lib/auth-context';
 import { api, ApiError, getAccessToken } from '@/lib/api';
 import { LeadSource, LeadStatus, LeadTemperature, Role, type BranchDTO, type ClientDTO, type LeadSummaryDTO } from '@holiday-vibez/shared';
@@ -17,7 +18,19 @@ interface BulkImportRow {
   error?: string;
 }
 
-const SOURCE_OPTIONS = [LeadSource.GOOGLE, LeadSource.META, LeadSource.WEBSITE, LeadSource.WHATSAPP, LeadSource.REFERRAL, LeadSource.WALKIN];
+const SOURCE_OPTIONS = [
+  LeadSource.WHATSAPP,
+  LeadSource.INSTAGRAM,
+  LeadSource.FACEBOOK,
+  LeadSource.WEBSITE,
+  LeadSource.GOOGLE,
+  LeadSource.WALKIN,
+  LeadSource.REFERRAL,
+  LeadSource.EXISTING_CUSTOMER,
+  LeadSource.AGENT_B2B,
+  LeadSource.PHONE_CALL,
+];
+const MEAL_PREFERENCE_OPTIONS = ['Veg', 'Non-veg', 'Jain', 'Any'];
 const STATUS_OPTIONS = Object.values(LeadStatus);
 
 // Each pipeline stage gets its own solid color so a row's status is readable
@@ -92,7 +105,7 @@ export default function LeadsPage() {
   const [importResults, setImportResults] = useState<BulkImportRow[] | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
 
-  const [form, setForm] = useState({
+  const emptyForm = {
     source: LeadSource.WEBSITE as string,
     clientName: '',
     clientId: '',
@@ -100,7 +113,18 @@ export default function LeadsPage() {
     email: '',
     destination: '',
     branchId: '',
-  });
+    travelDate: '',
+    adultsCount: '',
+    childrenCount: '',
+    childrenAges: '',
+    hotelCategory: '',
+    mealPreference: '',
+    transportRequired: false,
+    visaRequired: false,
+    flightRequired: false,
+    insuranceRequired: false,
+  };
+  const [form, setForm] = useState(emptyForm);
 
   async function load() {
     try {
@@ -136,8 +160,18 @@ export default function LeadsPage() {
     e.preventDefault();
     setError(null);
     try {
-      await api.post('/leads', { ...form, clientId: form.clientId || undefined, email: form.email || undefined });
-      setForm({ source: LeadSource.WEBSITE, clientName: '', clientId: '', phone: '', email: '', destination: '', branchId: branches[0]?.id ?? '' });
+      await api.post('/leads', {
+        ...form,
+        clientId: form.clientId || undefined,
+        email: form.email || undefined,
+        travelDate: form.travelDate || undefined,
+        adultsCount: form.adultsCount ? Number(form.adultsCount) : undefined,
+        childrenCount: form.childrenCount ? Number(form.childrenCount) : undefined,
+        childrenAges: form.childrenAges || undefined,
+        hotelCategory: form.hotelCategory ? Number(form.hotelCategory) : undefined,
+        mealPreference: form.mealPreference || undefined,
+      });
+      setForm({ ...emptyForm, branchId: branches[0]?.id ?? '' });
       setShowForm(false);
       await load();
     } catch (err) {
@@ -196,7 +230,7 @@ export default function LeadsPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Leads</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Leads</h1>
         {canCreate && (
           <div className="flex items-center gap-2">
             <button
@@ -207,7 +241,7 @@ export default function LeadsPage() {
               {importing ? 'Importing…' : 'Bulk import (CSV)'}
             </button>
             <input ref={fileInputRef} type="file" accept=".csv,text/csv" onChange={handleBulkImport} className="hidden" />
-            <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
+            <button onClick={() => setShowForm((s) => !s)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-1.5 text-sm font-semibold text-white shadow-md shadow-brand-500/25 transition hover:opacity-90">
               {showForm ? 'Cancel' : 'Add lead'}
             </button>
           </div>
@@ -250,16 +284,46 @@ export default function LeadsPage() {
             {clients.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.type})</option>)}
           </select>
           <input required placeholder="Client name" value={form.clientName} onChange={(e) => setForm({ ...form, clientName: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-          <input required placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <PhoneInput required value={form.phone} onChange={(phone) => setForm({ ...form, phone })} />
           <input type="email" placeholder="Email (optional)" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           <input required placeholder="Destination" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
+
+          <p className="sm:col-span-2 lg:col-span-3 mt-1 text-xs font-medium uppercase tracking-wide text-slate-400">Travel Requirement</p>
+          <input type="date" placeholder="Travel date" value={form.travelDate} onChange={(e) => setForm({ ...form, travelDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <input type="number" min={0} placeholder="No. of adults" value={form.adultsCount} onChange={(e) => setForm({ ...form, adultsCount: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <input type="number" min={0} placeholder="No. of children" value={form.childrenCount} onChange={(e) => setForm({ ...form, childrenCount: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <input placeholder="Children ages (e.g. 5, 8)" value={form.childrenAges} onChange={(e) => setForm({ ...form, childrenAges: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <select value={form.hotelCategory} onChange={(e) => setForm({ ...form, hotelCategory: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
+            <option value="">Hotel category</option>
+            {[3, 4, 5].map((n) => <option key={n} value={n}>{n}-star</option>)}
+          </select>
+          <select value={form.mealPreference} onChange={(e) => setForm({ ...form, mealPreference: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
+            <option value="">Meal preference</option>
+            {MEAL_PREFERENCE_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
+          </select>
+          <div className="flex flex-wrap items-center gap-4 sm:col-span-2 lg:col-span-3 text-sm text-slate-600 dark:text-slate-300">
+            <label className="flex items-center gap-1.5">
+              <input type="checkbox" checked={form.transportRequired} onChange={(e) => setForm({ ...form, transportRequired: e.target.checked })} /> Transport
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="checkbox" checked={form.visaRequired} onChange={(e) => setForm({ ...form, visaRequired: e.target.checked })} /> Visa
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="checkbox" checked={form.flightRequired} onChange={(e) => setForm({ ...form, flightRequired: e.target.checked })} /> Flight
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="checkbox" checked={form.insuranceRequired} onChange={(e) => setForm({ ...form, insuranceRequired: e.target.checked })} /> Insurance
+            </label>
+          </div>
+
+          <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 sm:col-span-2 lg:col-span-3">
             Create lead (auto-assigns via round-robin)
           </button>
         </form>
       )}
 
       <div className="mt-4 overflow-hidden rounded-xl bg-white shadow-card dark:bg-slate-800">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
@@ -267,6 +331,7 @@ export default function LeadsPage() {
               <th className="px-4 py-3">Destination</th>
               <th className="px-4 py-3">Branch</th>
               <th className="px-4 py-3">Source</th>
+              <th className="px-4 py-3">Entry Date</th>
               <th className="px-4 py-3" title="Whether this lead was contacted within the required response-time window">SLA</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3" title="How likely/urgent this lead is to convert">Priority</th>
@@ -290,6 +355,7 @@ export default function LeadsPage() {
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{l.destination}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{branchName(l.branchId)}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{l.source}</td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{new Date(l.createdAt).toLocaleDateString()}</td>
                 <td className="px-4 py-3">
                   {l.slaBreached ? (
                     <span title="Not contacted within the required response-time window" className="inline-flex w-[90px] items-center justify-center whitespace-nowrap rounded-lg bg-red-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
@@ -323,10 +389,11 @@ export default function LeadsPage() {
               </tr>
             ))}
             {leads.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-6 text-center text-slate-400">No leads yet.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-6 text-center text-slate-400">No leads yet.</td></tr>
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </AppShell>
   );

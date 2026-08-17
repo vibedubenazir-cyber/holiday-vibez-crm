@@ -1,5 +1,5 @@
 import { ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { LeadSource, LeadStatus, Role } from '@prisma/client';
+import { LeadSource, LeadStatus, Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateLeadDto, PublicCreateLeadDto, UpdateLeadDto } from './dto/lead.dto';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -57,27 +57,69 @@ export class LeadsService {
     });
   }
 
-  async create(dto: CreateLeadDto) {
-    const duplicate = await this.findDuplicateByPhone(dto.phone);
-    if (duplicate) {
-      throw new ConflictException(
-        `A lead with this phone number already exists: ${duplicate.clientName} — ${duplicate.destination} (status: ${duplicate.status}, id: ${duplicate.id})`,
-      );
-    }
+  async create(dto: CreateLeadDto, actor: Actor) {
+    const lead = await this.createGuardedAgainstDuplicate(async (tx) => {
+      const duplicate = await this.findDuplicateByPhone(dto.phone, tx);
+      if (duplicate) {
+        // A Branch Manager creating a lead has no authorization to see another
+        // branch's customer name/destination/status (assertScope enforces this
+        // everywhere else) — redact those fields in the conflict message when
+        // the duplicate belongs to a branch the actor can't otherwise view.
+        const sameScope = actor.role !== Role.BRANCH_MANAGER || actor.branchId === duplicate.branchId;
+        throw new ConflictException(
+          sameScope
+            ? `A lead with this phone number already exists: ${duplicate.clientName} — ${duplicate.destination} (status: ${duplicate.status}, id: ${duplicate.id})`
+            : `A lead with this phone number already exists in another branch (id: ${duplicate.id}).`,
+        );
+      }
 
-    const lead = await this.prisma.lead.create({
-      data: {
-        source: dto.source,
-        utmCampaign: dto.utmCampaign,
-        clientName: dto.clientName,
-        clientId: dto.clientId,
-        phone: dto.phone,
-        email: dto.email,
-        destination: dto.destination,
-        branchId: dto.branchId,
-      },
+      return tx.lead.create({
+        data: {
+          source: dto.source,
+          utmCampaign: dto.utmCampaign,
+          clientName: dto.clientName,
+          clientId: dto.clientId,
+          phone: dto.phone,
+          email: dto.email,
+          destination: dto.destination,
+          branchId: dto.branchId,
+          travelDate: dto.travelDate ? new Date(dto.travelDate) : undefined,
+          adultsCount: dto.adultsCount,
+          childrenCount: dto.childrenCount,
+          childrenAges: dto.childrenAges,
+          hotelCategory: dto.hotelCategory,
+          mealPreference: dto.mealPreference,
+          transportRequired: dto.transportRequired,
+          visaRequired: dto.visaRequired,
+          flightRequired: dto.flightRequired,
+          insuranceRequired: dto.insuranceRequired,
+        },
+      });
     });
     return this.autoAssign(lead.id);
+  }
+
+  // The duplicate-phone check and the insert used to run as two unguarded
+  // queries — two near-simultaneous submits (a webhook fired twice, a
+  // consultant double-clicking Save) could both pass findDuplicateByPhone()
+  // before either commit, creating two Lead rows for the same customer with
+  // split SLA tracking and consultant assignment. Serializable isolation
+  // makes Postgres abort one of the two concurrent transactions with a
+  // serialization failure instead; retry once so the retry's duplicate check
+  // sees the first transaction's now-committed row.
+  private async createGuardedAgainstDuplicate<T>(
+    fn: (tx: Prisma.TransactionClient) => Promise<T>,
+    attempt = 0,
+  ): Promise<T> {
+    try {
+      return await this.prisma.$transaction(fn, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    } catch (err) {
+      const isSerializationFailure = err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2034';
+      if (isSerializationFailure && attempt < 1) {
+        return this.createGuardedAgainstDuplicate(fn, attempt + 1);
+      }
+      throw err;
+    }
   }
 
   // Compares by the last 10 digits so "+91-98765-43210", "9876543210", and
@@ -89,12 +131,12 @@ export class LeadsService {
     return phone.replace(/\D/g, '').slice(-10);
   }
 
-  private async findDuplicateByPhone(phone: string) {
+  private async findDuplicateByPhone(phone: string, client: Prisma.TransactionClient | PrismaService = this.prisma) {
     const normalized = this.normalizePhone(phone);
     if (normalized.length < 10) return null;
 
-    const candidates = await this.prisma.lead.findMany({
-      select: { id: true, phone: true, clientName: true, destination: true, status: true },
+    const candidates = await client.lead.findMany({
+      select: { id: true, phone: true, clientName: true, destination: true, status: true, branchId: true },
     });
     return candidates.find((c) => this.normalizePhone(c.phone) === normalized) ?? null;
   }
@@ -103,7 +145,7 @@ export class LeadsService {
   // each row still auto-assigns round-robin), just looped with per-row validation
   // so one bad row doesn't sink the whole batch. Branch is matched by name
   // case-insensitively since operators upload spreadsheets, not branch UUIDs.
-  async bulkImport(rows: Record<string, string>[]): Promise<BulkImportRow[]> {
+  async bulkImport(rows: Record<string, string>[], actor: Actor): Promise<BulkImportRow[]> {
     const branches = await this.prisma.branch.findMany();
     const branchByName = new Map(branches.map((b) => [b.name.toLowerCase(), b.id]));
     const validSources = new Set(Object.values(LeadSource));
@@ -129,14 +171,17 @@ export class LeadsService {
         const branchId = branchByName.get(branchName.toLowerCase());
         if (!branchId) throw new Error(`Unknown branch "${row.branch}"`);
 
-        const lead = await this.create({
-          source: source as LeadSource,
-          clientName,
-          phone,
-          destination,
-          branchId,
-          email: email || undefined,
-        });
+        const lead = await this.create(
+          {
+            source: source as LeadSource,
+            clientName,
+            phone,
+            destination,
+            branchId,
+            email: email || undefined,
+          } as CreateLeadDto,
+          actor,
+        );
         results.push({ row: rowNum, success: true, leadId: lead.id });
       } catch (err) {
         results.push({ row: rowNum, success: false, error: err instanceof Error ? err.message : 'Unknown error' });
@@ -153,42 +198,55 @@ export class LeadsService {
     // existing lead into the follow-up queue (if it had gone cold) and hand it
     // back unchanged otherwise, keeping "one lead = one timeline" instead of
     // fragmenting this customer's history across two records.
-    const duplicate = await this.findDuplicateByPhone(dto.phone);
-    if (duplicate) {
-      return this.prisma.lead.update({
-        where: { id: duplicate.id },
-        data: CLOSED_STATUSES.includes(duplicate.status) ? { status: LeadStatus.NEW } : {},
-      });
-    }
-
     const branches = await this.prisma.branch.findMany();
     if (branches.length === 0) {
       throw new NotFoundException('No branches configured to receive leads');
     }
 
-    const loads = await Promise.all(
-      branches.map(async (b) => ({
-        branch: b,
-        openCount: await this.prisma.lead.count({
-          where: { branchId: b.id, status: { in: OPEN_STATUSES } },
-        }),
-      })),
-    );
-    loads.sort((a, b) => a.openCount - b.openCount);
-    const targetBranch = loads[0].branch;
+    const outcome = await this.createGuardedAgainstDuplicate(async (tx) => {
+      const duplicate = await this.findDuplicateByPhone(dto.phone, tx);
+      if (duplicate) {
+        const reopened = await tx.lead.update({
+          where: { id: duplicate.id },
+          data: CLOSED_STATUSES.includes(duplicate.status) ? { status: LeadStatus.NEW } : {},
+        });
+        return { lead: reopened, isNew: false };
+      }
 
-    const lead = await this.prisma.lead.create({
-      data: {
-        source: dto.source,
-        utmCampaign: dto.utmCampaign,
-        clientName: dto.clientName,
-        phone: dto.phone,
-        email: dto.email,
-        destination: dto.destination,
-        branchId: targetBranch.id,
-      },
+      const loads = await Promise.all(
+        branches.map(async (b) => ({
+          branch: b,
+          openCount: await tx.lead.count({ where: { branchId: b.id, status: { in: OPEN_STATUSES } } }),
+        })),
+      );
+      loads.sort((a, b) => a.openCount - b.openCount);
+      const targetBranch = loads[0].branch;
+
+      const lead = await tx.lead.create({
+        data: {
+          source: dto.source,
+          utmCampaign: dto.utmCampaign,
+          clientName: dto.clientName,
+          phone: dto.phone,
+          email: dto.email,
+          destination: dto.destination,
+          branchId: targetBranch.id,
+          travelDate: dto.travelDate ? new Date(dto.travelDate) : undefined,
+          adultsCount: dto.adultsCount,
+          childrenCount: dto.childrenCount,
+          childrenAges: dto.childrenAges,
+          hotelCategory: dto.hotelCategory,
+          mealPreference: dto.mealPreference,
+          transportRequired: dto.transportRequired,
+          visaRequired: dto.visaRequired,
+          flightRequired: dto.flightRequired,
+          insuranceRequired: dto.insuranceRequired,
+        },
+      });
+      return { lead, isNew: true };
     });
-    return this.autoAssign(lead.id);
+
+    return outcome.isNew ? this.autoAssign(outcome.lead.id) : outcome.lead;
   }
 
   // Round-robin auto-assignment: picks the branch's ACTIVE (not on_leave/inactive)
@@ -243,6 +301,12 @@ export class LeadsService {
     if (!consultant || consultant.branchId !== lead.branchId) {
       throw new NotFoundException('Consultant not found in this branch');
     }
+    // autoAssign() only ever picks an ACTIVE consultant; a manual reassign must
+    // hold the same bar, or a lead can land on someone on_leave/inactive and sit
+    // uncontacted outside both round-robin and SLA escalation tied to an owner.
+    if (consultant.status !== 'ACTIVE') {
+      throw new ConflictException(`${consultant.name} is not currently active and cannot be assigned new leads`);
+    }
     return this.prisma.lead.update({ where: { id: leadId }, data: { assignedConsultantId: consultantId } });
   }
 
@@ -253,6 +317,11 @@ export class LeadsService {
       where: { id },
       data: {
         ...dto,
+        // Distinguish "not sent" (undefined — leave column alone) from an
+        // explicit clear (null — the Travel Requirement form's "Not set"/blank
+        // state) since `dto.travelDate ? ... : undefined` would collapse both
+        // into "leave alone", making the field impossible to clear once set.
+        travelDate: dto.travelDate === undefined ? undefined : dto.travelDate === null ? null : new Date(dto.travelDate),
         firstContactedAt: lead.firstContactedAt ?? (dto.status && dto.status !== LeadStatus.NEW ? new Date() : undefined),
       },
     });

@@ -1,5 +1,6 @@
 import { SupplierType } from '@prisma/client';
 import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsPhoneWithCountryCode } from '../../common/validators/phone.validator';
 
 export class CreateSupplierDto {
   @IsString()
@@ -14,6 +15,7 @@ export class CreateSupplierDto {
 
   @IsOptional()
   @IsString()
+  @IsPhoneWithCountryCode()
   phone?: string;
 
   @IsOptional()
@@ -48,6 +50,7 @@ export class UpdateSupplierDto {
 
   @IsOptional()
   @IsString()
+  @IsPhoneWithCountryCode()
   phone?: string;
 
   @IsOptional()

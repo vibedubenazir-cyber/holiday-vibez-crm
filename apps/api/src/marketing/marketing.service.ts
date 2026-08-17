@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateCampaignDto } from './dto/campaign.dto';
+import { interpolateTemplate } from '../common/template.util';
 
 @Injectable()
 export class MarketingService {
@@ -53,13 +54,14 @@ export class MarketingService {
 
     for (const lead of leads) {
       const recipient = campaign.channel === 'EMAIL' ? (lead.email ?? lead.phone) : lead.phone;
+      const vars = { name: lead.clientName, destination: lead.destination };
       await this.notifications.send({
         channel: campaign.channel,
         triggerType: 'campaign',
         recipient,
         relatedEntity: `campaign:${id}`,
-        body: campaign.template?.body,
-        subject: campaign.template?.subject ?? campaign.name,
+        body: interpolateTemplate(campaign.template?.body, vars),
+        subject: interpolateTemplate(campaign.template?.subject, vars) ?? campaign.name,
       });
     }
 

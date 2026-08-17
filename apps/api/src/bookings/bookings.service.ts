@@ -6,6 +6,19 @@ import { CreateBookingDto } from './dto/booking.dto';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+// PENDING -> CONFIRMED -> COMPLETED is the normal lifecycle; either open state
+// can be CANCELLED. CANCELLED and COMPLETED are terminal — moving a booking
+// backward out of either (e.g. CANCELLED -> CONFIRMED) previously had no
+// guard, and sendEngagementReminders() reads live `status` to decide who gets
+// pre-departure/review-request WhatsApp messages, so a backward transition
+// could resurrect reminders for a trip that was cancelled and never happened.
+const ALLOWED_STATUS_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
+  PENDING: ['CONFIRMED', 'CANCELLED'],
+  CONFIRMED: ['COMPLETED', 'CANCELLED'],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
 @Injectable()
 export class BookingsService {
   constructor(
@@ -72,6 +85,9 @@ export class BookingsService {
     const booking = await this.prisma.booking.findUnique({ where: { id }, include: { quotation: { include: { lead: true } } } });
     if (!booking) throw new NotFoundException('Booking not found');
     this.assertActorScope(actor, booking.quotation.consultantId, booking.quotation.lead.branchId);
+    if (status !== booking.status && !ALLOWED_STATUS_TRANSITIONS[booking.status].includes(status)) {
+      throw new BadRequestException(`Cannot move a booking from ${booking.status} to ${status}`);
+    }
     return this.prisma.booking.update({ where: { id }, data: { status } });
   }
 

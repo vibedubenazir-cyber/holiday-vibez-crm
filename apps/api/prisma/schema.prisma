@@ -37,11 +37,16 @@ enum UserStatus {
 
 enum LeadSource {
   GOOGLE
-  META
+  META // legacy value — superseded by INSTAGRAM/FACEBOOK below, kept for old rows
   WEBSITE
   WHATSAPP
   REFERRAL
   WALKIN
+  INSTAGRAM
+  FACEBOOK
+  EXISTING_CUSTOMER
+  AGENT_B2B
+  PHONE_CALL
 }
 
 enum LeadStatus {
@@ -246,29 +251,29 @@ enum CustomFieldType {
 }
 
 model User {
-  id           String     @id @default(uuid())
-  name         String
-  email        String     @unique
-  phone        String
-  passwordHash String
-  role         Role
-  branchId     String?
-  branch       Branch?    @relation("BranchUsers", fields: [branchId], references: [id])
-  status       UserStatus @default(ACTIVE)
-  lastLoginAt  DateTime?
+  id               String     @id @default(uuid())
+  name             String
+  email            String     @unique
+  phone            String
+  passwordHash     String
+  role             Role
+  branchId         String?
+  branch           Branch?    @relation("BranchUsers", fields: [branchId], references: [id])
+  status           UserStatus @default(ACTIVE)
+  lastLoginAt      DateTime?
   twoFactorSecret  String?
-  twoFactorEnabled Boolean  @default(false)
+  twoFactorEnabled Boolean    @default(false)
   // Browser's current FCM registration token, set via POST /notifications/push-token
   // once the user opts into push notifications on /security. Single most-recent
   // token per user — multi-device push is a natural follow-up, not built here.
-  fcmToken     String?
+  fcmToken         String?
   // Presence: lastSeenAt is bumped by a client heartbeat (see team-chat/presence);
   // computed status is ONLINE if recent, else OFFLINE, unless manualStatus overrides
   // it to BUSY. No separate "online" boolean — freshness of lastSeenAt is the signal.
-  lastSeenAt   DateTime?
-  manualStatus String?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  lastSeenAt       DateTime?
+  manualStatus     String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 
   // HR profile fields — Employee Directory / Org Chart. All optional since
   // existing seeded/onboarded users won't have these set retroactively.
@@ -283,34 +288,35 @@ model User {
   // Used by the Compliance Calendar to surface upcoming probation
   // confirmations — set alongside dateOfJoining, not auto-computed, since
   // probation length can vary per hire (contractor conversions, etc).
-  probationEndDate     DateTime?
+  probationEndDate      DateTime?
 
-  managedBranch     Branch?    @relation("BranchManager")
-  assignedLeads     Lead[]     @relation("AssignedConsultant")
-  quotationsCreated Quotation[] @relation("QuotationConsultant")
-  quotationsApproved Quotation[] @relation("QuotationApprover")
-  sessions          Session[]
-  auditLogs         AuditLog[]
-  attendance        Attendance[]
-  messagesSent      Message[]
-  leaveRequests     LeaveRequest[] @relation("LeaveRequests")
-  leaveReviews      LeaveRequest[] @relation("LeaveReviews")
-  salaryStructure   SalaryStructure? @relation("SalaryStructure")
-  payslips          Payslip[]      @relation("Payslips")
-  assignedTickets   SupportTicket[] @relation("AssignedTickets")
-  teamChannelMemberships TeamChannelMember[]
-  teamMessagesSent       TeamMessage[]
-  courseEnrollments      Enrollment[]
-  directReports          User[]              @relation("ReportsTo")
-  exitRecord              ExitRecord?
-  performanceReviewsReceived PerformanceReview[] @relation("RevieweeReviews")
-  performanceReviewsGiven    PerformanceReview[] @relation("ReviewerReviews")
+  managedBranch              Branch?              @relation("BranchManager")
+  assignedLeads              Lead[]               @relation("AssignedConsultant")
+  quotationsCreated          Quotation[]          @relation("QuotationConsultant")
+  quotationsApproved         Quotation[]          @relation("QuotationApprover")
+  sessions                   Session[]
+  auditLogs                  AuditLog[]
+  attendance                 Attendance[]
+  messagesSent               Message[]
+  leaveRequests              LeaveRequest[]       @relation("LeaveRequests")
+  leaveReviews               LeaveRequest[]       @relation("LeaveReviews")
+  salaryStructure            SalaryStructure?     @relation("SalaryStructure")
+  payslips                   Payslip[]            @relation("Payslips")
+  assignedTickets            SupportTicket[]      @relation("AssignedTickets")
+  teamChannelMemberships     TeamChannelMember[]
+  teamMessagesSent           TeamMessage[]
+  courseEnrollments          Enrollment[]
+  directReports              User[]               @relation("ReportsTo")
+  exitRecord                 ExitRecord?
+  performanceReviewsReceived PerformanceReview[]  @relation("RevieweeReviews")
+  performanceReviewsGiven    PerformanceReview[]  @relation("ReviewerReviews")
   reimbursementClaims        ReimbursementClaim[] @relation("ReimbursementClaimant")
   reimbursementReviews       ReimbursementClaim[] @relation("ReimbursementReviewer")
-  hrTicketsRaised            HrTicket[]          @relation("HrTicketsRaised")
-  hrTicketsAssigned          HrTicket[]          @relation("HrTicketsAssigned")
-  grievancesRaised           GrievanceReport[]   @relation("GrievancesRaised")
-  grievancesHandled          GrievanceReport[]   @relation("GrievancesHandled")
+  hrTicketsRaised            HrTicket[]           @relation("HrTicketsRaised")
+  hrTicketsAssigned          HrTicket[]           @relation("HrTicketsAssigned")
+  grievancesRaised           GrievanceReport[]    @relation("GrievancesRaised")
+  grievancesHandled          GrievanceReport[]    @relation("GrievancesHandled")
+  itineraryPlans             ItineraryPlan[]
 
   @@map("users")
 }
@@ -430,19 +436,19 @@ enum PerformanceReviewStatus {
 }
 
 model PerformanceReview {
-  id           String             @id @default(uuid())
+  id           String                  @id @default(uuid())
   userId       String
-  user         User               @relation("RevieweeReviews", fields: [userId], references: [id])
+  user         User                    @relation("RevieweeReviews", fields: [userId], references: [id])
   reviewerId   String
-  reviewer     User               @relation("ReviewerReviews", fields: [reviewerId], references: [id])
+  reviewer     User                    @relation("ReviewerReviews", fields: [reviewerId], references: [id])
   period       String
   rating       PerformanceRating?
   strengths    String?
   improvements String?
   goals        String?
-  status       PerformanceReviewStatus       @default(DRAFT)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  status       PerformanceReviewStatus @default(DRAFT)
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
 
   @@unique([userId, period])
   @@map("hr_performance_reviews")
@@ -463,42 +469,42 @@ enum ReimbursementStatus {
 }
 
 model ReimbursementClaim {
-  id            String                 @id @default(uuid())
+  id            String                @id @default(uuid())
   userId        String
-  user          User                   @relation("ReimbursementClaimant", fields: [userId], references: [id])
+  user          User                  @relation("ReimbursementClaimant", fields: [userId], references: [id])
   category      ReimbursementCategory
   description   String
-  amount        Decimal                @db.Decimal(14, 2)
+  amount        Decimal               @db.Decimal(14, 2)
   expenseDate   DateTime
   receiptUrl    String?
-  status        ReimbursementStatus    @default(PENDING)
+  status        ReimbursementStatus   @default(PENDING)
   reviewedById  String?
-  reviewer      User?                  @relation("ReimbursementReviewer", fields: [reviewedById], references: [id])
+  reviewer      User?                 @relation("ReimbursementReviewer", fields: [reviewedById], references: [id])
   reviewedAt    DateTime?
   reviewComment String?
   paidAt        DateTime?
-  createdAt     DateTime               @default(now())
+  createdAt     DateTime              @default(now())
 
   @@map("hr_reimbursement_claims")
 }
 
 model Branch {
-  id               String  @id @default(uuid())
-  name             String
-  city             String
-  managerId        String? @unique
-  manager          User?   @relation("BranchManager", fields: [managerId], references: [id])
-  monthlyTarget    Decimal @default(0) @db.Decimal(14, 2)
-  quarterlyTarget  Decimal @default(0) @db.Decimal(14, 2)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              String   @id @default(uuid())
+  name            String
+  city            String
+  managerId       String?  @unique
+  manager         User?    @relation("BranchManager", fields: [managerId], references: [id])
+  monthlyTarget   Decimal  @default(0) @db.Decimal(14, 2)
+  quarterlyTarget Decimal  @default(0) @db.Decimal(14, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  users     User[]     @relation("BranchUsers")
-  leads     Lead[]
-  targets   Target[]
-  expenses  Expense[]
-  campaigns Campaign[]
-  teamChannels TeamChannel[]
+  users            User[]            @relation("BranchUsers")
+  leads            Lead[]
+  targets          Target[]
+  expenses         Expense[]
+  campaigns        Campaign[]
+  teamChannels     TeamChannel[]
   pettyCashEntries PettyCashEntry[]
   budgets          Budget[]
   bankTransactions BankTransaction[]
@@ -507,7 +513,7 @@ model Branch {
 }
 
 model Lead {
-  id                   String     @id @default(uuid())
+  id                   String          @id @default(uuid())
   source               LeadSource
   utmCampaign          String?
   clientName           String
@@ -515,27 +521,40 @@ model Lead {
   email                String?
   destination          String
   branchId             String
-  branch               Branch     @relation(fields: [branchId], references: [id])
+  branch               Branch          @relation(fields: [branchId], references: [id])
   assignedConsultantId String?
-  assignedConsultant   User?      @relation("AssignedConsultant", fields: [assignedConsultantId], references: [id])
-  status               LeadStatus @default(NEW)
+  assignedConsultant   User?           @relation("AssignedConsultant", fields: [assignedConsultantId], references: [id])
+  status               LeadStatus      @default(NEW)
   temperature          LeadTemperature @default(WARM)
   firstContactedAt     DateTime?
-  slaBreached          Boolean    @default(false)
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
+  slaBreached          Boolean         @default(false)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  // Travel requirement intake fields — captured at lead creation, editable later.
+  travelDate        DateTime? @db.Date
+  adultsCount       Int?
+  childrenCount     Int?
+  childrenAges      String? // comma-separated ages, e.g. "5,8" — avoids a child sub-table for a display-only detail
+  hotelCategory     Int? // star rating 1-5, matches Hotel.category
+  mealPreference    String?
+  transportRequired Boolean   @default(false)
+  visaRequired      Boolean   @default(false)
+  flightRequired    Boolean   @default(false)
+  insuranceRequired Boolean   @default(false)
 
   // Optional link to a Client business-entity record (agent/corporate/group
   // account). clientName stays the free-text field it always was — this is
   // opt-in, not a replacement, so existing leads need no backfill.
   clientId String?
-  client   Client?  @relation(fields: [clientId], references: [id])
+  client   Client? @relation(fields: [clientId], references: [id])
 
   travelers      Traveler[]
   quotations     Quotation[]
   conversations  Conversation[]
   automationLogs AutomationLog[]
   supportTickets SupportTicket[]
+  itineraryPlans ItineraryPlan[]
 
   @@map("leads")
 }
@@ -552,7 +571,7 @@ model Client {
   active        Boolean    @default(true)
   createdAt     DateTime   @default(now())
 
-  leads Lead[]
+  leads          Lead[]
   loyaltyAccount LoyaltyAccount?
 
   @@map("clients")
@@ -594,40 +613,40 @@ model LoyaltyTransaction {
 }
 
 model Traveler {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   leadId            String
-  lead              Lead     @relation(fields: [leadId], references: [id])
+  lead              Lead      @relation(fields: [leadId], references: [id])
   name              String
   phone             String?
   email             String?
-  passportNumberEnc String?  // field-level AES-encrypted at the application layer, never stored in plaintext
+  passportNumberEnc String? // field-level AES-encrypted at the application layer, never stored in plaintext
   passportExpiry    DateTime?
   visaStatus        String?
   insurancePolicyNo String?
   dateOfBirth       DateTime? @db.Date
   anniversaryDate   DateTime? @db.Date
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   @@map("travelers")
 }
 
 model RateCard {
-  id        String         @id @default(uuid())
-  type      RateCardType
+  id          String         @id @default(uuid())
+  type        RateCardType
   destination String
-  name      String
-  baseCost  Decimal        @db.Decimal(14, 2)
-  taxPct    Decimal        @default(0) @db.Decimal(5, 2)
-  currency  String         @default("INR")
-  source    RateCardSource @default(MANUAL)
-  createdBy String
-  version   Int            @default(1)
-  active    Boolean        @default(true)
-  supplierId String?
-  supplier  Supplier?      @relation(fields: [supplierId], references: [id])
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  name        String
+  baseCost    Decimal        @db.Decimal(14, 2)
+  taxPct      Decimal        @default(0) @db.Decimal(5, 2)
+  currency    String         @default("INR")
+  source      RateCardSource @default(MANUAL)
+  createdBy   String
+  version     Int            @default(1)
+  active      Boolean        @default(true)
+  supplierId  String?
+  supplier    Supplier?      @relation(fields: [supplierId], references: [id])
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   quotationItems QuotationItem[]
   packageItems   PackageItem[]
@@ -650,26 +669,26 @@ model Supplier {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  rateCards RateCard[]
-  payments  Payment[]
+  rateCards      RateCard[]
+  payments       Payment[]
   dmcCommissions DmcCommission[]
 
   @@map("suppliers")
 }
 
 model Package {
-  id             String   @id @default(uuid())
-  name           String
-  destination    String
-  theme          String?
-  durationDays   Int
-  basePrice      Decimal  @default(0) @db.Decimal(14, 2)
-  currency       String   @default("INR")
-  coverImageUrl  String?
-  active         Boolean  @default(true)
-  createdBy      String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            String   @id @default(uuid())
+  name          String
+  destination   String
+  theme         String?
+  durationDays  Int
+  basePrice     Decimal  @default(0) @db.Decimal(14, 2)
+  currency      String   @default("INR")
+  coverImageUrl String?
+  active        Boolean  @default(true)
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   items PackageItem[]
 
@@ -707,42 +726,314 @@ model Quotation {
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 
-  items    QuotationItem[]
-  bookings Booking[]
+  items     QuotationItem[]
+  bookings  Booking[]
+  itinerary Itinerary?
 
   @@map("quotations")
 }
 
+enum RoomCategory {
+  SINGLE
+  DOUBLE
+  TRIPLE
+  QUAD
+  CWB // Child With Bed
+  CNB // Child No Bed
+}
+
+enum TransportationType {
+  PRIVATE
+  SIC // Seat-in-Coach
+}
+
+// Simple day-note categories the spec lists alongside Accommodation/Activity/
+// Transportation without their own detailed sub-fields — a description each.
+enum ItineraryNoteType {
+  VISA
+  MEAL
+  FLIGHT
+  LEISURE
+  CRUISE
+}
+
+// Day-wise itinerary document attached to a Quotation, distinct from
+// QuotationItem (which drives pricing) — this is the customer-facing
+// "what happens each day" narrative plus static terms sections.
+model Itinerary {
+  id                       String    @id @default(uuid())
+  quotationId              String    @unique
+  quotation                Quotation @relation(fields: [quotationId], references: [id])
+  bookingPaymentTerms      String?
+  pricingTerms             String?
+  inclusionsExclusions     String?
+  cancellationRefundPolicy String?
+  importantInstructions    String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  days ItineraryDay[]
+
+  @@map("itineraries")
+}
+
+model ItineraryDay {
+  id          String    @id @default(uuid())
+  itineraryId String
+  itinerary   Itinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  dayNumber   Int
+  date        DateTime? @db.Date
+  title       String?
+
+  accommodations  ItineraryAccommodation[]
+  activities      ItineraryActivity[]
+  transportations ItineraryTransportation[]
+  notes           ItineraryNote[]
+
+  @@unique([itineraryId, dayNumber])
+  @@map("itinerary_days")
+}
+
+model ItineraryAccommodation {
+  id            String       @id @default(uuid())
+  dayId         String
+  day           ItineraryDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  hotelName     String
+  city          String
+  checkInDate   DateTime     @db.Date
+  checkOutDate  DateTime     @db.Date
+  nights        Int
+  roomCategory  RoomCategory
+  numberOfRooms Int
+  checkInTime   String?
+  checkOutTime  String?
+  description   String?
+
+  @@map("itinerary_accommodations")
+}
+
+model ItineraryActivity {
+  id           String       @id @default(uuid())
+  dayId        String
+  day          ItineraryDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  destination  String
+  activityName String
+  description  String?
+
+  @@map("itinerary_activities")
+}
+
+model ItineraryTransportation {
+  id          String             @id @default(uuid())
+  dayId       String
+  day         ItineraryDay       @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  type        TransportationType
+  description String?
+
+  @@map("itinerary_transportations")
+}
+
+model ItineraryNote {
+  id          String            @id @default(uuid())
+  dayId       String
+  day         ItineraryDay      @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  type        ItineraryNoteType
+  description String?
+
+  @@map("itinerary_notes")
+}
+
+// --- Standalone Itinerary module ("ItineraryPlan*") ---------------------
+// Distinct from `Itinerary` above (which is nested 1:1 under a Quotation)
+// and from `DayItinerary` (a flat content-library master). This is a
+// standalone, optionally lead-linked itinerary with 8 event types,
+// multiple priced accommodation options, package terms, an image
+// gallery, and a public shareable client report.
+
+enum ItineraryPlanStatus {
+  DRAFT
+  READY_TO_SHARE
+  ARCHIVED
+}
+
+enum ItineraryEventType {
+  ACCOMMODATION
+  ACTIVITY
+  TRANSPORTATION
+  VISA
+  MEAL
+  FLIGHT
+  LEISURE
+  CRUISE
+}
+
+model ItineraryPlan {
+  id                    String              @id @default(uuid())
+  refNo                 String              @unique
+  title                 String
+  leadId                String?
+  lead                  Lead?               @relation(fields: [leadId], references: [id])
+  destinations          String[]
+  startDate             DateTime?           @db.Date
+  endDate               DateTime?           @db.Date
+  adultsCount           Int                 @default(1)
+  childrenCount         Int                 @default(0)
+  infantsCount          Int                 @default(0)
+  notes                 String?
+  coverPhotoUrl         String?
+  theme                 String?
+  status                ItineraryPlanStatus @default(DRAFT)
+  showOnWebsite         Boolean             @default(false)
+  websitePerPersonPrice Decimal?            @db.Decimal(14, 2)
+  websiteValidUntil     DateTime?           @db.Date
+  isPopular             Boolean             @default(false)
+  isSpecial             Boolean             @default(false)
+  aboutPackage          String?
+  createdById           String
+  createdBy             User                @relation(fields: [createdById], references: [id])
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  days           ItineraryPlanDay[]
+  pricingOptions ItineraryPricingOption[]
+  images         ItineraryImage[]
+  packageTerms   ItineraryPackageTerms?
+
+  @@map("itinerary_plans")
+}
+
+model ItineraryPlanDay {
+  id              String               @id @default(uuid())
+  itineraryPlanId String
+  itineraryPlan   ItineraryPlan        @relation(fields: [itineraryPlanId], references: [id], onDelete: Cascade)
+  dayNumber       Int
+  date            DateTime?            @db.Date
+  events          ItineraryPlanEvent[]
+
+  @@unique([itineraryPlanId, dayNumber])
+  @@map("itinerary_plan_days")
+}
+
+model ItineraryPlanEvent {
+  id           String              @id @default(uuid())
+  dayId        String
+  day          ItineraryPlanDay    @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  type         ItineraryEventType
+  sortOrder    Int                 @default(0)
+  name         String
+  destination  String?
+  date         DateTime?           @db.Date
+  endDate      DateTime?           @db.Date
+  startTime    String?
+  endTime      String?
+  showTime     Boolean             @default(true)
+  description  String?
+  photoUrl     String?
+  transferType TransportationType?
+  netAmount    Decimal?            @db.Decimal(14, 2)
+  markupPct    Decimal?            @db.Decimal(5, 2)
+  addOns       Json?
+  details      Json?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  pricingOptions ItineraryPricingOption[] @relation("PricingOptionAccommodations")
+
+  @@map("itinerary_plan_events")
+}
+
+model ItineraryPricingOption {
+  id                String               @id @default(uuid())
+  itineraryPlanId   String
+  itineraryPlan     ItineraryPlan        @relation(fields: [itineraryPlanId], references: [id], onDelete: Cascade)
+  label             String               @default("Option 1")
+  sortOrder         Int                  @default(0)
+  accommodations    ItineraryPlanEvent[] @relation("PricingOptionAccommodations")
+  baseMarkupPct     Decimal              @default(0) @db.Decimal(5, 2)
+  extraMarkupAmount Decimal              @default(0) @db.Decimal(14, 2)
+  cgstPct           Decimal              @default(0) @db.Decimal(5, 2)
+  sgstPct           Decimal              @default(0) @db.Decimal(5, 2)
+  igstPct           Decimal              @default(0) @db.Decimal(5, 2)
+  tcsPct            Decimal              @default(0) @db.Decimal(5, 2)
+  discountAmount    Decimal              @default(0) @db.Decimal(14, 2)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@map("itinerary_pricing_options")
+}
+
+model ItineraryPackageTerms {
+  id                      String        @id @default(uuid())
+  itineraryPlanId         String        @unique
+  itineraryPlan           ItineraryPlan @relation(fields: [itineraryPlanId], references: [id], onDelete: Cascade)
+  bookingAndPayment       String?
+  pricingAndInclusions    String?
+  cancellationsAndRefunds String?
+  liability               String?
+  updatedAt               DateTime      @updatedAt
+
+  @@map("itinerary_package_terms")
+}
+
+model ItineraryImage {
+  id              String        @id @default(uuid())
+  itineraryPlanId String
+  itineraryPlan   ItineraryPlan @relation(fields: [itineraryPlanId], references: [id], onDelete: Cascade)
+  url             String
+  caption         String?
+  sortOrder       Int           @default(0)
+  createdAt       DateTime      @default(now())
+
+  @@map("itinerary_images")
+}
+
+// Reusable "stop retyping the same activity/hotel description" library —
+// searched from every event-add modal (by type + destination) to fill a
+// name/description/photo before falling back to manual typing.
+model ItineraryEventTemplate {
+  id          String             @id @default(uuid())
+  type        ItineraryEventType
+  destination String
+  name        String
+  description String?
+  photoUrl    String?
+  active      Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@map("itinerary_event_templates")
+}
+
 model QuotationItem {
-  id              String    @id @default(uuid())
-  quotationId     String
-  quotation       Quotation @relation(fields: [quotationId], references: [id])
-  rateCardId      String
-  rateCard        RateCard  @relation(fields: [rateCardId], references: [id])
-  description     String
-  snapshotAmount  Decimal   @db.Decimal(14, 2) // locked at add-time, immune to later rate changes
-  quantity        Int       @default(1)
+  id             String    @id @default(uuid())
+  quotationId    String
+  quotation      Quotation @relation(fields: [quotationId], references: [id])
+  rateCardId     String
+  rateCard       RateCard  @relation(fields: [rateCardId], references: [id])
+  description    String
+  snapshotAmount Decimal   @db.Decimal(14, 2) // locked at add-time, immune to later rate changes
+  quantity       Int       @default(1)
 
   @@map("quotation_items")
 }
 
 model Booking {
-  id            String    @id @default(uuid())
-  quotationId   String    @unique
-  quotation     Quotation @relation(fields: [quotationId], references: [id])
+  id            String        @id @default(uuid())
+  quotationId   String        @unique
+  quotation     Quotation     @relation(fields: [quotationId], references: [id])
   status        BookingStatus @default(PENDING)
   departureDate DateTime
   returnDate    DateTime?
   voucherUrl    String?
   invoiceUrl    String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  payments  Payment[]
-  vouchers  Voucher[]
-  invoices  Invoice[]
-  reviews   Review[]
-  feedback  TripFeedback[]
+  payments          Payment[]
+  vouchers          Voucher[]
+  invoices          Invoice[]
+  reviews           Review[]
+  feedback          TripFeedback[]
   insurancePolicies InsurancePolicy[]
   dmcCommissions    DmcCommission[]
 
@@ -750,26 +1041,26 @@ model Booking {
 }
 
 model Payment {
-  id         String      @id @default(uuid())
-  bookingId  String
-  booking    Booking     @relation(fields: [bookingId], references: [id])
-  type       PaymentType
-  category   PaymentCategory?
-  amount     Decimal     @db.Decimal(14, 2)
-  dueDate    DateTime?
-  paidAt     DateTime?
-  gatewayRef String?
+  id             String           @id @default(uuid())
+  bookingId      String
+  booking        Booking          @relation(fields: [bookingId], references: [id])
+  type           PaymentType
+  category       PaymentCategory?
+  amount         Decimal          @db.Decimal(14, 2)
+  dueDate        DateTime?
+  paidAt         DateTime?
+  gatewayRef     String?
   // Razorpay Payment Link id/url — set when a hosted-checkout link is generated
   // for this payment; the webhook looks the payment up by gatewayLinkId when
   // Razorpay reports it paid.
   gatewayLinkId  String?
   gatewayLinkUrl String?
-  supplierId String?
-  supplier   Supplier?   @relation(fields: [supplierId], references: [id])
+  supplierId     String?
+  supplier       Supplier?        @relation(fields: [supplierId], references: [id])
   couponId       String?
-  coupon         Coupon?  @relation(fields: [couponId], references: [id])
-  discountAmount Decimal? @db.Decimal(14, 2)
-  createdAt  DateTime    @default(now())
+  coupon         Coupon?          @relation(fields: [couponId], references: [id])
+  discountAmount Decimal?         @db.Decimal(14, 2)
+  createdAt      DateTime         @default(now())
 
   bankTransaction BankTransaction?
 
@@ -818,19 +1109,19 @@ enum InsurancePolicyStatus {
 }
 
 model InsurancePolicy {
-  id              String                 @id @default(uuid())
-  bookingId       String
-  booking         Booking                @relation(fields: [bookingId], references: [id])
-  provider        String
-  policyNumber    String
-  premiumAmount   Decimal                @db.Decimal(12, 2)
-  coverageAmount  Decimal                @db.Decimal(12, 2)
-  startDate       DateTime               @db.Date
-  endDate         DateTime               @db.Date
-  status          InsurancePolicyStatus  @default(ACTIVE)
-  claimNotes      String?
-  createdBy       String
-  createdAt       DateTime               @default(now())
+  id             String                @id @default(uuid())
+  bookingId      String
+  booking        Booking               @relation(fields: [bookingId], references: [id])
+  provider       String
+  policyNumber   String
+  premiumAmount  Decimal               @db.Decimal(12, 2)
+  coverageAmount Decimal               @db.Decimal(12, 2)
+  startDate      DateTime              @db.Date
+  endDate        DateTime              @db.Date
+  status         InsurancePolicyStatus @default(ACTIVE)
+  claimNotes     String?
+  createdBy      String
+  createdAt      DateTime              @default(now())
 
   @@map("insurance_policies")
 }
@@ -932,19 +1223,19 @@ enum ExpenseStatus {
 }
 
 model Attendance {
-  id          String            @id @default(uuid())
+  id          String           @id @default(uuid())
   userId      String
-  user        User              @relation(fields: [userId], references: [id])
-  date        DateTime          @db.Date
+  user        User             @relation(fields: [userId], references: [id])
+  date        DateTime         @db.Date
   checkInAt   DateTime?
   checkOutAt  DateTime?
   checkInLat  Float?
   checkInLng  Float?
   checkOutLat Float?
   checkOutLng Float?
-  status      AttendanceStatus  @default(PRESENT)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  status      AttendanceStatus @default(PRESENT)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   @@unique([userId, date])
   @@map("attendance")
@@ -965,36 +1256,36 @@ enum LeaveStatus {
 }
 
 model LeaveRequest {
-  id             String      @id @default(uuid())
-  userId         String
-  user           User        @relation("LeaveRequests", fields: [userId], references: [id])
-  type           LeaveType
-  startDate      DateTime    @db.Date
-  endDate        DateTime    @db.Date
-  reason         String?
-  status         LeaveStatus @default(PENDING)
-  reviewedById   String?
-  reviewedBy     User?       @relation("LeaveReviews", fields: [reviewedById], references: [id])
-  reviewedAt     DateTime?
-  reviewComment  String?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation("LeaveRequests", fields: [userId], references: [id])
+  type          LeaveType
+  startDate     DateTime    @db.Date
+  endDate       DateTime    @db.Date
+  reason        String?
+  status        LeaveStatus @default(PENDING)
+  reviewedById  String?
+  reviewedBy    User?       @relation("LeaveReviews", fields: [reviewedById], references: [id])
+  reviewedAt    DateTime?
+  reviewComment String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@map("leave_requests")
 }
 
 model Target {
-  id               String       @id @default(uuid())
-  scope            TargetScope
-  scopeId          String
-  period           TargetPeriod
-  revenueTarget    Decimal      @db.Decimal(14, 2)
-  bookingTarget    Int          @default(0)
-  revenueAchieved  Decimal      @default(0) @db.Decimal(14, 2)
-  branchId         String?
-  branch           Branch?      @relation(fields: [branchId], references: [id])
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id              String       @id @default(uuid())
+  scope           TargetScope
+  scopeId         String
+  period          TargetPeriod
+  revenueTarget   Decimal      @db.Decimal(14, 2)
+  bookingTarget   Int          @default(0)
+  revenueAchieved Decimal      @default(0) @db.Decimal(14, 2)
+  branchId        String?
+  branch          Branch?      @relation(fields: [branchId], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   @@map("targets")
 }
@@ -1013,37 +1304,37 @@ model SalaryStructure {
 }
 
 model Payslip {
-  id           String   @id @default(uuid())
-  userId       String
-  user         User     @relation("Payslips", fields: [userId], references: [id])
-  month        String   // "YYYY-MM"
-  basicSalary  Decimal  @db.Decimal(12, 2)
-  hra          Decimal  @db.Decimal(12, 2)
-  allowances   Decimal  @db.Decimal(12, 2)
-  incentive    Decimal  @default(0) @db.Decimal(12, 2)
-  deductions   Decimal  @default(0) @db.Decimal(12, 2)
-  grossPay     Decimal  @db.Decimal(12, 2)
-  netPay       Decimal  @db.Decimal(12, 2)
-  presentDays  Int
-  lopDays      Int      @default(0)
-  generatedBy  String
-  generatedAt  DateTime @default(now())
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation("Payslips", fields: [userId], references: [id])
+  month       String // "YYYY-MM"
+  basicSalary Decimal  @db.Decimal(12, 2)
+  hra         Decimal  @db.Decimal(12, 2)
+  allowances  Decimal  @db.Decimal(12, 2)
+  incentive   Decimal  @default(0) @db.Decimal(12, 2)
+  deductions  Decimal  @default(0) @db.Decimal(12, 2)
+  grossPay    Decimal  @db.Decimal(12, 2)
+  netPay      Decimal  @db.Decimal(12, 2)
+  presentDays Int
+  lopDays     Int      @default(0)
+  generatedBy String
+  generatedAt DateTime @default(now())
 
   @@unique([userId, month])
   @@map("payslips")
 }
 
 model Notification {
-  id             String              @id @default(uuid())
-  channel        NotificationChannel
-  triggerType    String
-  recipient      String
-  status         NotificationStatus  @default(SENT)
-  relatedEntity  String?
+  id            String              @id @default(uuid())
+  channel       NotificationChannel
+  triggerType   String
+  recipient     String
+  status        NotificationStatus  @default(SENT)
+  relatedEntity String?
   // WhatsApp message id (WAMID) returned by Meta's Cloud API on send — lets the
   // webhook's delivery/read/failed status callbacks correlate back to this row.
-  externalId     String?
-  createdAt      DateTime            @default(now())
+  externalId    String?
+  createdAt     DateTime            @default(now())
 
   @@map("notifications")
 }
@@ -1064,16 +1355,16 @@ model Conversation {
 }
 
 model Message {
-  id             String              @id @default(uuid())
+  id             String             @id @default(uuid())
   conversationId String
-  conversation   Conversation        @relation(fields: [conversationId], references: [id])
+  conversation   Conversation       @relation(fields: [conversationId], references: [id])
   direction      MessageDirection
   body           String
-  status         NotificationStatus  @default(SENT)
-  sentBy         String?             // null = system/bot-generated
-  sender         User?               @relation(fields: [sentBy], references: [id])
-  externalId     String?             @unique // WhatsApp WAMID, set once the send confirms — lets delivery/read status webhooks target this exact message instead of guessing "most recent outbound"
-  createdAt      DateTime            @default(now())
+  status         NotificationStatus @default(SENT)
+  sentBy         String? // null = system/bot-generated
+  sender         User?              @relation(fields: [sentBy], references: [id])
+  externalId     String?            @unique // WhatsApp WAMID, set once the send confirms — lets delivery/read status webhooks target this exact message instead of guessing "most recent outbound"
+  createdAt      DateTime           @default(now())
 
   @@map("messages")
 }
@@ -1082,7 +1373,7 @@ model Template {
   id        String              @id @default(uuid())
   channel   NotificationChannel
   name      String
-  subject   String?             // email-only
+  subject   String? // email-only
   body      String
   status    TemplateStatus      @default(APPROVED)
   createdBy String
@@ -1102,7 +1393,7 @@ model CmsContent {
   body        String?
   imageUrl    String?
   linkUrl     String?
-  rating      Int?           // testimonials only (1-5)
+  rating      Int? // testimonials only (1-5)
   active      Boolean        @default(true)
   sortOrder   Int            @default(0)
   publishedAt DateTime?
@@ -1123,20 +1414,20 @@ model SiteSetting {
 }
 
 model Campaign {
-  id                String          @id @default(uuid())
-  name              String
-  channel           NotificationChannel
-  templateId        String?
-  template          Template?       @relation(fields: [templateId], references: [id])
-  status            CampaignStatus  @default(DRAFT)
-  audienceBranchId  String?
-  audienceBranch    Branch?         @relation(fields: [audienceBranchId], references: [id])
+  id                 String              @id @default(uuid())
+  name               String
+  channel            NotificationChannel
+  templateId         String?
+  template           Template?           @relation(fields: [templateId], references: [id])
+  status             CampaignStatus      @default(DRAFT)
+  audienceBranchId   String?
+  audienceBranch     Branch?             @relation(fields: [audienceBranchId], references: [id])
   audienceLeadStatus LeadStatus?
-  scheduledAt       DateTime?
-  sentAt            DateTime?
-  sentCount         Int             @default(0)
-  createdBy         String
-  createdAt         DateTime        @default(now())
+  scheduledAt        DateTime?
+  sentAt             DateTime?
+  sentCount          Int                 @default(0)
+  createdBy          String
+  createdAt          DateTime            @default(now())
 
   @@map("campaigns")
 }
@@ -1185,7 +1476,7 @@ model CurrencyRate {
 
 model CustomFieldDefinition {
   id         String          @id @default(uuid())
-  entityType String          // "LEAD" | "TRAVELER" | "BOOKING" — validated in the DTO, kept as a plain string here since a generic engine's set of carriable entities should stay open-ended
+  entityType String // "LEAD" | "TRAVELER" | "BOOKING" — validated in the DTO, kept as a plain string here since a generic engine's set of carriable entities should stay open-ended
   label      String
   fieldKey   String
   fieldType  CustomFieldType
@@ -1206,7 +1497,7 @@ model CustomFieldValue {
   id           String                @id @default(uuid())
   definitionId String
   definition   CustomFieldDefinition @relation(fields: [definitionId], references: [id])
-  entityId     String                // polymorphic — no FK, same tradeoff as AuditLog.entityId / Notification.relatedEntity
+  entityId     String // polymorphic — no FK, same tradeoff as AuditLog.entityId / Notification.relatedEntity
   value        String
   updatedAt    DateTime              @updatedAt
 
@@ -1230,14 +1521,14 @@ model AuditLog {
 }
 
 model Session {
-  id         String    @id @default(uuid())
-  userId     String
-  user       User      @relation(fields: [userId], references: [id])
-  deviceInfo String
-  ipAddress  String
+  id               String    @id @default(uuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+  deviceInfo       String
+  ipAddress        String
   refreshTokenHash String
-  createdAt  DateTime  @default(now())
-  revokedAt  DateTime?
+  createdAt        DateTime  @default(now())
+  revokedAt        DateTime?
 
   @@map("sessions")
 }
@@ -1547,18 +1838,18 @@ enum CommissionStatus {
 // type, which is money we pay out. tdsAmount is what we expect withheld
 // under Indian TDS rules when the DMC actually pays out.
 model DmcCommission {
-  id         String            @id @default(uuid())
+  id         String           @id @default(uuid())
   supplierId String
-  supplier   Supplier          @relation(fields: [supplierId], references: [id])
+  supplier   Supplier         @relation(fields: [supplierId], references: [id])
   bookingId  String?
-  booking    Booking?          @relation(fields: [bookingId], references: [id])
-  amount     Decimal           @db.Decimal(14, 2)
-  tdsAmount  Decimal           @default(0) @db.Decimal(14, 2)
-  status     CommissionStatus  @default(PENDING)
+  booking    Booking?         @relation(fields: [bookingId], references: [id])
+  amount     Decimal          @db.Decimal(14, 2)
+  tdsAmount  Decimal          @default(0) @db.Decimal(14, 2)
+  status     CommissionStatus @default(PENDING)
   receivedAt DateTime?
   notes      String?
   createdBy  String
-  createdAt  DateTime          @default(now())
+  createdAt  DateTime         @default(now())
 
   @@map("dmc_commissions")
 }

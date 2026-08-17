@@ -345,7 +345,7 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
               <button
                 onClick={handleSend}
                 disabled={sending || !text.trim()}
-                className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+                className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
               >
                 Send
               </button>
@@ -384,7 +384,7 @@ export function TeamChatPanel({ compact = false }: { compact?: boolean }) {
               <button
                 onClick={handleCreateGroup}
                 disabled={!groupName.trim() || selectedMemberIds.length === 0}
-                className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+                className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
               >
                 Create
               </button>

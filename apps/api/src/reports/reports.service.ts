@@ -150,8 +150,9 @@ export class ReportsService {
   // on an upcoming booking whose passport expires within 6 months of departure, or has
   // no visa status recorded. Exposed as an on-demand report; a real cron trigger would
   // call this same query on a schedule (see main.ts's SLA interval for that pattern).
-  async complianceExpiring() {
+  async complianceExpiring(branchId?: string) {
     const travelers = await this.prisma.traveler.findMany({
+      where: branchId ? { lead: { branchId } } : undefined,
       include: { lead: { include: { quotations: { include: { bookings: true } } } } },
     });
 
@@ -313,7 +314,17 @@ export class ReportsService {
         .then((entries) => entries.reduce((s, e) => s + (e.type === 'CASH_IN' ? Number(e.amount) : -Number(e.amount)), 0)),
       this.prisma.budget.findMany({ where: { month, year, ...(branchId ? { branchId } : {}) } }),
       this.prisma.bankTransaction.count({ where: { matched: false, ...(branchId ? { branchId } : {}) } }),
-      this.prisma.dmcCommission.findMany({ where: { status: 'PENDING' } }),
+      // DmcCommission has no direct branchId — it reaches a branch only via
+      // booking->quotation->lead. Every sibling query in this dashboard is
+      // branch-scoped when branchId is set; this one was querying org-wide
+      // regardless, leaking every branch's pending commission total into a
+      // branch manager's Accounts dashboard.
+      this.prisma.dmcCommission.findMany({
+        where: {
+          status: 'PENDING',
+          ...(branchId ? { booking: { quotation: { lead: { branchId } } } } : {}),
+        },
+      }),
     ]);
 
     const totalBudgeted = budgets.reduce((s, b) => s + Number(b.budgetedAmount), 0);

@@ -257,10 +257,16 @@ export default function QuotationDetailPage() {
     <AppShell>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{quotation.refNo}</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">{quotation.refNo}</h1>
           <p className="text-sm text-slate-500">{quotation.lead.clientName} · {quotation.lead.destination} · {quotation.status}</p>
         </div>
         <div className="flex gap-2">
+          <a
+            href={`/quotations/${id}/itinerary`}
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-brand-200 hover:bg-white dark:hover:bg-slate-800 hover:text-brand"
+          >
+            Manage itinerary
+          </a>
           {isSent && (
             <>
               <a
@@ -280,14 +286,14 @@ export default function QuotationDetailPage() {
               <button
                 onClick={handleSendToClient}
                 disabled={sending}
-                className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:opacity-60"
+                className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-1.5 text-sm font-semibold text-white shadow-md shadow-brand-500/25 transition hover:opacity-90 disabled:opacity-60"
               >
                 {sending ? 'Sending...' : sent ? 'Sent!' : 'Send to client (WhatsApp + Email)'}
               </button>
             </>
           )}
           {isDraft && (
-            <button onClick={handleSubmit} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
+            <button onClick={handleSubmit} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-1.5 text-sm font-semibold text-white shadow-md shadow-brand-500/25 transition hover:opacity-90">
               Submit for approval
             </button>
           )}
@@ -308,7 +314,7 @@ export default function QuotationDetailPage() {
               className="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors"
             />
           </div>
-          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+          <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">
             Convert to booking
           </button>
         </form>
@@ -343,7 +349,7 @@ export default function QuotationDetailPage() {
                     <label className="block text-xs text-slate-500">Markup %</label>
                     <input type="number" min={0} value={hotelMarkup} onChange={(e) => setHotelMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
                   </div>
-                  <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
+                  <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Search</button>
                 </form>
                 <div className="mt-3 space-y-3">
                   {hotelResults.map((hotel, hi) => (
@@ -398,7 +404,7 @@ export default function QuotationDetailPage() {
                     <label className="block text-xs text-slate-500">Markup %</label>
                     <input type="number" min={0} value={flightMarkup} onChange={(e) => setFlightMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
                   </div>
-                  <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
+                  <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Search</button>
                 </form>
                 <table className="mt-3 w-full text-xs">
                   <thead className="text-left text-slate-500"><tr><th className="py-1">Airline</th><th>Flight</th><th>Depart</th><th>Arrive</th><th>Class</th><th>Fare (marked up, x{flightForm.pax} pax)</th><th></th></tr></thead>
@@ -447,7 +453,7 @@ export default function QuotationDetailPage() {
                     <label className="block text-xs text-slate-500">Markup %</label>
                     <input type="number" min={0} value={transferMarkup} onChange={(e) => setTransferMarkup(Number(e.target.value))} className="mt-1 w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
                   </div>
-                  <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Search</button>
+                  <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Search</button>
                 </form>
                 <table className="mt-3 w-full text-xs">
                   <thead className="text-left text-slate-500"><tr><th className="py-1">Vehicle</th><th>Capacity</th><th>Distance</th><th>Fare (marked up)</th><th></th></tr></thead>
@@ -483,7 +489,7 @@ export default function QuotationDetailPage() {
             <label className="block text-xs text-slate-500">Qty</label>
             <input type="number" min={1} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="mt-1 w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           </div>
-          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+          <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">
             + Add to quotation
           </button>
         </form>

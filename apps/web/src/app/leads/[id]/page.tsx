@@ -24,6 +24,7 @@ const TEMPERATURE_DROPDOWN_OPTIONS: BadgeDropdownOption[] = TEMPERATURE_OPTIONS.
   colorClass: TEMPERATURE_COLORS[t],
   dotClass: TEMPERATURE_DOT_COLORS[t],
 }));
+const MEAL_PREFERENCE_OPTIONS = ['Veg', 'Non-veg', 'Jain', 'Any'];
 
 interface TravelerRow {
   id: string;
@@ -44,6 +45,19 @@ export default function LeadDetailPage() {
   const [form, setForm] = useState({ name: '', passportNumber: '', passportExpiry: '', visaStatus: '' });
   const [customFieldDefs, setCustomFieldDefs] = useState<CustomFieldDefinitionDTO[]>([]);
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
+  const [travelForm, setTravelForm] = useState({
+    travelDate: '',
+    adultsCount: '',
+    childrenCount: '',
+    childrenAges: '',
+    hotelCategory: '',
+    mealPreference: '',
+    transportRequired: false,
+    visaRequired: false,
+    flightRequired: false,
+    insuranceRequired: false,
+  });
+  const [savingTravel, setSavingTravel] = useState(false);
 
   async function load() {
     try {
@@ -54,13 +68,56 @@ export default function LeadDetailPage() {
         api.get<CustomFieldDefinitionDTO[]>('/custom-fields/definitions?entityType=LEAD'),
         api.get<CustomFieldValueDTO[]>(`/custom-fields/values?entityType=LEAD&entityId=${id}`),
       ]);
-      setLead(leads.find((l) => l.id === id) ?? null);
+      const found = leads.find((l) => l.id === id) ?? null;
+      setLead(found);
       setTravelers(t);
       setQuotations(q.filter((qq) => qq.leadId === id));
       setCustomFieldDefs(defs.filter((d) => d.active));
       setCustomFieldValues(Object.fromEntries(values.map((v) => [v.definitionId, v.value])));
+      if (found) {
+        setTravelForm({
+          travelDate: found.travelDate ? found.travelDate.slice(0, 10) : '',
+          adultsCount: found.adultsCount?.toString() ?? '',
+          childrenCount: found.childrenCount?.toString() ?? '',
+          childrenAges: found.childrenAges ?? '',
+          hotelCategory: found.hotelCategory?.toString() ?? '',
+          mealPreference: found.mealPreference ?? '',
+          transportRequired: found.transportRequired,
+          visaRequired: found.visaRequired,
+          flightRequired: found.flightRequired,
+          insuranceRequired: found.insuranceRequired,
+        });
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to load lead');
+    }
+  }
+
+  async function handleSaveTravelRequirements(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSavingTravel(true);
+    try {
+      await api.patch(`/leads/${id}`, {
+        // null (not undefined) for a blank field — this form always resubmits
+        // its full state, so a blank field means "clear this", and undefined
+        // would be silently ignored by the backend's partial-update semantics.
+        travelDate: travelForm.travelDate || null,
+        adultsCount: travelForm.adultsCount ? Number(travelForm.adultsCount) : null,
+        childrenCount: travelForm.childrenCount ? Number(travelForm.childrenCount) : null,
+        childrenAges: travelForm.childrenAges || null,
+        hotelCategory: travelForm.hotelCategory ? Number(travelForm.hotelCategory) : null,
+        mealPreference: travelForm.mealPreference || null,
+        transportRequired: travelForm.transportRequired,
+        visaRequired: travelForm.visaRequired,
+        flightRequired: travelForm.flightRequired,
+        insuranceRequired: travelForm.insuranceRequired,
+      });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to save travel requirements');
+    } finally {
+      setSavingTravel(false);
     }
   }
 
@@ -131,12 +188,13 @@ export default function LeadDetailPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{lead.clientName}</h1>
+            <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">{lead.clientName}</h1>
             <BadgeDropdown value={lead.temperature} options={TEMPERATURE_DROPDOWN_OPTIONS} onChange={handleTemperatureChange} />
           </div>
           <p className="text-sm text-slate-500">{lead.destination} · {lead.phone} · {lead.status}</p>
+          <p className="text-xs text-slate-400">Entry date: {new Date(lead.createdAt).toLocaleDateString()}</p>
         </div>
-        <button onClick={handleCreateQuotation} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
+        <button onClick={handleCreateQuotation} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-1.5 text-sm font-semibold text-white shadow-md shadow-brand-500/25 transition hover:opacity-90">
           Create quotation
         </button>
       </div>
@@ -157,7 +215,7 @@ export default function LeadDetailPage() {
               <input placeholder="Passport number" value={form.passportNumber} onChange={(e) => setForm({ ...form, passportNumber: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
               <input type="date" placeholder="Passport expiry" value={form.passportExpiry} onChange={(e) => setForm({ ...form, passportExpiry: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
               <input placeholder="Visa status" value={form.visaStatus} onChange={(e) => setForm({ ...form, visaStatus: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-              <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Save traveler</button>
+              <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Save traveler</button>
             </form>
           )}
           <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
@@ -203,6 +261,59 @@ export default function LeadDetailPage() {
         </div>
       </div>
 
+      <div className="mt-6">
+        <h2 className="text-sm font-semibold text-slate-700">Travel Requirement</h2>
+        <form onSubmit={handleSaveTravelRequirements} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Travel date</label>
+            <input type="date" value={travelForm.travelDate} onChange={(e) => setTravelForm({ ...travelForm, travelDate: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">No. of adults</label>
+            <input type="number" min={0} value={travelForm.adultsCount} onChange={(e) => setTravelForm({ ...travelForm, adultsCount: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">No. of children</label>
+            <input type="number" min={0} value={travelForm.childrenCount} onChange={(e) => setTravelForm({ ...travelForm, childrenCount: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Children ages</label>
+            <input placeholder="e.g. 5, 8" value={travelForm.childrenAges} onChange={(e) => setTravelForm({ ...travelForm, childrenAges: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Hotel category</label>
+            <select value={travelForm.hotelCategory} onChange={(e) => setTravelForm({ ...travelForm, hotelCategory: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
+              <option value="">Not set</option>
+              {[3, 4, 5].map((n) => <option key={n} value={n}>{n}-star</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Meal preference</label>
+            <select value={travelForm.mealPreference} onChange={(e) => setTravelForm({ ...travelForm, mealPreference: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
+              <option value="">Not set</option>
+              {MEAL_PREFERENCE_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+          <div className="flex flex-wrap items-center gap-4 sm:col-span-2 lg:col-span-3 text-sm text-slate-600 dark:text-slate-300">
+            <label className="flex items-center gap-1.5">
+              <input type="checkbox" checked={travelForm.transportRequired} onChange={(e) => setTravelForm({ ...travelForm, transportRequired: e.target.checked })} /> Transport
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="checkbox" checked={travelForm.visaRequired} onChange={(e) => setTravelForm({ ...travelForm, visaRequired: e.target.checked })} /> Visa
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="checkbox" checked={travelForm.flightRequired} onChange={(e) => setTravelForm({ ...travelForm, flightRequired: e.target.checked })} /> Flight
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="checkbox" checked={travelForm.insuranceRequired} onChange={(e) => setTravelForm({ ...travelForm, insuranceRequired: e.target.checked })} /> Insurance
+            </label>
+          </div>
+          <button type="submit" disabled={savingTravel} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 sm:col-span-2 lg:col-span-3">
+            {savingTravel ? 'Saving…' : 'Save travel requirement'}
+          </button>
+        </form>
+      </div>
+
       {customFieldDefs.length > 0 && (
         <div className="mt-6">
           <h2 className="text-sm font-semibold text-slate-700">Custom Fields</h2>
@@ -239,7 +350,7 @@ export default function LeadDetailPage() {
                 )}
               </div>
             ))}
-            <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
+            <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 sm:col-span-2 lg:col-span-3">
               Save custom fields
             </button>
           </form>

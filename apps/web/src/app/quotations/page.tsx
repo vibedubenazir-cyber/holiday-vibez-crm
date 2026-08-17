@@ -27,7 +27,7 @@ export default function QuotationsPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Quotations</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Quotations</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Start a quotation from a lead's page. Drafts are built here by selecting rate cards.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">

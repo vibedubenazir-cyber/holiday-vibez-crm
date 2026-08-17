@@ -3,6 +3,7 @@ import { AutomationRule } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateAutomationRuleDto, UpdateAutomationRuleDto } from './dto/automation.dto';
+import { interpolateTemplate } from '../common/template.util';
 
 @Injectable()
 export class AutomationService {
@@ -96,13 +97,14 @@ export class AutomationService {
 
     for (const lead of leads) {
       const recipient = rule.channel === 'EMAIL' ? (lead.email ?? lead.phone) : lead.phone;
+      const vars = { name: lead.clientName, destination: lead.destination };
       await this.notifications.send({
         channel: rule.channel,
         triggerType: `automation:${rule.name}`,
         recipient,
         relatedEntity: `lead:${lead.id}`,
-        body: template?.body ?? `Hi ${lead.clientName}, following up on your ${lead.destination} trip — let us know if you have any questions!`,
-        subject: template?.subject ?? `Following up on your ${lead.destination} trip`,
+        body: interpolateTemplate(template?.body, vars) ?? `Hi ${lead.clientName}, following up on your ${lead.destination} trip — let us know if you have any questions!`,
+        subject: interpolateTemplate(template?.subject, vars) ?? `Following up on your ${lead.destination} trip`,
       });
       await this.prisma.automationLog.create({ data: { ruleId: rule.id, leadId: lead.id, status: 'SENT' } });
       this.logger.log(`Rule "${rule.name}" fired for lead ${lead.id}${template ? ` (template: ${template.name})` : ''}`);

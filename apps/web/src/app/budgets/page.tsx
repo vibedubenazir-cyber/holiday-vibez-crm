@@ -67,9 +67,9 @@ export default function BudgetsPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Budget & Forecast</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Budget & Forecast</h1>
         {canManage && (
-          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
+          <button onClick={() => setShowForm((s) => !s)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-1.5 text-sm font-semibold text-white shadow-md shadow-brand-500/25 transition hover:opacity-90">
             {showForm ? 'Cancel' : 'Set budget'}
           </button>
         )}
@@ -111,7 +111,7 @@ export default function BudgetsPage() {
             <input required type="number" value={form.budgetedAmount} onChange={(e) => setForm({ ...form, budgetedAmount: e.target.value })} className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           </div>
           <p className="text-xs text-slate-400">for {new Date(year, month - 1).toLocaleString('en-IN', { month: 'long', year: 'numeric' })}</p>
-          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Save</button>
+          <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Save</button>
         </form>
       )}
 

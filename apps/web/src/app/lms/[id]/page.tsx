@@ -126,12 +126,12 @@ export default function CourseDetailPage() {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={course.imageUrl} alt={course.title} className="mb-4 h-48 w-full rounded-xl object-cover shadow-card" />
       )}
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">{course.title}</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">{course.title}</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{course.description}</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {!course.enrolled ? (
-        <button onClick={handleEnroll} disabled={enrolling} className="mt-4 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60">
+        <button onClick={handleEnroll} disabled={enrolling} className="mt-4 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60">
           {enrolling ? 'Enrolling...' : 'Enroll in this course'}
         </button>
       ) : course.certificate ? (
@@ -166,7 +166,7 @@ export default function CourseDetailPage() {
           <form onSubmit={handleAddLesson} className="mt-2 flex flex-wrap items-end gap-2 rounded-lg border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-700 dark:bg-slate-900/30">
             <input required placeholder="Lesson title" value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} className="w-56 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
             <input required placeholder="Content / video URL / notes" value={lessonForm.content} onChange={(e) => setLessonForm({ ...lessonForm, content: e.target.value })} className="flex-1 min-w-[200px] rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-            <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add</button>
+            <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Add</button>
           </form>
         )}
 
@@ -233,7 +233,7 @@ export default function CourseDetailPage() {
               <button type="button" onClick={() => setQuestionForm({ ...questionForm, options: [...questionForm.options, ''] })} className="text-sm text-brand hover:underline">
                 + Add option
               </button>
-              <button type="submit" className="ml-auto rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add question</button>
+              <button type="submit" className="ml-auto rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Add question</button>
             </div>
           </form>
         )}
@@ -255,7 +255,7 @@ export default function CourseDetailPage() {
                 </div>
               </div>
             ))}
-            <button type="submit" disabled={submittingQuiz} className="self-start rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60">
+            <button type="submit" disabled={submittingQuiz} className="self-start rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60">
               {submittingQuiz ? 'Submitting...' : 'Submit quiz'}
             </button>
           </form>

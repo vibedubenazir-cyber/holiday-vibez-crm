@@ -2,6 +2,7 @@
 
 import { Fragment, FormEvent, useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
+import { PhoneInput } from '@/components/PhoneInput';
 import { useAuth } from '@/lib/auth-context';
 import { api, ApiError } from '@/lib/api';
 import { Role, ClientType, type ClientDTO, type LoyaltyAccountDTO } from '@holiday-vibez/shared';
@@ -127,9 +128,9 @@ export default function ClientsPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Clients</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Clients</h1>
         {canManage && (
-          <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
+          <button onClick={() => setShowForm((s) => !s)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-1.5 text-sm font-semibold text-white shadow-md shadow-brand-500/25 transition hover:opacity-90">
             {showForm ? 'Cancel' : 'Add client'}
           </button>
         )}
@@ -147,7 +148,7 @@ export default function ClientsPage() {
             {TYPE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
           <input required placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-          <input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <PhoneInput value={form.phone} onChange={(phone) => setForm({ ...form, phone })} />
           <input type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           {form.type === ClientType.CORPORATE && (
             <input placeholder="GST number" value={form.gstNumber} onChange={(e) => setForm({ ...form, gstNumber: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
@@ -156,7 +157,7 @@ export default function ClientsPage() {
             <input type="number" step="0.01" placeholder="Commission %" value={form.commissionPct} onChange={(e) => setForm({ ...form, commissionPct: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           )}
           <input placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors sm:col-span-2 lg:col-span-3" />
-          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-3">
+          <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 sm:col-span-2 lg:col-span-3">
             Create client
           </button>
         </form>
@@ -217,7 +218,7 @@ export default function ClientsPage() {
                               <div className="mt-2 flex flex-wrap items-center gap-2">
                                 <input type="number" min="0" placeholder="Points" value={pointsForm.points} onChange={(e) => setPointsForm({ ...pointsForm, points: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-2 py-1 text-sm" />
                                 <input placeholder="Reason (optional)" value={pointsForm.description} onChange={(e) => setPointsForm({ ...pointsForm, description: e.target.value })} className="rounded-lg border border-slate-300 px-2 py-1 text-sm" />
-                                <button onClick={() => handleEarn(c.id)} className="rounded-lg bg-brand px-3 py-1 text-xs font-medium text-white hover:bg-brand-dark">Award</button>
+                                <button onClick={() => handleEarn(c.id)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-1 text-xs font-medium text-white hover:opacity-90">Award</button>
                                 <button onClick={() => handleRedeem(c.id)} className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100">Redeem</button>
                                 <button onClick={() => handleReferralBonus(c.id)} className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100">Referral bonus</button>
                               </div>

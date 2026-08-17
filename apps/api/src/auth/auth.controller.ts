@@ -14,8 +14,9 @@ import {
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { ConfirmTwoFactorDto, VerifyTwoFactorDto } from './dto/two-factor.dto';
+import { ConfirmTwoFactorDto, DisableTwoFactorDto, VerifyTwoFactorDto } from './dto/two-factor.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { toUserDto } from '../admin/dto/user.mapper';
 
@@ -25,6 +26,7 @@ const REFRESH_COOKIE = 'hv_refresh';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @UseGuards(RateLimitGuard)
   @Post('login')
   @HttpCode(200)
   async login(@Body() dto: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
@@ -47,6 +49,7 @@ export class AuthController {
     return { accessToken: result.accessToken, user: toUserDto(result.user) };
   }
 
+  @UseGuards(RateLimitGuard)
   @Post('2fa/verify')
   @HttpCode(200)
   async verifyTwoFactor(@Body() dto: VerifyTwoFactorDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
@@ -79,18 +82,27 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('2fa/disable')
-  disableTwoFactor(@CurrentUser() user: { id: string }) {
-    return this.authService.disableTwoFactor(user.id);
+  disableTwoFactor(@CurrentUser() user: { id: string }, @Body() dto: DisableTwoFactorDto) {
+    return this.authService.disableTwoFactor(user.id, dto.code);
   }
 
   @Post('refresh')
   @HttpCode(200)
-  async refresh(@Req() req: Request) {
+  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies?.[REFRESH_COOKIE];
     if (!refreshToken) {
       throw new UnauthorizedException('Missing refresh token');
     }
-    const { user, accessToken } = await this.authService.refresh(refreshToken);
+    const { user, accessToken, refreshToken: rotatedRefreshToken } = await this.authService.refresh(refreshToken);
+
+    res.cookie(REFRESH_COOKIE, rotatedRefreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      path: '/api/auth',
+    });
+
     return { accessToken, user: toUserDto(user) };
   }
 

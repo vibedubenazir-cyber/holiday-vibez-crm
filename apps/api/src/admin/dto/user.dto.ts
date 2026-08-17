@@ -1,5 +1,6 @@
 import { Role, UserStatus } from '@prisma/client';
 import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsPhoneWithCountryCode } from '../../common/validators/phone.validator';
 
 export class CreateUserDto {
   @IsString()
@@ -9,6 +10,7 @@ export class CreateUserDto {
   email!: string;
 
   @IsString()
+  @IsPhoneWithCountryCode()
   phone!: string;
 
   @IsString()
@@ -30,6 +32,7 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsString()
+  @IsPhoneWithCountryCode()
   phone?: string;
 
   @IsOptional()

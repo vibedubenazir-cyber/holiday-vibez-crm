@@ -39,8 +39,8 @@ export class LeadsController {
 
   @Roles(Role.ADMIN, Role.BRANCH_MANAGER)
   @Post()
-  create(@Body() dto: CreateLeadDto) {
-    return this.leadsService.create(dto);
+  create(@Body() dto: CreateLeadDto, @CurrentUser() user: { id: string; role: Role; branchId: string | null }) {
+    return this.leadsService.create(dto, user);
   }
 
   // CSV columns: source,clientName,phone,email,destination,branch — same write
@@ -49,7 +49,7 @@ export class LeadsController {
   @Roles(Role.ADMIN, Role.BRANCH_MANAGER)
   @Post('bulk-import')
   @UseInterceptors(FileInterceptor('file', { storage: memoryStorage(), limits: { fileSize: MAX_CSV_SIZE_BYTES } }))
-  async bulkImport(@UploadedFile() file: Express.Multer.File) {
+  async bulkImport(@UploadedFile() file: Express.Multer.File, @CurrentUser() user: { id: string; role: Role; branchId: string | null }) {
     if (!file) throw new BadRequestException('No CSV file uploaded');
     let rows: Record<string, string>[];
     try {
@@ -58,7 +58,7 @@ export class LeadsController {
       throw new BadRequestException(`Could not parse CSV: ${err instanceof Error ? err.message : 'invalid format'}`);
     }
     if (rows.length === 0) throw new BadRequestException('CSV has no data rows');
-    return this.leadsService.bulkImport(rows);
+    return this.leadsService.bulkImport(rows, user);
   }
 
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)

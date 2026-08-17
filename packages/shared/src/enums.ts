@@ -15,11 +15,16 @@ export enum UserStatus {
 
 export enum LeadSource {
   GOOGLE = 'GOOGLE',
-  META = 'META',
+  META = 'META', // legacy value — superseded by INSTAGRAM/FACEBOOK below, kept for old rows
   WEBSITE = 'WEBSITE',
   WHATSAPP = 'WHATSAPP',
   REFERRAL = 'REFERRAL',
   WALKIN = 'WALKIN',
+  INSTAGRAM = 'INSTAGRAM',
+  FACEBOOK = 'FACEBOOK',
+  EXISTING_CUSTOMER = 'EXISTING_CUSTOMER',
+  AGENT_B2B = 'AGENT_B2B',
+  PHONE_CALL = 'PHONE_CALL',
 }
 
 export enum LeadStatus {
@@ -302,4 +307,45 @@ export enum ExpenseStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
+}
+
+export enum RoomCategory {
+  SINGLE = 'SINGLE',
+  DOUBLE = 'DOUBLE',
+  TRIPLE = 'TRIPLE',
+  QUAD = 'QUAD',
+  CWB = 'CWB',
+  CNB = 'CNB',
+}
+
+export enum TransportationType {
+  PRIVATE = 'PRIVATE',
+  SIC = 'SIC',
+}
+
+export enum ItineraryNoteType {
+  VISA = 'VISA',
+  MEAL = 'MEAL',
+  FLIGHT = 'FLIGHT',
+  LEISURE = 'LEISURE',
+  CRUISE = 'CRUISE',
+}
+
+// Standalone "Itinerary" module (ItineraryPlan*) — distinct from the
+// quotation-nested Itinerary/ItineraryNoteType above and from DayItinerary.
+export enum ItineraryPlanStatus {
+  DRAFT = 'DRAFT',
+  READY_TO_SHARE = 'READY_TO_SHARE',
+  ARCHIVED = 'ARCHIVED',
+}
+
+export enum ItineraryEventType {
+  ACCOMMODATION = 'ACCOMMODATION',
+  ACTIVITY = 'ACTIVITY',
+  TRANSPORTATION = 'TRANSPORTATION',
+  VISA = 'VISA',
+  MEAL = 'MEAL',
+  FLIGHT = 'FLIGHT',
+  LEISURE = 'LEISURE',
+  CRUISE = 'CRUISE',
 }

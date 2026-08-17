@@ -74,7 +74,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white transition hover:bg-brand-dark disabled:opacity-60"
+              className="w-full rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
             >
               {submitting ? 'Verifying...' : 'Verify'}
             </button>
@@ -136,7 +136,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white transition hover:bg-brand-dark disabled:opacity-60"
+            className="w-full rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
           >
             {submitting ? 'Signing in...' : 'Sign in'}
           </button>

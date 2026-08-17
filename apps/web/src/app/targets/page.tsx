@@ -81,7 +81,7 @@ export default function TargetsPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Targets & Leaderboard</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Targets & Leaderboard</h1>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       <div className="mt-4 flex items-center gap-3">
@@ -117,7 +117,7 @@ export default function TargetsPage() {
             <option value="QUARTER">Quarterly</option>
           </select>
           <input required type="number" placeholder="Revenue target (₹)" value={form.revenueTarget} onChange={(e) => setForm({ ...form, revenueTarget: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-          <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-4">
+          <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 sm:col-span-2 lg:col-span-4">
             Set target
           </button>
         </form>

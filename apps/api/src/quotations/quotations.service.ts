@@ -54,7 +54,23 @@ export class QuotationsService {
     if (!rateCard || !rateCard.active) throw new NotFoundException('Rate card not found or inactive');
 
     const quantity = dto.quantity ?? 1;
-    const unitAmount = Number(rateCard.baseCost) * (1 + Number(rateCard.taxPct) / 100);
+    let unitAmount = Number(rateCard.baseCost) * (1 + Number(rateCard.taxPct) / 100);
+
+    // Quotation.currency is always INR (recalculateTotal() just sums
+    // snapshotAmount with no per-item currency, and the customer-facing quote
+    // displays the total labeled "INR"). A rate card priced in another
+    // currency was being summed and shown as INR unconverted — convert at
+    // item-add time using the same CurrencyRate table the Currency Exchange
+    // page manages, so what's snapshotted is what quotation.currency claims it is.
+    if (rateCard.currency !== 'INR') {
+      const fx = await this.prisma.currencyRate.findUnique({ where: { code: rateCard.currency } });
+      if (!fx) {
+        throw new BadRequestException(
+          `No INR exchange rate configured for ${rateCard.currency} — add one on the Currency Exchange page before quoting this rate card`,
+        );
+      }
+      unitAmount *= Number(fx.rateToInr);
+    }
     const snapshotAmount = Math.round(unitAmount * 100) / 100;
 
     await this.prisma.quotationItem.create({

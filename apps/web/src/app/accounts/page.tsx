@@ -83,7 +83,7 @@ export default function AccountsDashboardPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Accounts Dashboard</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Accounts Dashboard</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Everything under Accounts, at a glance.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 

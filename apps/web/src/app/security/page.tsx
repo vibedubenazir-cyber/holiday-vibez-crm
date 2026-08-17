@@ -15,6 +15,8 @@ export default function SecurityPage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [setupData, setSetupData] = useState<TwoFactorSetupDTO | null>(null);
   const [confirmCode, setConfirmCode] = useState('');
+  const [disableCode, setDisableCode] = useState('');
+  const [confirmingDisable, setConfirmingDisable] = useState(false);
   const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
   const [twoFactorBusy, setTwoFactorBusy] = useState(false);
 
@@ -77,10 +79,12 @@ export default function SecurityPage() {
     setTwoFactorError(null);
     setTwoFactorBusy(true);
     try {
-      await api.post('/auth/2fa/disable');
+      await api.post('/auth/2fa/disable', { code: disableCode });
       setTwoFactorEnabled(false);
+      setConfirmingDisable(false);
+      setDisableCode('');
     } catch (err) {
-      setTwoFactorError(err instanceof ApiError ? err.message : 'Failed to disable 2FA');
+      setTwoFactorError(err instanceof ApiError ? err.message : 'Invalid code');
     } finally {
       setTwoFactorBusy(false);
     }
@@ -97,26 +101,57 @@ export default function SecurityPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Security</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Security</h1>
 
       <section className="mt-4 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-5">
-        <h2 className="text-sm font-semibold text-slate-800">Two-Factor Authentication</h2>
+        <h2 className="text-sm font-semibold text-brand-700">Two-Factor Authentication</h2>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Require a 6-digit authenticator app code in addition to your password when signing in.
         </p>
         {twoFactorError && <p className="mt-2 text-sm text-red-600">{twoFactorError}</p>}
 
         {twoFactorEnabled ? (
-          <div className="mt-4 flex items-center gap-3">
-            <span className="rounded-lg bg-blue-100 px-2 py-0.5 text-xs text-blue-700">Enabled</span>
-            <button
-              onClick={handleDisable}
-              disabled={twoFactorBusy}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-60"
-            >
-              Disable 2FA
-            </button>
-          </div>
+          confirmingDisable ? (
+            <div className="mt-4 flex items-center gap-2">
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={disableCode}
+                onChange={(e) => setDisableCode(e.target.value)}
+                placeholder="000000"
+                autoFocus
+                className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-center text-sm tracking-widest focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors"
+              />
+              <button
+                onClick={handleDisable}
+                disabled={twoFactorBusy || disableCode.length !== 6}
+                className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-60"
+              >
+                Confirm Disable
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmingDisable(false);
+                  setDisableCode('');
+                  setTwoFactorError(null);
+                }}
+                className="text-sm text-slate-500 hover:underline"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div className="mt-4 flex items-center gap-3">
+              <span className="rounded-lg bg-blue-100 px-2 py-0.5 text-xs text-blue-700">Enabled</span>
+              <button
+                onClick={() => setConfirmingDisable(true)}
+                className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+              >
+                Disable 2FA
+              </button>
+            </div>
+          )
         ) : setupData ? (
           <div className="mt-4 space-y-3">
             <img src={setupData.qrCodeDataUrl} alt="2FA QR code" className="h-40 w-40 rounded-lg border border-slate-200" />
@@ -137,7 +172,7 @@ export default function SecurityPage() {
               <button
                 onClick={handleConfirmSetup}
                 disabled={twoFactorBusy || confirmCode.length !== 6}
-                className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+                className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
               >
                 Confirm & Enable
               </button>
@@ -156,7 +191,7 @@ export default function SecurityPage() {
           <button
             onClick={handleStartSetup}
             disabled={twoFactorBusy}
-            className="mt-4 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+            className="mt-4 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
           >
             Enable 2FA
           </button>
@@ -164,7 +199,7 @@ export default function SecurityPage() {
       </section>
 
       <section className="mt-4 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-5">
-        <h2 className="text-sm font-semibold text-slate-800">Push Notifications</h2>
+        <h2 className="text-sm font-semibold text-brand-700">Push Notifications</h2>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Get a browser notification for lead assignments, SLA breaches, and quotation approvals.
         </p>
@@ -183,7 +218,7 @@ export default function SecurityPage() {
             <button
               onClick={handleEnablePush}
               disabled={pushBusy}
-              className="mt-4 rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+              className="mt-4 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
             >
               {pushBusy ? 'Requesting…' : 'Enable push notifications'}
             </button>
@@ -200,7 +235,7 @@ export default function SecurityPage() {
         )}
       </section>
 
-      <h2 className="mt-8 text-sm font-semibold text-slate-800 dark:text-slate-100">Active Sessions</h2>
+      <h2 className="mt-8 text-sm font-semibold text-brand-700 dark:text-slate-100">Active Sessions</h2>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Devices currently signed in to your account. Revoke any you don't recognize.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 

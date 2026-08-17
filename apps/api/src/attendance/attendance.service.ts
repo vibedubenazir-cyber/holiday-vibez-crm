@@ -16,7 +16,25 @@ export class AttendanceService {
     });
   }
 
+  // No branch-coordinate data exists yet to check a real geofence radius
+  // against, so this is a plausibility floor: reject coordinates that can't
+  // be real GPS fixes (out of range, or the (0,0) "Null Island" default a
+  // buggy/spoofed client sends when location capture silently fails).
+  private assertPlausibleCoords(lat?: number, lng?: number) {
+    if (lat === undefined && lng === undefined) return;
+    if (lat === undefined || lng === undefined) {
+      throw new BadRequestException('Both latitude and longitude are required together');
+    }
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      throw new BadRequestException('Location looks invalid — please retry with GPS enabled');
+    }
+    if (lat === 0 && lng === 0) {
+      throw new BadRequestException('Could not capture your location — please retry with GPS enabled');
+    }
+  }
+
   async clockIn(userId: string, lat?: number, lng?: number) {
+    this.assertPlausibleCoords(lat, lng);
     const date = startOfToday();
     const existing = await this.prisma.attendance.findUnique({ where: { userId_date: { userId, date } } });
     if (existing) throw new BadRequestException('Already clocked in today');
@@ -26,6 +44,7 @@ export class AttendanceService {
   }
 
   async clockOut(userId: string, lat?: number, lng?: number) {
+    this.assertPlausibleCoords(lat, lng);
     const date = startOfToday();
     const existing = await this.prisma.attendance.findUnique({ where: { userId_date: { userId, date } } });
     if (!existing) throw new BadRequestException('Clock in before clocking out');

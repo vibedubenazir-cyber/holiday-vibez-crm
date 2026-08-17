@@ -52,7 +52,7 @@ export default function DataAdminPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Data Admin</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Data Admin</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Operational health stats and a searchable log of every create/update/delete action across the CRM.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
@@ -68,7 +68,7 @@ export default function DataAdminPage() {
       )}
 
       <div className="mt-8 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-800">Audit Log</h2>
+        <h2 className="text-sm font-semibold text-brand-700">Audit Log</h2>
         <input
           value={entityFilter}
           onChange={(e) => setEntityFilter(e.target.value)}

@@ -105,7 +105,7 @@ export default function AssignTrainingPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Assign Training</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Assign Training</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         {isBranchManager
           ? 'Assign a course to a consultant on your team, or to your whole branch.'
@@ -217,7 +217,7 @@ export default function AssignTrainingPage() {
           />
         </div>
 
-        <button type="submit" className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">Assign</button>
+        <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-4 py-2 text-sm font-medium text-white hover:opacity-90">Assign</button>
       </form>
 
       <p className="mt-6 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Recent assignments</p>

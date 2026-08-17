@@ -90,8 +90,8 @@ export default function GrievancesPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Grievances &amp; POSH</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700">
+        <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Grievances &amp; POSH</h1>
+        <button onClick={() => setShowForm((s) => !s)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-1.5 text-sm font-semibold text-white shadow-md shadow-brand-500/25 transition hover:opacity-90">
           {showForm ? 'Cancel' : 'Report an issue'}
         </button>
       </div>
@@ -109,7 +109,7 @@ export default function GrievancesPage() {
           </select>
           <input placeholder="Against (optional — who this concerns)" value={form.against} onChange={(e) => setForm({ ...form, against: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           <textarea required placeholder="Describe what happened" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" rows={4} />
-          <button type="submit" className="self-start rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Submit</button>
+          <button type="submit" className="self-start rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Submit</button>
         </form>
       )}
 
@@ -192,7 +192,7 @@ export default function GrievancesPage() {
                           onKeyDown={(e) => e.key === 'Enter' && confirmNotes(editingId)}
                           className="flex-1 min-w-[200px] rounded-lg border border-slate-300 dark:border-slate-600 dark:bg-slate-900 px-3 py-1.5 text-sm focus:border-brand focus:outline-none"
                         />
-                        <button onClick={() => confirmNotes(editingId)} className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">Save</button>
+                        <button onClick={() => confirmNotes(editingId)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-1.5 text-sm font-medium text-white hover:opacity-90">Save</button>
                         <button onClick={() => setEditingId(null)} className="text-sm text-slate-500 hover:underline">Cancel</button>
                       </div>
                     </td>

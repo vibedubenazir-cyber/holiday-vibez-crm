@@ -41,7 +41,7 @@ export default function ComplianceCalendarPage() {
   if (!canView) {
     return (
       <AppShell>
-        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Compliance Calendar</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Compliance Calendar</h1>
         <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Only Director, Admin, and Branch Manager can view the compliance calendar.</p>
       </AppShell>
     );
@@ -50,7 +50,7 @@ export default function ComplianceCalendarPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Compliance Calendar</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Compliance Calendar</h1>
         <div className="flex gap-1 rounded-lg border border-slate-200 bg-white dark:bg-slate-800 dark:border-slate-700 p-1 text-sm">
           {WINDOWS.map((w) => (
             <button

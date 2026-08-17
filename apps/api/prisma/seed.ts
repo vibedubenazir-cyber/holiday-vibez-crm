@@ -198,6 +198,32 @@ async function main() {
     ],
   });
 
+  // Automatic follow-up sequence: 4 escalating nudges anchored on a quotation
+  // being sent, each its own AutomationRule so it fires independently once per
+  // lead (see AutomationLog's (ruleId, leadId) uniqueness) — a real chained
+  // sequence, not a single rule.
+  const followUpSteps: { delayMinutes: number; name: string; body: string }[] = [
+    { delayMinutes: 120, name: 'Follow-up: 2h after quotation sent', body: 'Did you receive the quotation?' },
+    { delayMinutes: 1440, name: 'Follow-up: next day after quotation sent', body: 'Just checking if you had a chance to review the {{destination}} package.' },
+    { delayMinutes: 4320, name: 'Follow-up: 3 days after quotation sent', body: 'We can revise the package according to your budget if required.' },
+    { delayMinutes: 10080, name: 'Follow-up: 7 days after quotation sent', body: 'Shall we keep this enquiry open or would you prefer another travel date?' },
+  ];
+  for (const step of followUpSteps) {
+    const template = await prisma.template.create({
+      data: { channel: 'WHATSAPP', name: step.name, body: step.body, createdBy: admin.id },
+    });
+    await prisma.automationRule.create({
+      data: {
+        name: step.name,
+        trigger: 'QUOTATION_SENT',
+        delayMinutes: step.delayMinutes,
+        channel: 'WHATSAPP',
+        templateId: template.id,
+        createdBy: admin.id,
+      },
+    });
+  }
+
   await prisma.cmsContent.createMany({
     data: [
       {

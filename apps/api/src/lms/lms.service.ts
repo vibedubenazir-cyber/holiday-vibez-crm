@@ -190,6 +190,9 @@ export class LmsService {
 
   async createAssignment(dto: CreateAssignmentDto, assignedBy: string, actingUser: ActingUser) {
     const course = await this.requireCourse(dto.courseId);
+    if (!course.active) {
+      throw new BadRequestException('Cannot assign a deactivated course');
+    }
 
     // Branch Managers may only assign within their own branch — no org-wide
     // ROLE assignments, and a CONSULTANT/BRANCH target must resolve inside
@@ -229,14 +232,25 @@ export class LmsService {
       },
     });
 
+    const existingEnrollments = await this.prisma.enrollment.findMany({
+      where: { courseId: dto.courseId, userId: { in: userIds } },
+      select: { userId: true, dueDate: true },
+    });
+    const existingDueDateByUser = new Map(existingEnrollments.map((e) => [e.userId, e.dueDate]));
+
     await Promise.all(
-      userIds.map((userId) =>
-        this.prisma.enrollment.upsert({
+      userIds.map((userId) => {
+        const existingDueDate = existingDueDateByUser.get(userId);
+        // Never loosen an existing due date — if this user already has a
+        // stricter (earlier) deadline from a prior assignment, keep it.
+        const effectiveDueDate =
+          existingDueDate && dueDate && existingDueDate < dueDate ? existingDueDate : dueDate;
+        return this.prisma.enrollment.upsert({
           where: { courseId_userId: { courseId: dto.courseId, userId } },
           create: { courseId: dto.courseId, userId, dueDate, assignedById: assignedBy },
-          update: dueDate ? { dueDate, assignedById: assignedBy } : { assignedById: assignedBy },
-        }),
-      ),
+          update: effectiveDueDate ? { dueDate: effectiveDueDate, assignedById: assignedBy } : { assignedById: assignedBy },
+        });
+      }),
     );
 
     await Promise.all(

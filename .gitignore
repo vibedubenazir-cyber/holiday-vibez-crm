@@ -10,3 +10,7 @@ apps/api/.pgdata/
 apps/api/uploads/*
 !apps/api/uploads/.gitkeep
 *.tsbuildinfo
+.vercel
+.env*
+apps/api/prisma/*.js
+apps/api/prisma/*.js.map

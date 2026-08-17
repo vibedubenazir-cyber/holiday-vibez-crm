@@ -58,6 +58,7 @@ import {
   HelpCircle,
   ShieldAlert,
   History,
+  MapPin,
   type LucideIcon,
 } from 'lucide-react';
 import { Role } from '@holiday-vibez/shared';
@@ -87,6 +88,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   '/calendar': Calendar,
   '/hotel-masters': Building2,
   '/day-itineraries': RouteIcon,
+  '/itineraries': MapPin,
   '/support': LifeBuoy,
   '/team-chat': MessageSquare,
   '/marketing': Megaphone,
@@ -132,6 +134,25 @@ const NAV_ICONS: Record<string, LucideIcon> = {
 
 function navIcon(href: string): LucideIcon {
   return NAV_ICONS[href] ?? Circle;
+}
+
+// Soft tinted chip behind every nav icon — the accent follows the ROUTE (hash
+// of the href), not its position, so an item keeps its colour regardless of
+// which role's filtering hides its neighbours. Palette is the CVD-validated
+// accent set from the approved design proposal.
+const CHIP_TINTS = [
+  'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm shadow-blue-200',
+  'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-sm shadow-emerald-200',
+  'bg-gradient-to-br from-violet-500 to-violet-600 text-white shadow-sm shadow-violet-200',
+  'bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-sm shadow-amber-200',
+  'bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-sm shadow-rose-200',
+  'bg-gradient-to-br from-sky-400 to-sky-500 text-white shadow-sm shadow-sky-200',
+] as const;
+
+function chipTint(href: string): string {
+  let hash = 0;
+  for (const ch of href) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return CHIP_TINTS[hash % CHIP_TINTS.length];
 }
 
 function initials(name: string) {
@@ -193,13 +214,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Link
         key={item.href}
         href={item.href}
-        className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+        className={`relative flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-sm font-medium transition-all ${
           active
-            ? 'bg-brand-50 text-brand shadow-card'
-            : 'text-white/80 hover:translate-x-0.5 hover:bg-white/10 hover:text-white'
+            ? 'bg-gradient-to-br from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-500/25'
+            : 'text-brand-700/80 hover:bg-white hover:text-brand-700'
         }`}
       >
-        <Icon className={`h-4 w-4 shrink-0 ${active ? 'text-brand' : 'text-white/70'}`} />
+        <span
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
+            active ? 'bg-white/15 text-white' : chipTint(item.href)
+          }`}
+        >
+          <Icon className="h-4 w-4" />
+        </span>
         {item.label}
       </Link>
     );
@@ -207,12 +234,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <aside className="flex w-64 shrink-0 flex-col overflow-y-auto bg-brand-700">
-        <div className="flex justify-center px-5 py-5">
-          <Image src="/logo-white.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-36" priority />
+      {/* Signature accent — a thin ribbon of the full accent palette across the top. */}
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-50 h-1 bg-[linear-gradient(90deg,#005aaa,#7c3aed,#e11d48,#d97706,#059669)]" />
+      <aside className="flex w-64 shrink-0 flex-col overflow-y-auto border-r border-brand-200/60 bg-gradient-to-b from-brand-50 to-brand-100">
+        <div className="flex items-center justify-between px-5 pb-3 pt-5">
+          <Image src="/logo.png" alt="Holiday Vibez" width={140} height={35} className="h-auto w-32" priority />
         </div>
         <div className="px-5">
-          <span className="inline-block rounded-lg bg-white/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white/80">
+          <span className="inline-block rounded-full bg-gradient-to-r from-brand-600 to-violet-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
             {activeModule.label}
           </span>
         </div>
@@ -220,7 +249,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {visibleGroups.map((group, i) => (
             <div key={group.title ?? 'top'} className={i > 0 ? 'mt-4' : undefined}>
               {group.title && (
-                <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-white/50">{group.title}</p>
+                <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-brand-500/70">{group.title}</p>
               )}
               <div className="flex flex-col gap-0.5">{group.items.map(navLink)}</div>
             </div>
@@ -228,32 +257,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </aside>
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex shrink-0 items-center justify-between bg-brand-700 px-6 py-3">
+        <header className="flex shrink-0 items-center justify-between border-b border-brand-200/60 bg-gradient-to-r from-brand-50 to-brand-100 px-6 py-2.5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand shadow-card">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-400 text-xs font-bold text-white shadow-md shadow-brand-500/25">
               {initials(user.name)}
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">{user.name}</p>
-              <p className="text-xs font-medium text-white/70">{ROLE_LABELS[user.role] ?? user.role}</p>
+              <p className="text-sm font-semibold text-brand-700">{user.name}</p>
+              <p className="text-[11px] font-medium text-slate-400">{ROLE_LABELS[user.role] ?? user.role}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Link
               href="/modules"
-              className="rounded-lg border border-white/30 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/10"
+              className="rounded-xl border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand"
             >
               Modules
             </Link>
             <button
               onClick={() => logout()}
-              className="rounded-lg border border-white/30 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-white/10"
+              className="rounded-xl border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
             >
               Sign out
             </button>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto bg-brand-50 p-6 dark:bg-slate-950">{children}</main>
+        <main className="flex-1 overflow-x-auto overflow-y-auto bg-brand-100 p-6 dark:bg-slate-950">{children}</main>
       </div>
       <FloatingChatWidget />
     </div>

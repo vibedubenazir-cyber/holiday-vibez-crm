@@ -10,6 +10,8 @@ import { PrismaService } from '../prisma.service';
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const TOTP_ISSUER = 'Holiday Vibez CRM';
+const TWO_FACTOR_CHALLENGE_TTL = '5m';
+const TWO_FACTOR_CHALLENGE_PURPOSE = 'login-2fa-challenge';
 
 @Injectable()
 export class AuthService {
@@ -31,15 +33,31 @@ export class AuthService {
 
     // Password alone isn't enough for a 2FA-enabled account — hand back a flag
     // instead of tokens; the client must call verifyTwoFactor with a TOTP code
-    // before a session is actually issued.
+    // before a session is actually issued. The token, not a bare user id, is
+    // what proves the password step already happened: it's signed, scoped to
+    // this purpose, and expires in 5 minutes, so verifyTwoFactor can't be
+    // called standalone against an arbitrary userId with no prior auth.
     if (user.twoFactorEnabled) {
-      return { requiresTwoFactor: true as const, userId: user.id };
+      const challengeToken = this.jwtService.sign(
+        { sub: user.id, purpose: TWO_FACTOR_CHALLENGE_PURPOSE },
+        { secret: process.env.JWT_SECRET, expiresIn: TWO_FACTOR_CHALLENGE_TTL },
+      );
+      return { requiresTwoFactor: true as const, userId: challengeToken };
     }
 
     return this.issueSession(user, deviceInfo, ipAddress);
   }
 
-  async verifyTwoFactor(userId: string, code: string, deviceInfo: string, ipAddress: string) {
+  async verifyTwoFactor(challengeToken: string, code: string, deviceInfo: string, ipAddress: string) {
+    let userId: string;
+    try {
+      const payload = this.jwtService.verify<{ sub: string; purpose: string }>(challengeToken, { secret: process.env.JWT_SECRET });
+      if (payload.purpose !== TWO_FACTOR_CHALLENGE_PURPOSE) throw new Error('wrong purpose');
+      userId = payload.sub;
+    } catch {
+      throw new UnauthorizedException('This login has expired — please sign in again');
+    }
+
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
       throw new UnauthorizedException('Two-factor authentication is not enabled for this account');
@@ -75,7 +93,19 @@ export class AuthService {
     return { success: true };
   }
 
-  async disableTwoFactor(userId: string) {
+  // A bare valid access token used to be enough to strip 2FA — meaning a
+  // hijacked/leaked short-lived token could permanently downgrade an
+  // account's security, not just act within its 15-minute window. Require
+  // proof of the *current* TOTP code, the same bar as confirming setup.
+  async disableTwoFactor(userId: string, code: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user?.twoFactorEnabled || !user.twoFactorSecret) {
+      throw new UnauthorizedException('Two-factor authentication is not enabled for this account');
+    }
+    const valid = authenticator.verify({ token: code, secret: user.twoFactorSecret });
+    if (!valid) {
+      throw new UnauthorizedException('Invalid authentication code');
+    }
     await this.prisma.user.update({
       where: { id: userId },
       data: { twoFactorEnabled: false, twoFactorSecret: null },
@@ -83,6 +113,12 @@ export class AuthService {
     return { success: true };
   }
 
+  // Rotates the refresh token on every use: the old hash stops being valid the
+  // moment a new one is issued, so a token that leaks (XSS, log capture) is
+  // only useful until its legitimate owner's next natural refresh — not for
+  // its full original 30-day life — and a reused/stolen old token becoming a
+  // 401 is itself a theft signal. Session lifetime (createdAt) also resets so
+  // an actively-used session doesn't force a re-login mid-30-day window.
   async refresh(refreshToken: string) {
     const refreshTokenHash = this.hashToken(refreshToken);
     const session = await this.prisma.session.findFirst({
@@ -99,7 +135,13 @@ export class AuthService {
       { secret: process.env.JWT_SECRET, expiresIn: ACCESS_TOKEN_TTL },
     );
 
-    return { user: session.user, accessToken };
+    const newRefreshToken = crypto.randomBytes(48).toString('hex');
+    await this.prisma.session.update({
+      where: { id: session.id },
+      data: { refreshTokenHash: this.hashToken(newRefreshToken), createdAt: new Date() },
+    });
+
+    return { user: session.user, accessToken, refreshToken: newRefreshToken };
   }
 
   async logout(refreshToken: string) {

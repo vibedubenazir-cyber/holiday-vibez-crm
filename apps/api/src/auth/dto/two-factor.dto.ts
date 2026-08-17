@@ -14,3 +14,9 @@ export class ConfirmTwoFactorDto {
   @Length(6, 6)
   code!: string;
 }
+
+export class DisableTwoFactorDto {
+  @IsString()
+  @Length(6, 6)
+  code!: string;
+}

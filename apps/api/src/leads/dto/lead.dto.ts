@@ -1,7 +1,58 @@
 import { LeadSource, LeadStatus, LeadTemperature } from '@prisma/client';
-import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDateString, IsEmail, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsPhoneWithCountryCode } from '../../common/validators/phone.validator';
 
-export class CreateLeadDto {
+class TravelRequirementFields {
+  // These fields are nullable, not just optional: the Travel Requirement edit
+  // form re-sends the whole form on every save, and `null` is how it clears a
+  // previously-set value — `undefined` (omitted) means "leave unchanged", so
+  // the two need to stay distinguishable all the way to the Prisma update.
+  @IsOptional()
+  @IsDateString()
+  travelDate?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  adultsCount?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  childrenCount?: number | null;
+
+  @IsOptional()
+  @IsString()
+  childrenAges?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  hotelCategory?: number | null;
+
+  @IsOptional()
+  @IsString()
+  mealPreference?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  transportRequired?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  visaRequired?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  flightRequired?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  insuranceRequired?: boolean;
+}
+
+export class CreateLeadDto extends TravelRequirementFields {
   @IsEnum(LeadSource)
   source!: LeadSource;
 
@@ -18,6 +69,7 @@ export class CreateLeadDto {
   clientId?: string;
 
   @IsString()
+  @IsPhoneWithCountryCode()
   phone!: string;
 
   @IsOptional()
@@ -31,7 +83,7 @@ export class CreateLeadDto {
   branchId!: string;
 }
 
-export class UpdateLeadDto {
+export class UpdateLeadDto extends TravelRequirementFields {
   @IsOptional()
   @IsEnum(LeadStatus)
   status?: LeadStatus;
@@ -47,7 +99,7 @@ export class UpdateLeadDto {
 
 // Used by the public website lead-capture endpoint (Section 10) — branch is
 // resolved server-side (round-robin across all branches) rather than trusted from the client.
-export class PublicCreateLeadDto {
+export class PublicCreateLeadDto extends TravelRequirementFields {
   @IsEnum(LeadSource)
   source!: LeadSource;
 
@@ -59,6 +111,7 @@ export class PublicCreateLeadDto {
   clientName!: string;
 
   @IsString()
+  @IsPhoneWithCountryCode()
   phone!: string;
 
   @IsOptional()

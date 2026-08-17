@@ -44,8 +44,8 @@ export class ReportsController {
 
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER)
   @Get('compliance/expiring')
-  complianceExpiring() {
-    return this.reportsService.complianceExpiring();
+  complianceExpiring(@CurrentUser() user: { role: Role; branchId: string | null }) {
+    return this.reportsService.complianceExpiring(resolveBranchScope(user));
   }
 
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.FINANCE, Role.AUDITOR)

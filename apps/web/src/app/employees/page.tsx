@@ -114,7 +114,7 @@ export default function EmployeesPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Employee Directory</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Employee Directory</h1>
         <div className="flex gap-1.5">
           <button onClick={() => setView('directory')} className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${view === 'directory' ? 'bg-brand text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300'}`}>Directory</button>
           <button onClick={() => setView('orgchart')} className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${view === 'orgchart' ? 'bg-brand text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300'}`}>Org Chart</button>
@@ -164,7 +164,7 @@ export default function EmployeesPage() {
                       {employees.filter((e) => e.id !== emp.id).map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
                     </select>
                     <div className="flex gap-2">
-                      <button type="submit" className="rounded-lg bg-brand px-2 py-1 text-xs font-medium text-white hover:bg-brand-dark">Save</button>
+                      <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-2 py-1 text-xs font-medium text-white hover:opacity-90">Save</button>
                       <button type="button" onClick={() => setEditingId(null)} className="text-xs text-slate-500 hover:underline">Cancel</button>
                     </div>
                   </form>

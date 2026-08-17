@@ -73,7 +73,7 @@ export default function ReportsPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Reports</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Reports</h1>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {dashboard && (

@@ -23,7 +23,7 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('storage')
 export class StorageController {
-  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER)
+  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {

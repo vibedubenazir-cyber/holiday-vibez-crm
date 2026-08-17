@@ -21,8 +21,12 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // Local-disk stand-in for real object storage (see storage.controller.ts) —
-  // served at /uploads/*, outside the /api prefix set above.
-  app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), { prefix: '/uploads/' });
+  // served at /uploads/*, outside the /api prefix set above. __dirname is
+  // apps/api/dist at runtime, so this must go up exactly one level to reach
+  // apps/api/uploads — the same directory storage.controller.ts writes to via
+  // process.cwd(). Going up two landed on a non-existent apps/uploads, so
+  // every locally-stored upload 404'd.
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/uploads/' });
 
   // Scheduled background jobs (SLA escalation, birthday/anniversary check,
   // automation sweep, currency refresh) are registered by JobsModule

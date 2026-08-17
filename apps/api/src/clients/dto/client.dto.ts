@@ -1,5 +1,6 @@
 import { ClientType } from '@prisma/client';
 import { IsBoolean, IsEmail, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsPhoneWithCountryCode } from '../../common/validators/phone.validator';
 
 export class CreateClientDto {
   @IsString()
@@ -10,6 +11,7 @@ export class CreateClientDto {
 
   @IsOptional()
   @IsString()
+  @IsPhoneWithCountryCode()
   phone?: string;
 
   @IsOptional()
@@ -40,6 +42,7 @@ export class UpdateClientDto {
 
   @IsOptional()
   @IsString()
+  @IsPhoneWithCountryCode()
   phone?: string;
 
   @IsOptional()

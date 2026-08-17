@@ -25,7 +25,7 @@ export function FloatingChatWidget() {
     <>
       {open && (
         <div className="fixed bottom-20 right-5 z-50 flex h-[500px] w-[440px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-slate-800">
-          <div className="flex items-center justify-between bg-brand px-3 py-2.5">
+          <div className="flex items-center justify-between bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2.5">
             <span className="text-sm font-semibold text-white">Team Chat</span>
             <div className="flex items-center gap-2">
               <a href="/team-chat" className="text-xs text-white/80 hover:text-white hover:underline">Open full view</a>

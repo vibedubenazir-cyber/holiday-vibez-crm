@@ -17,7 +17,12 @@ import {
   QuotationStatus,
   ReimbursementCategory,
   ReimbursementStatus,
+  RoomCategory,
   Role,
+  TransportationType,
+  ItineraryNoteType,
+  ItineraryPlanStatus,
+  ItineraryEventType,
   UserStatus,
 } from './enums';
 
@@ -70,6 +75,16 @@ export interface LeadSummaryDTO {
   assignedConsultantId: string | null;
   slaBreached: boolean;
   createdAt: string;
+  travelDate: string | null;
+  adultsCount: number | null;
+  childrenCount: number | null;
+  childrenAges: string | null;
+  hotelCategory: number | null;
+  mealPreference: string | null;
+  transportRequired: boolean;
+  visaRequired: boolean;
+  flightRequired: boolean;
+  insuranceRequired: boolean;
 }
 
 export interface QuotationItemDTO {
@@ -1031,4 +1046,353 @@ export interface GrievanceReportDTO {
   handledBy?: { name: string } | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ItineraryAccommodationDTO {
+  id: string;
+  dayId: string;
+  hotelName: string;
+  city: string;
+  checkInDate: string;
+  checkOutDate: string;
+  nights: number;
+  roomCategory: RoomCategory;
+  numberOfRooms: number;
+  checkInTime: string | null;
+  checkOutTime: string | null;
+  description: string | null;
+}
+
+export interface ItineraryActivityDTO {
+  id: string;
+  dayId: string;
+  destination: string;
+  activityName: string;
+  description: string | null;
+}
+
+export interface ItineraryTransportationDTO {
+  id: string;
+  dayId: string;
+  type: TransportationType;
+  description: string | null;
+}
+
+export interface ItineraryNoteDTO {
+  id: string;
+  dayId: string;
+  type: ItineraryNoteType;
+  description: string | null;
+}
+
+export interface ItineraryDayDTO {
+  id: string;
+  itineraryId: string;
+  dayNumber: number;
+  date: string | null;
+  title: string | null;
+  accommodations: ItineraryAccommodationDTO[];
+  activities: ItineraryActivityDTO[];
+  transportations: ItineraryTransportationDTO[];
+  notes: ItineraryNoteDTO[];
+}
+
+export interface ItineraryDTO {
+  id: string;
+  quotationId: string;
+  bookingPaymentTerms: string | null;
+  pricingTerms: string | null;
+  inclusionsExclusions: string | null;
+  cancellationRefundPolicy: string | null;
+  importantInstructions: string | null;
+  createdAt: string;
+  updatedAt: string;
+  days: ItineraryDayDTO[];
+}
+
+// --- Standalone Itinerary module (ItineraryPlan*) ---------------------
+// Distinct from ItineraryDTO above (quotation-nested) and DayItineraryDTO
+// (flat content-library master). A standalone, optionally lead-linked
+// itinerary with 8 event types, multiple priced accommodation options,
+// package terms, an image gallery, and a public shareable client report.
+
+export interface ItineraryAddOnDTO {
+  name: string;
+  price: number;
+}
+
+export interface ItineraryAccommodationDetails {
+  hotelCategory?: number;
+  roomName?: string;
+  mealPlan?: string;
+  single?: number;
+  double?: number;
+  triple?: number;
+  quad?: number;
+  cwb?: number;
+  cnb?: number;
+  checkInTime?: string;
+  checkOutTime?: string;
+}
+
+export interface ItineraryFlightDetails {
+  flightNumber?: string;
+  fromDestination?: string;
+  toDestination?: string;
+  durationMinutes?: number;
+}
+
+export interface ItineraryMealDetails {
+  mealType?: string;
+}
+
+export type ItineraryEventDetails = ItineraryAccommodationDetails & ItineraryFlightDetails & ItineraryMealDetails;
+
+export interface ItineraryPlanEventDTO {
+  id: string;
+  dayId: string;
+  type: ItineraryEventType;
+  sortOrder: number;
+  name: string;
+  destination: string | null;
+  date: string | null;
+  endDate: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  showTime: boolean;
+  description: string | null;
+  photoUrl: string | null;
+  transferType: TransportationType | null;
+  netAmount: number | null;
+  markupPct: number | null;
+  addOns: ItineraryAddOnDTO[] | null;
+  details: ItineraryEventDetails | null;
+}
+
+export interface ItineraryPlanDayDTO {
+  id: string;
+  itineraryPlanId: string;
+  dayNumber: number;
+  date: string | null;
+  events: ItineraryPlanEventDTO[];
+}
+
+export interface ItineraryPricingOptionDTO {
+  id: string;
+  itineraryPlanId: string;
+  label: string;
+  sortOrder: number;
+  accommodations: ItineraryPlanEventDTO[];
+  baseMarkupPct: number;
+  extraMarkupAmount: number;
+  cgstPct: number;
+  sgstPct: number;
+  igstPct: number;
+  tcsPct: number;
+  discountAmount: number;
+}
+
+export interface ItineraryPackageTermsDTO {
+  id: string;
+  itineraryPlanId: string;
+  bookingAndPayment: string | null;
+  pricingAndInclusions: string | null;
+  cancellationsAndRefunds: string | null;
+  liability: string | null;
+}
+
+export interface ItineraryImageDTO {
+  id: string;
+  itineraryPlanId: string;
+  url: string;
+  caption: string | null;
+  sortOrder: number;
+}
+
+export interface ItineraryPlanDTO {
+  id: string;
+  refNo: string;
+  title: string;
+  leadId: string | null;
+  lead: { id: string; clientName: string; phone: string; email: string | null; destination: string } | null;
+  destinations: string[];
+  startDate: string | null;
+  endDate: string | null;
+  adultsCount: number;
+  childrenCount: number;
+  infantsCount: number;
+  notes: string | null;
+  coverPhotoUrl: string | null;
+  theme: string | null;
+  status: ItineraryPlanStatus;
+  showOnWebsite: boolean;
+  websitePerPersonPrice: number | null;
+  websiteValidUntil: string | null;
+  isPopular: boolean;
+  isSpecial: boolean;
+  aboutPackage: string | null;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+  days: ItineraryPlanDayDTO[];
+  pricingOptions: ItineraryPricingOptionDTO[];
+  images: ItineraryImageDTO[];
+  packageTerms: ItineraryPackageTermsDTO | null;
+}
+
+export interface ItineraryPlanSummaryDTO {
+  id: string;
+  refNo: string;
+  title: string;
+  coverPhotoUrl: string | null;
+  destinations: string[];
+  startDate: string | null;
+  endDate: string | null;
+  duration: string | null;
+  price: number | null;
+  websitePerPersonPrice: number | null;
+  showOnWebsite: boolean;
+  status: ItineraryPlanStatus;
+  updatedAt: string;
+}
+
+export interface ItineraryPricingLineItemDTO {
+  eventId: string;
+  type: ItineraryEventType;
+  name: string;
+  net: number;
+  markupPct: number;
+  gross: number;
+}
+
+export interface ItineraryPricingOptionTotalsDTO {
+  optionId: string;
+  label: string;
+  lineItems: ItineraryPricingLineItemDTO[];
+  subtotalGross: number;
+  baseMarkupPct: number;
+  baseMarkupAmount: number;
+  extraMarkupAmount: number;
+  discountAmount: number;
+  cgstPct: number;
+  sgstPct: number;
+  igstPct: number;
+  tcsPct: number;
+  cgstAmount: number;
+  sgstAmount: number;
+  igstAmount: number;
+  tcsAmount: number;
+  totalIncludingGst: number;
+}
+
+export interface ItineraryPricingSummaryDTO {
+  refNo: string;
+  options: ItineraryPricingOptionTotalsDTO[];
+}
+
+export interface ItineraryEventTemplateDTO {
+  id: string;
+  type: ItineraryEventType;
+  destination: string;
+  name: string;
+  description: string | null;
+  photoUrl: string | null;
+  active: boolean;
+}
+
+export interface CreateItineraryPlanInput {
+  title: string;
+  leadId?: string;
+  destinations?: string[];
+  startDate?: string;
+  endDate?: string;
+  adultsCount?: number;
+  childrenCount?: number;
+  infantsCount?: number;
+  notes?: string;
+  theme?: string;
+  showOnWebsite?: boolean;
+  websitePerPersonPrice?: number;
+  websiteValidUntil?: string;
+  isPopular?: boolean;
+  isSpecial?: boolean;
+  aboutPackage?: string;
+}
+
+export interface GenerateItineraryDraftInput {
+  destinations: string[];
+  startDate: string;
+  endDate: string;
+  adultsCount?: number;
+  childrenCount?: number;
+  theme?: string;
+  sightseeing?: string;
+  hotelCategory?: string;
+  transport?: string;
+  transportType?: TransportationType;
+  mealPlan?: string;
+  pickupCity?: string;
+  budget?: string;
+  freeText?: string;
+  notes?: string;
+}
+
+export interface ItineraryPublicEventDTO {
+  id: string;
+  type: ItineraryEventType;
+  name: string;
+  destination: string | null;
+  date: string | null;
+  endDate: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  showTime: boolean;
+  description: string | null;
+  photoUrl: string | null;
+  details: ItineraryEventDetails | null;
+}
+
+export interface ItineraryPublicViewDTO {
+  id: string;
+  refNo: string;
+  title: string;
+  destinations: string[];
+  startDate: string | null;
+  endDate: string | null;
+  adultsCount: number;
+  childrenCount: number;
+  infantsCount: number;
+  coverPhotoUrl: string | null;
+  createdAt: string;
+  days: { id: string; dayNumber: number; date: string | null; events: ItineraryPublicEventDTO[] }[];
+  images: { id: string; url: string; caption: string | null }[];
+  packageTerms: ItineraryPackageTermsDTO | null;
+  pricingOptions: {
+    id: string;
+    label: string;
+    totalIncludingGst: number;
+    accommodations: {
+      id: string;
+      name: string;
+      destination: string | null;
+      date: string | null;
+      description: string | null;
+      details: ItineraryEventDetails | null;
+    }[];
+  }[];
+}
+
+export interface WebsitePackageCardDTO {
+  id: string;
+  title: string;
+  destinations: string[];
+  nights: number;
+  days: number;
+  pricePerPerson: string | null;
+  validUntil: string | null;
+  coverPhotoUrl: string | null;
+  isPopular: boolean;
+  isSpecial: boolean;
+  aboutPackage: string | null;
+  theme: string | null;
 }

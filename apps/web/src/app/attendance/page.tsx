@@ -74,7 +74,7 @@ export default function AttendancePage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Attendance</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Attendance</h1>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       <div className="mt-4 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
@@ -92,7 +92,7 @@ export default function AttendancePage() {
           <button
             onClick={handleClockIn}
             disabled={!!today}
-            className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-40"
+            className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-40"
           >
             Clock in
           </button>

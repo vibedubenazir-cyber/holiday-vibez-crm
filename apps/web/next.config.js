@@ -1,14 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Temporary: proxies API calls through the Next.js dev server itself so a
-  // single ngrok tunnel (this app's port) is enough to demo the whole stack
-  // — the API on :4100 never needs its own public tunnel. Safe to remove
-  // once the ngrok demo is done; local dev works the same either way since
-  // NEXT_PUBLIC_API_URL controls whether the browser calls this rewrite or
-  // hits the API directly.
+  // Proxies API calls through this Next.js server itself so the browser only
+  // ever talks to one origin — keeps the refresh-token cookie (SameSite=Lax)
+  // working without switching it to SameSite=None, which cross-origin
+  // browser calls straight to the API would otherwise require. API_URL picks
+  // the upstream (local API by default, the deployed API in staging/prod).
   async rewrites() {
-    return [{ source: '/api/:path*', destination: 'http://localhost:4100/api/:path*' }];
+    const apiUrl = process.env.API_URL ?? 'http://localhost:4100';
+    return [
+      { source: '/api/:path*', destination: `${apiUrl}/api/:path*` },
+      // Uploaded files are served by the API from /uploads (see main.ts's
+      // useStaticAssets) and the storage endpoint hands back an API-relative
+      // "/uploads/..." path. Proxy that prefix too, otherwise those paths
+      // resolve against this origin and 404 — which is exactly what happened
+      // to itinerary cover/event photos.
+      { source: '/uploads/:path*', destination: `${apiUrl}/uploads/:path*` },
+    ];
   },
 };
 

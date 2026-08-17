@@ -43,7 +43,7 @@ export default function ApprovalsPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Approval Queue</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Approval Queue</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Hard gate — no quotation reaches a customer until a Branch Manager approves it here.
       </p>

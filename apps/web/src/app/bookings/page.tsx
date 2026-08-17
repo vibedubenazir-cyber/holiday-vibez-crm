@@ -217,7 +217,7 @@ export default function BookingsPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Bookings & Payments</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Bookings & Payments</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Bookings are created from approved (SENT) quotations. Generate a payment link to send the customer a real hosted-checkout
         page (Razorpay), or use "Mark paid" for offline/cash payments already received — either way, payments feed branch P&L
@@ -366,7 +366,7 @@ export default function BookingsPage() {
                       <input type="text" placeholder="Optional" value={paymentForm.couponCode} onChange={(e) => setPaymentForm({ ...paymentForm, couponCode: e.target.value.toUpperCase() })} className="w-36 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
                     </div>
                   )}
-                  <button onClick={() => handleAddPayment(b.id)} className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add payment</button>
+                  <button onClick={() => handleAddPayment(b.id)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-4 py-2 text-sm font-medium text-white hover:opacity-90">Add payment</button>
                 </div>
                 )}
 
@@ -439,7 +439,7 @@ export default function BookingsPage() {
                         {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} ★</option>)}
                       </select>
                       <input type="text" placeholder="Comment (optional)" value={reviewForm.comment} onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })} className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                      <button onClick={() => handleAddReview(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add review</button>
+                      <button onClick={() => handleAddReview(b.id)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Add review</button>
                     </div>
                   )}
                 </div>
@@ -467,7 +467,7 @@ export default function BookingsPage() {
                       <input type="number" min={1} max={5} placeholder="Transport" value={feedbackForm.transportRating} onChange={(e) => setFeedbackForm({ ...feedbackForm, transportRating: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
                       <input type="number" min={1} max={5} placeholder="Guide" value={feedbackForm.guideRating} onChange={(e) => setFeedbackForm({ ...feedbackForm, guideRating: e.target.value })} className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
                       <input type="text" placeholder="Comments" value={feedbackForm.comments} onChange={(e) => setFeedbackForm({ ...feedbackForm, comments: e.target.value })} className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                      <button onClick={() => handleAddFeedback(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add feedback</button>
+                      <button onClick={() => handleAddFeedback(b.id)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Add feedback</button>
                     </div>
                   )}
                 </div>
@@ -491,7 +491,7 @@ export default function BookingsPage() {
                       <input type="number" placeholder="Coverage" value={policyForm.coverageAmount} onChange={(e) => setPolicyForm({ ...policyForm, coverageAmount: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
                       <input type="date" value={policyForm.startDate} onChange={(e) => setPolicyForm({ ...policyForm, startDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
                       <input type="date" value={policyForm.endDate} onChange={(e) => setPolicyForm({ ...policyForm, endDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-                      <button onClick={() => handleAddPolicy(b.id)} className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add policy</button>
+                      <button onClick={() => handleAddPolicy(b.id)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Add policy</button>
                     </div>
                   )}
                 </div>

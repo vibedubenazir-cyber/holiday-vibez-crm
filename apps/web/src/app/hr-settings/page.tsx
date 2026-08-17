@@ -60,7 +60,7 @@ export default function HrSettingsPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">HR Settings</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">HR Settings</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Org-wide HR policy values. Leave quotas feed directly into Leave balance checks; probation period auto-calculates each employee&apos;s probation end date.
       </p>
@@ -89,7 +89,7 @@ export default function HrSettingsPage() {
                 <button
                   type="submit"
                   disabled={saving === f.key}
-                  className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:opacity-50"
+                  className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-1.5 text-sm font-semibold text-white shadow-md shadow-brand-500/25 transition hover:opacity-90 disabled:opacity-50"
                 >
                   {saving === f.key ? 'Saving…' : 'Save'}
                 </button>

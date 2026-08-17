@@ -55,6 +55,9 @@ import { HrSettingsModule } from './hr-settings/hr-settings.module';
 import { ComplianceModule } from './compliance/compliance.module';
 import { HrHelpdeskModule } from './hr-helpdesk/hr-helpdesk.module';
 import { GrievancesModule } from './grievances/grievances.module';
+import { ItineraryModule } from './itinerary/itinerary.module';
+import { ItinerariesModule } from './itineraries/itineraries.module';
+import { ItineraryEventTemplatesModule } from './itinerary-event-templates/itinerary-event-templates.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -115,6 +118,9 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     ComplianceModule,
     HrHelpdeskModule,
     GrievancesModule,
+    ItineraryModule,
+    ItinerariesModule,
+    ItineraryEventTemplatesModule,
   ],
   providers: [
     PrismaService,

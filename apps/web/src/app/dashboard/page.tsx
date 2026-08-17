@@ -150,8 +150,8 @@ export default function DashboardPage() {
     <AppShell>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="inline-block rounded-lg bg-gradient-to-r from-brand to-indigo-600 px-4 py-2 text-xl font-bold tracking-tight text-white shadow-card">
-            Welcome, {user?.name}
+          <h1 className="text-2xl font-extrabold tracking-tight text-brand-700 dark:text-slate-100">
+            Welcome, {user?.name} 👋
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {user?.role.replaceAll('_', ' ')}
@@ -160,7 +160,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <h2 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-100">
+      <h2 className="mt-6 text-sm font-semibold text-brand-700 dark:text-slate-100">
         {user?.role === Role.TRAVEL_CONSULTANT ? 'Leads assigned to you' : 'Your workspace at a glance'}
       </h2>
       <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -175,7 +175,7 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      <h2 className="mt-8 text-sm font-semibold text-slate-800 dark:text-slate-100">How interested are they?</h2>
+      <h2 className="mt-8 text-sm font-semibold text-brand-700 dark:text-slate-100">How interested are they?</h2>
       <div className="mt-2 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <DashCard accent="red" label="🔥 Hot" value={interestCounts.hot.toString()} />
         <DashCard accent="amber" label="🌤 Warm" value={interestCounts.warm.toString()} />
@@ -184,7 +184,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Lead status breakdown — {rangeLabel}</h2>
+        <h2 className="text-sm font-semibold text-brand-700 dark:text-slate-100">Lead status breakdown — {rangeLabel}</h2>
         <div className="flex flex-wrap items-center gap-2">
           {(['today', 'month', 'year', 'custom'] as RangeKey[]).map((r) => (
             <button
@@ -239,7 +239,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <h2 className="mt-8 text-sm font-semibold text-slate-800 dark:text-slate-100">Operations right now</h2>
+      <h2 className="mt-8 text-sm font-semibold text-brand-700 dark:text-slate-100">Operations right now</h2>
       <div className="mt-2 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="rounded-xl bg-white p-4 shadow-card dark:bg-slate-800">
           <p className="text-xs font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-400">SLA breached · needs attention</p>
@@ -283,7 +283,7 @@ export default function DashboardPage() {
 
       {target && (user?.role === Role.TRAVEL_CONSULTANT || user?.role === Role.BRANCH_MANAGER) && (
         <>
-          <h2 className="mt-8 text-sm font-semibold text-slate-800 dark:text-slate-100">
+          <h2 className="mt-8 text-sm font-semibold text-brand-700 dark:text-slate-100">
             {user.role === Role.TRAVEL_CONSULTANT ? 'Your performance' : 'Your branch performance'} · {target.period.toLowerCase()}
           </h2>
           <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -317,7 +317,7 @@ export default function DashboardPage() {
 
       {(user?.role === Role.TRAVEL_CONSULTANT || user?.role === Role.BRANCH_MANAGER) && myLearning.length > 0 && (
         <>
-          <h2 className="mt-8 text-sm font-semibold text-slate-800 dark:text-slate-100">Training & certification</h2>
+          <h2 className="mt-8 text-sm font-semibold text-brand-700 dark:text-slate-100">Training & certification</h2>
           <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="rounded-xl bg-white p-4 shadow-card dark:bg-slate-800">
               <p className="text-xs font-semibold uppercase tracking-wide text-brand">Courses completed</p>
@@ -340,7 +340,7 @@ export default function DashboardPage() {
 
       {companyLeaderboard.length > 0 && (user?.role === Role.DIRECTOR || user?.role === Role.ADMIN) && (
         <>
-          <h2 className="mt-8 text-sm font-semibold text-slate-800 dark:text-slate-100">Company performance by branch</h2>
+          <h2 className="mt-8 text-sm font-semibold text-brand-700 dark:text-slate-100">Company performance by branch</h2>
           <div className="mt-2 overflow-hidden rounded-xl bg-white shadow-card dark:bg-slate-800">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-700/50 dark:text-brand-200">
@@ -381,21 +381,21 @@ export default function DashboardPage() {
 }
 
 const ACCENTS = {
-  'blue-light': { border: 'border-t-brand-300', text: 'text-brand-500 dark:text-brand-300' },
-  blue: { border: 'border-t-brand-500', text: 'text-brand-600 dark:text-brand-300' },
-  'blue-deep': { border: 'border-t-brand-700', text: 'text-brand-700 dark:text-brand-200' },
-  red: { border: 'border-t-red-500', text: 'text-red-600 dark:text-red-400' },
-  amber: { border: 'border-t-amber-500', text: 'text-amber-600 dark:text-amber-400' },
-  sky: { border: 'border-t-sky-500', text: 'text-sky-600 dark:text-sky-400' },
-  slate: { border: 'border-t-slate-400', text: 'text-slate-500 dark:text-slate-400' },
+  'blue-light': { chip: 'bg-brand-50 text-brand-500' },
+  blue: { chip: 'bg-brand-100 text-brand-600' },
+  'blue-deep': { chip: 'bg-brand-100 text-brand-700' },
+  red: { chip: 'bg-rose-50 text-rose-600' },
+  amber: { chip: 'bg-amber-50 text-amber-600' },
+  sky: { chip: 'bg-sky-50 text-sky-600' },
+  slate: { chip: 'bg-slate-100 text-slate-500' },
 } as const;
 
 function DashCard({ label, value, accent }: { label: string; value: string; accent: keyof typeof ACCENTS }) {
   const c = ACCENTS[accent];
   return (
-    <div className={`overflow-hidden rounded-xl border-t-4 ${c.border} bg-white p-4 shadow-card transition-shadow hover:shadow-card-hover dark:bg-slate-800`}>
-      <p className={`text-xs font-semibold uppercase tracking-wide ${c.text}`}>{label}</p>
-      <p className="mt-1 text-xl font-bold text-slate-800 dark:text-slate-100">{value}</p>
+    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover dark:bg-slate-800">
+      <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${c.chip}`}>{label}</span>
+      <p className="mt-2.5 text-2xl font-extrabold text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   );
 }

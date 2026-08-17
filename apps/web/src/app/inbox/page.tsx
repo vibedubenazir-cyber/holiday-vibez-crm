@@ -112,7 +112,7 @@ export default function InboxPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between">
-        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Inbox</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Inbox</h1>
         <div className="flex rounded-lg border border-slate-200 bg-white dark:bg-slate-800 p-1 text-sm">
           {[NotificationChannel.WHATSAPP, NotificationChannel.EMAIL].map((c) => (
             <button
@@ -203,7 +203,7 @@ export default function InboxPage() {
                     rows={2}
                     className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors"
                   />
-                  <button type="submit" className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+                  <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-4 py-2 text-sm font-medium text-white hover:opacity-90">
                     Send
                   </button>
                 </div>

@@ -87,12 +87,12 @@ export default function PayrollPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Payroll</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Payroll</h1>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {canManage && (
         <>
-          <h2 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-100">Salary structures</h2>
+          <h2 className="mt-6 text-sm font-semibold text-brand-700 dark:text-slate-100">Salary structures</h2>
           <form onSubmit={handleSaveStructure} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card p-4 sm:grid-cols-2 lg:grid-cols-4">
             <select required value={structureForm.userId} onChange={(e) => setStructureForm({ ...structureForm, userId: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
               <option value="">Select employee</option>
@@ -101,7 +101,7 @@ export default function PayrollPage() {
             <input required type="number" min="0" placeholder="Basic salary" value={structureForm.basicSalary} onChange={(e) => setStructureForm({ ...structureForm, basicSalary: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
             <input type="number" min="0" placeholder="HRA" value={structureForm.hra} onChange={(e) => setStructureForm({ ...structureForm, hra: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
             <input type="number" min="0" placeholder="Allowances" value={structureForm.allowances} onChange={(e) => setStructureForm({ ...structureForm, allowances: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-            <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark sm:col-span-2 lg:col-span-4">
+            <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 sm:col-span-2 lg:col-span-4">
               Save salary structure
             </button>
           </form>
@@ -132,7 +132,7 @@ export default function PayrollPage() {
             </table>
           </div>
 
-          <h2 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-100">Generate payslip</h2>
+          <h2 className="mt-6 text-sm font-semibold text-brand-700 dark:text-slate-100">Generate payslip</h2>
           <form onSubmit={handleGenerate} className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card p-4 sm:grid-cols-2 lg:grid-cols-4">
             <select required value={genForm.userId} onChange={(e) => setGenForm({ ...genForm, userId: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
               <option value="">Select employee</option>
@@ -140,7 +140,7 @@ export default function PayrollPage() {
             </select>
             <input required type="month" value={genForm.month} onChange={(e) => setGenForm({ ...genForm, month: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
             <input type="number" min="0" placeholder="Incentive (optional)" value={genForm.incentive} onChange={(e) => setGenForm({ ...genForm, incentive: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-            <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+            <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">
               Generate
             </button>
           </form>
@@ -150,7 +150,7 @@ export default function PayrollPage() {
         </>
       )}
 
-      <h2 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-100">My payslips</h2>
+      <h2 className="mt-6 text-sm font-semibold text-brand-700 dark:text-slate-100">My payslips</h2>
       <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
@@ -186,7 +186,7 @@ export default function PayrollPage() {
       {canSeeTeam && (
         <>
           <div className="mt-6 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Team payslips</h2>
+            <h2 className="text-sm font-semibold text-brand-700 dark:text-slate-100">Team payslips</h2>
             <input type="month" value={teamMonth} onChange={(e) => setTeamMonth(e.target.value)} className="rounded-lg border border-slate-300 px-2 py-1 text-sm" />
           </div>
           <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">

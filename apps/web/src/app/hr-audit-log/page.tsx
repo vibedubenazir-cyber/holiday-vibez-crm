@@ -42,7 +42,7 @@ export default function HrAuditLogPage() {
   if (!canView) {
     return (
       <AppShell>
-        <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">HR Audit Log</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">HR Audit Log</h1>
         <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Only Admin and Director can view the HR audit log.</p>
       </AppShell>
     );
@@ -50,7 +50,7 @@ export default function HrAuditLogPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">HR Audit Log</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">HR Audit Log</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Every create/update/delete action across the HR modules, logged automatically.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 

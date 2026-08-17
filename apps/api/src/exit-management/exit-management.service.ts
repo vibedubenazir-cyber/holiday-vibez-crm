@@ -48,6 +48,9 @@ export class ExitManagementService {
     const record = await this.prisma.exitRecord.findUnique({ where: { id } });
     if (!record) throw new NotFoundException('Exit record not found');
     if (record.status === 'CLEARED') throw new BadRequestException('This exit has already been cleared');
+    if (record.userId === clearedById) {
+      throw new BadRequestException('You cannot clear your own exit record');
+    }
 
     await this.prisma.user.update({ where: { id: record.userId }, data: { status: 'INACTIVE' } });
     return this.prisma.exitRecord.update({

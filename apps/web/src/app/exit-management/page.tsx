@@ -107,7 +107,7 @@ export default function ExitManagementPage() {
 
   return (
     <AppShell>
-      <h1 className="inline-block rounded-lg bg-brand-50 px-4 py-2 text-xl font-bold tracking-tight text-brand shadow-card">Exit Management</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Exit Management</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Resignations, terminations, and offboarding clearance.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       {notice && <p className="mt-3 text-sm text-emerald-600">{notice}</p>}
@@ -135,7 +135,7 @@ export default function ExitManagementPage() {
               <input required type="date" value={resignForm.lastWorkingDate} onChange={(e) => setResignForm({ ...resignForm, lastWorkingDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none dark:border-slate-600 dark:bg-slate-900" />
             </div>
             <input required placeholder="Reason for resigning" value={resignForm.reason} onChange={(e) => setResignForm({ ...resignForm, reason: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none dark:border-slate-600 dark:bg-slate-900" />
-            <button type="submit" className="self-start rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Submit</button>
+            <button type="submit" className="self-start rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Submit</button>
           </form>
         ) : (
           <p className="mt-2 text-sm text-slate-400">No exit record on file.</p>
@@ -164,7 +164,7 @@ export default function ExitManagementPage() {
               <input required type="date" value={termForm.noticeDate} onChange={(e) => setTermForm({ ...termForm, noticeDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none dark:border-slate-600 dark:bg-slate-900" />
               <input required type="date" value={termForm.lastWorkingDate} onChange={(e) => setTermForm({ ...termForm, lastWorkingDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none dark:border-slate-600 dark:bg-slate-900" />
               <input required placeholder="Reason" value={termForm.reason} onChange={(e) => setTermForm({ ...termForm, reason: e.target.value })} className="flex-1 min-w-[160px] rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none dark:border-slate-600 dark:bg-slate-900" />
-              <button type="submit" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark">Record</button>
+              <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Record</button>
             </form>
           )}
 
@@ -209,7 +209,7 @@ export default function ExitManagementPage() {
                           onKeyDown={(e) => e.key === 'Enter' && confirmClear(clearingId)}
                           className="flex-1 min-w-[200px] rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-brand focus:outline-none dark:border-slate-600 dark:bg-slate-900"
                         />
-                        <button onClick={() => confirmClear(clearingId)} className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark">Confirm clearance</button>
+                        <button onClick={() => confirmClear(clearingId)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-1.5 text-sm font-medium text-white hover:opacity-90">Confirm clearance</button>
                         <button onClick={() => setClearingId(null)} className="text-sm text-slate-500 hover:underline">Cancel</button>
                       </div>
                     </td>
