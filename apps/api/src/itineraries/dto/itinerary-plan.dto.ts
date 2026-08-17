@@ -245,7 +245,7 @@ export class CreateItineraryPlanEventDto {
   @IsOptional()
   @IsNumber()
   @Min(-100)
-  @Max(1000)
+  @Max(999.99)
   markupPct?: number;
 
   @IsOptional()
@@ -314,7 +314,7 @@ export class UpdateItineraryPlanEventDto {
   @IsOptional()
   @IsNumber()
   @Min(-100)
-  @Max(1000)
+  @Max(999.99)
   markupPct?: number;
 
   @IsOptional()
@@ -398,7 +398,7 @@ export class UpdatePricingOptionDto {
   @IsOptional()
   @IsNumber()
   @Min(-100)
-  @Max(1000)
+  @Max(999.99)
   baseMarkupPct?: number;
 
   @IsOptional()

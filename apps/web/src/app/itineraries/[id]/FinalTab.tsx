@@ -102,6 +102,7 @@ export function FinalTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
     })),
     images: plan.images.map((i) => ({ id: i.id, url: i.url, caption: i.caption })),
     packageTerms: plan.packageTerms,
+    consultant: plan.createdBy ?? null,
     pricingOptions: plan.pricingOptions.map((option) => {
       const t = totals.find((x) => x.optionId === option.id);
       return {

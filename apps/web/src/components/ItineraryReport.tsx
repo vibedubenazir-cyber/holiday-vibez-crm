@@ -7,6 +7,12 @@ export interface ItineraryReportDetails {
   hotelCategory?: number | null;
   roomName?: string | null;
   mealPlan?: string | null;
+  single?: number | null;
+  double?: number | null;
+  triple?: number | null;
+  quad?: number | null;
+  cwb?: number | null;
+  cnb?: number | null;
 }
 
 export interface ItineraryReportEvent {
@@ -43,6 +49,12 @@ export interface ItineraryReportOption {
   }[];
 }
 
+export interface ItineraryReportConsultant {
+  name: string;
+  phone?: string | null;
+  email?: string | null;
+}
+
 export interface ItineraryReportData {
   refNo: string;
   title: string;
@@ -62,6 +74,7 @@ export interface ItineraryReportData {
     liability: string | null;
   } | null;
   pricingOptions: ItineraryReportOption[];
+  consultant?: ItineraryReportConsultant | null;
 }
 
 function formatDate(value: string | null) {
@@ -80,6 +93,43 @@ function StarRating({ details }: { details?: ItineraryReportDetails | null }) {
       {'★'.repeat(Math.min(5, Math.round(stars)))}
     </span>
   );
+}
+
+// "1 Double, 1 Twin" style summary of the room-count fields captured on an
+// Accommodation event — the same fields the Build tab's SINGLE/DOUBLE/TRIPLE/
+// QUAD/CWB/CNB inputs feed, condensed to what a client actually needs to see.
+const ROOM_LABELS: [keyof ItineraryReportDetails, string][] = [
+  ['single', 'Single'],
+  ['double', 'Double'],
+  ['triple', 'Triple'],
+  ['quad', 'Quad'],
+  ['cwb', 'Child w/ Bed'],
+  ['cnb', 'Child no Bed'],
+];
+function roomSummary(details?: ItineraryReportDetails | null): string | null {
+  if (!details) return null;
+  const parts = ROOM_LABELS.map(([key, label]) => {
+    const n = Number(details[key] ?? 0);
+    return n > 0 ? `${n} ${label}` : null;
+  }).filter(Boolean);
+  return parts.length ? parts.join(', ') : null;
+}
+
+// A plain textarea's newlines rendered as a bulleted list — matches how the
+// Build tab's description editor stores multi-point activity notes (one
+// point per line) rather than a single paragraph.
+function DescriptionBlock({ text, className }: { text: string; className?: string }) {
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  if (lines.length > 1) {
+    return (
+      <ul className={`list-disc space-y-0.5 pl-4 ${className ?? ''}`}>
+        {lines.map((line, i) => (
+          <li key={i}>{line}</li>
+        ))}
+      </ul>
+    );
+  }
+  return <p className={className}>{text}</p>;
 }
 
 // Shared presentational component — rendered both as the authenticated
@@ -127,21 +177,28 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
 
       {data.pricingOptions.length > 0 && (
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {data.pricingOptions.map((option) => (
-            <div key={option.id} className="rounded-xl border border-slate-200 p-4">
-              <p className="text-xs font-semibold uppercase text-slate-400">{option.label}</p>
-              {option.accommodations.map((a) => (
-                <p key={a.id} className="mt-1 text-sm font-medium text-slate-700">
-                  {a.name}
-                  <StarRating details={a.details} />
+          {data.pricingOptions.map((option) => {
+            const totalPax = Math.max(1, data.adultsCount + data.childrenCount);
+            const perPerson = option.totalIncludingGst / totalPax;
+            return (
+              <div key={option.id} className="rounded-xl border border-slate-200 p-4">
+                <p className="text-xs font-semibold uppercase text-slate-400">{option.label}</p>
+                {option.accommodations.map((a) => (
+                  <p key={a.id} className="mt-1 text-sm font-medium text-slate-700">
+                    {a.name}
+                    <StarRating details={a.details} />
+                  </p>
+                ))}
+                <p className="mt-2 text-lg font-bold text-brand">
+                  {option.totalIncludingGst.toLocaleString('en-IN')} INR
                 </p>
-              ))}
-              <p className="mt-2 text-lg font-bold text-brand">
-                {option.totalIncludingGst.toLocaleString('en-IN')} INR
-              </p>
-              <p className="text-xs text-slate-400">Total Including GST</p>
-            </div>
-          ))}
+                <p className="text-xs text-slate-400">Total Including GST</p>
+                <p className="mt-1 text-xs font-medium text-slate-500">
+                  {perPerson.toLocaleString('en-IN', { maximumFractionDigits: 0 })} INR / person
+                </p>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -149,27 +206,53 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
         <div className="mt-8">
           <h2 className="text-lg font-bold text-slate-800">Hotels</h2>
           <div className="mt-3 space-y-4">
-            {/* Dedupe by id — the same hotel is usually attached to several
-                pricing options (that's the point of options), and the client
-                should see each property listed once, not once per option. */}
-            {Array.from(new Map(data.pricingOptions.flatMap((o) => o.accommodations).map((a) => [a.id, a])).values()).map((a) => {
-              const facts = [a.destination, a.details?.roomName, a.details?.mealPlan, a.date && a.endDate ? `${formatDate(a.date)} – ${formatDate(a.endDate)}` : null].filter(Boolean);
-              return (
-                <div key={a.id} className="flex gap-4 border-b border-slate-100 pb-3">
-                  {a.photoUrl && (
-                    <img src={absoluteUploadUrl(a.photoUrl)} alt="" className="h-20 w-28 shrink-0 rounded-lg object-cover" />
-                  )}
-                  <div>
-                    <p className="font-semibold text-slate-700">
-                      {a.name}
-                      <StarRating details={a.details} />
-                    </p>
-                    {facts.length > 0 && <p className="text-xs text-slate-400">{facts.join(' · ')}</p>}
-                    {a.description && <p className="mt-1 text-sm text-slate-500">{a.description}</p>}
+            {data.pricingOptions.flatMap((option) =>
+              option.accommodations.map((a) => {
+                const room = roomSummary(a.details);
+                const roomMeal = [room && `Room: ${room}`, a.details?.mealPlan && `Meal: ${a.details.mealPlan}`].filter(Boolean).join(' | ');
+                return (
+                  <div key={`${option.id}-${a.id}`} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:flex">
+                    {a.photoUrl && (
+                      <div className="relative h-40 w-full shrink-0 sm:h-auto sm:w-48">
+                        <img src={absoluteUploadUrl(a.photoUrl)} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                      </div>
+                    )}
+                    <div className="flex-1 p-4">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold text-slate-700">
+                          {a.name}
+                          <StarRating details={a.details} />
+                        </p>
+                        <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand">{option.label}</span>
+                      </div>
+                      <div className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 text-xs text-slate-500 sm:grid-cols-3">
+                        {a.date && (
+                          <span>
+                            <span className="text-slate-400">Check-in </span>
+                            {formatDate(a.date)}
+                          </span>
+                        )}
+                        {a.endDate && (
+                          <span>
+                            <span className="text-slate-400">Check-out </span>
+                            {formatDate(a.endDate)}
+                          </span>
+                        )}
+                        {a.details?.roomName && (
+                          <span>
+                            <span className="text-slate-400">Room Type </span>
+                            {a.details.roomName}
+                          </span>
+                        )}
+                      </div>
+                      {roomMeal && <p className="mt-1 text-xs font-medium text-slate-600">{roomMeal}</p>}
+                      {a.destination && <p className="mt-1 text-xs text-slate-400">{a.destination}</p>}
+                      {a.description && <DescriptionBlock text={a.description} className="mt-1.5 text-sm text-slate-500" />}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              }),
+            )}
           </div>
         </div>
       )}
@@ -200,7 +283,7 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
                           {event.name}
                           <StarRating details={event.details} />
                         </p>
-                        {event.description && <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{event.description}</p>}
+                        {event.description && <DescriptionBlock text={event.description} className="mt-1.5 text-sm leading-relaxed text-slate-500" />}
                       </div>
                     </div>
                   ) : (
@@ -209,7 +292,7 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
                         {event.name}
                         <StarRating details={event.details} />
                       </p>
-                      {event.description && <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{event.description}</p>}
+                      {event.description && <DescriptionBlock text={event.description} className="mt-1.5 text-sm leading-relaxed text-slate-500" />}
                     </div>
                   ),
                 )}
@@ -250,6 +333,25 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
           )}
         </div>
       )}
+
+      <div className="mt-10 flex flex-wrap items-center justify-between gap-6 border-t border-slate-100 pt-6">
+        <div className="flex items-center gap-3">
+          <span className="text-base font-bold text-brand">holiday vibez</span>
+          {data.consultant && (
+            <div className="border-l border-slate-200 pl-3 text-xs text-slate-600">
+              <p className="font-semibold text-slate-700">{data.consultant.name}</p>
+              {data.consultant.phone && <p>Phone: {data.consultant.phone}</p>}
+              {data.consultant.email && <p>Email: {data.consultant.email}</p>}
+            </div>
+          )}
+        </div>
+        <div className="text-right text-xs text-slate-600">
+          <p className="font-semibold text-slate-700">HOLIDAY VIBEZ PRIVATE LIMITED</p>
+          <p>Phone: 9645123446</p>
+          <p>Email: holidays@holidayvibez.com</p>
+          <p>Address: 2nd floor, ANANDHAM ELITE, 1, MRTS ROAD, 1st Main Rd, Velachery, Chennai, Tamil Nadu 600042</p>
+        </div>
+      </div>
     </div>
   );
 }

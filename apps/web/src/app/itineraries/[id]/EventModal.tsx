@@ -126,6 +126,54 @@ function formFromEvent(event: ItineraryPlanEventDTO): FormState {
 
 const numOrUndef = (v: string) => (v === '' ? undefined : Number(v));
 
+// Turns the plain-text description into a list of bullet points a consultant
+// can add/edit/remove one at a time — still stored as a single newline-joined
+// string (no schema change), which DescriptionBlock in ItineraryReport then
+// renders as an actual <ul> whenever there's more than one line.
+function BulletListEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const lines = value ? value.split('\n') : [''];
+  function setLine(idx: number, text: string) {
+    const next = [...lines];
+    next[idx] = text;
+    onChange(next.join('\n'));
+  }
+  function addLine() {
+    onChange([...lines, ''].join('\n'));
+  }
+  function removeLine(idx: number) {
+    const next = lines.filter((_, i) => i !== idx);
+    onChange((next.length ? next : ['']).join('\n'));
+  }
+  return (
+    <div className="col-span-2">
+      <div className="mb-1 flex items-center justify-between">
+        <label className="text-xs text-slate-500">Description</label>
+        <button type="button" onClick={addLine} className="text-xs text-brand hover:underline">
+          + Add point
+        </button>
+      </div>
+      <div className="space-y-1.5">
+        {lines.map((line, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            <span className="text-slate-400">•</span>
+            <input
+              value={line}
+              onChange={(e) => setLine(idx, e.target.value)}
+              placeholder="e.g. Museum of the Future (Photo Stop)"
+              className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+            />
+            {lines.length > 1 && (
+              <button type="button" onClick={() => removeLine(idx)} className="text-slate-400 hover:text-red-500">
+                ✕
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function EventModal({
   planId,
   dayId,
@@ -427,13 +475,7 @@ export function EventModal({
           </>
         )}
 
-        <textarea
-          placeholder="Description"
-          rows={3}
-          value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
-          className={`col-span-2 ${inputCls}`}
-        />
+        <BulletListEditor value={form.description} onChange={(v) => setForm({ ...form, description: v })} />
 
         <div className="col-span-2">
           <label className="text-xs text-slate-500">Photo</label>

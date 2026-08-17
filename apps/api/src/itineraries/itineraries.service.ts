@@ -26,7 +26,7 @@ const FULL_INCLUDE = {
   images: { orderBy: { sortOrder: 'asc' as const } },
   packageTerms: true,
   lead: { select: { id: true, clientName: true, phone: true, email: true, destination: true, branchId: true } },
-  createdBy: { select: { id: true, branchId: true } },
+  createdBy: { select: { id: true, branchId: true, name: true, email: true, phone: true } },
 } as const;
 
 type PlanWithRelations = Awaited<ReturnType<InstanceType<typeof ItinerariesService>['findFullById']>>;
@@ -770,6 +770,7 @@ export class ItinerariesService {
       infantsCount: plan.infantsCount,
       coverPhotoUrl: plan.coverPhotoUrl,
       createdAt: plan.createdAt,
+      consultant: plan.createdBy ? { name: plan.createdBy.name, email: plan.createdBy.email, phone: plan.createdBy.phone } : null,
       days: plan.days.map((day) => ({
         id: day.id,
         dayNumber: day.dayNumber,
