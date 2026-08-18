@@ -45,6 +45,12 @@ export interface WeatherSentence {
   prefix: string;
   temp: string;
   suffix: string;
+  /**
+   * Small print shown under the sentence when the figure is a seasonal
+   * average rather than a forecast. The sentence itself stays warm and
+   * readable; the caveat lives here so honesty doesn't cost the tone.
+   */
+  note?: string;
 }
 
 /** Turns the numbers into something encouraging, and useful for packing. */
@@ -67,28 +73,51 @@ function mood(maxC: number, code: number | null): string {
  */
 export function weatherSentence(
   destination: string | null | undefined,
-  weather: { maxC: number; code: number | null; kind: 'forecast' | 'typical' } | null | undefined,
+  weather:
+    | { maxC: number; minC: number; code: number | null; kind: 'forecast' | 'typical' }
+    | null
+    | undefined,
+  day?: { date: string | null; isToday: boolean },
 ): WeatherSentence | null {
   if (!weather) return null;
   const where = destination ?? 'your destination';
   const temp = `${Math.round(weather.maxC)}°C`;
+  const low = Math.round(weather.minC);
   const tail = mood(weather.maxC, weather.code);
-
-  if (weather.kind === 'typical') {
-    return { prefix: `${where} is usually around `, temp, suffix: ` on these dates — ${tail}.` };
-  }
   const sky = describeSky(weather.code);
+
+  // "Today" only when it genuinely is; otherwise name the day, so browsing
+  // ahead to Thursday never claims to describe this morning.
+  const when =
+    day?.isToday || !day?.date
+      ? 'Today'
+      : new Date(day.date).toLocaleDateString('en-IN', { weekday: 'long' });
+
+  const estimate = weather.kind === 'typical';
+  // Colon rather than a dash: the mood clause at the end already uses one,
+  // and two em-dashes in a single sentence read as a stutter.
+  const prefix = `${when} in ${where}: ${estimate ? 'around ' : ''}`;
+
+  // Max plus overnight low describes the whole day rather than one moment.
+  const arc = Number.isFinite(low) ? `, easing to ${low}°C overnight` : '';
+  const suffix = `${sky ? ` and ${sky}` : ''}${arc} — ${tail}.`;
+
   return {
-    prefix: `Today's weather in ${where} is `,
+    prefix,
     temp,
-    suffix: sky ? `, ${sky} — ${tail}.` : ` — ${tail}.`,
+    suffix,
+    note: estimate ? 'Typical for this time of year — live forecast nearer the date.' : undefined,
   };
 }
 
-/** Kept local so the notes module stays free of weather-API concerns. */
+/**
+ * Kept local so the notes module stays free of weather-API concerns. Each
+ * phrase must read after an "and", so none of them may contain one of their
+ * own — "33°C and clear and sunny" is the trap here.
+ */
 function describeSky(code: number | null): string | null {
   if (code == null) return null;
-  if (code === 0) return 'clear and sunny';
+  if (code === 0) return 'sunny';
   if (code <= 2) return 'mostly sunny';
   if (code === 3) return 'overcast';
   if (code <= 48) return 'misty';

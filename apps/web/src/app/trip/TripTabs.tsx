@@ -144,10 +144,11 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
   const next = safeIndex < days.length - 1 ? days[safeIndex + 1] : null;
 
   const hello = greeting(travellerName);
-  const sentence = weatherSentence(
-    dayDestination,
-    day.date ? weather?.byDate[day.date.slice(0, 10)] : null,
-  );
+  const dayIso = day.date?.slice(0, 10) ?? null;
+  const sentence = weatherSentence(dayDestination, dayIso ? weather?.byDate[dayIso] : null, {
+    date: dayIso,
+    isToday: dayIso === new Date().toISOString().slice(0, 10),
+  });
 
   return (
     <div>
@@ -200,11 +201,14 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
         <div className="mt-2 rounded-2xl bg-brand-50 px-4 py-3.5">
           {hello && <p className="text-base font-bold text-brand-800">{hello}</p>}
           {sentence && (
-            <p className={`text-sm text-brand-900 ${hello ? 'mt-1' : ''}`}>
-              {sentence.prefix}
-              <span className="text-lg font-extrabold text-brand-700">{sentence.temp}</span>
-              {sentence.suffix}
-            </p>
+            <>
+              <p className={`text-sm text-brand-900 ${hello ? 'mt-1' : ''}`}>
+                {sentence.prefix}
+                <span className="text-lg font-extrabold text-brand-700">{sentence.temp}</span>
+                {sentence.suffix}
+              </p>
+              {sentence.note && <p className="mt-0.5 text-[11px] text-brand-900/50">{sentence.note}</p>}
+            </>
           )}
           <p className="mt-1 text-sm font-medium text-brand-800">
             {dayOpener(day.dayNumber, days.length)}
