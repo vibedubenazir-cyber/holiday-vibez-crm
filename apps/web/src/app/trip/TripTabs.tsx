@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { CountryGuide, Trip, TripHotel, TripTransfer } from '@/lib/traveler';
 import { absoluteUploadUrl } from '@/lib/upload';
 import { downloadTripIcs } from '@/lib/tripIcs';
+import { dayCloser, dayOpener } from '@/lib/tripNotes';
 import { useNotificationPermission, useTripReminders } from '@/lib/tripReminders';
 import {
   buildSchedule,
@@ -42,14 +43,57 @@ const TRANSFER_LABELS: Record<string, string> = {
   DAY_TRANSFER: 'Day transfer',
 };
 
-// Phone numbers are the single most important thing in this app when something
-// goes wrong, so every one of them is a real tel: link — one tap to dial,
-// never something to copy out by hand.
-function CallLink({ phone, label }: { phone: string; label?: string }) {
+/**
+ * Builds a wa.me target, or null when we can't be sure of the country.
+ *
+ * wa.me needs a full international number as bare digits. A number stored
+ * without a country code can't be resolved to one country from here, and
+ * guessing would open a chat with a stranger — so WhatsApp is simply not
+ * offered for those, while the tel: link still works as before.
+ */
+function whatsappNumber(phone: string): string | null {
+  const trimmed = phone.trim();
+  const digits = trimmed.replace(/\D/g, '');
+  if (!digits) return null;
+  if (trimmed.startsWith('+')) return digits;
+  if (digits.startsWith('00')) return digits.slice(2);
+  return null;
+}
+
+function WhatsAppGlyph({ className }: { className?: string }) {
   return (
-    <a href={`tel:${phone.replace(/\s/g, '')}`} className="font-semibold text-brand underline">
-      {label ?? phone}
-    </a>
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.47-2.4-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.91-2.2-.25-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.03 1.02-1.03 2.48 0 1.46 1.06 2.87 1.21 3.07.15.2 2.1 3.2 5.08 4.49.7.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.27-.2-.57-.35M12.05 21.8a9.87 9.87 0 01-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 01-1.51-5.26c0-5.45 4.44-9.89 9.89-9.89a9.83 9.83 0 016.99 2.9 9.83 9.83 0 012.89 6.99c0 5.45-4.44 9.89-9.89 9.89M20.52 3.45A11.9 11.9 0 0012.05 0C5.46 0 .1 5.36.1 11.95c0 2.1.55 4.14 1.6 5.94L0 24l6.3-1.65a11.88 11.88 0 005.69 1.45c6.58 0 11.94-5.36 11.95-11.95a11.87 11.87 0 00-3.42-8.4" />
+    </svg>
+  );
+}
+
+/**
+ * Phone numbers are the single most important thing in this app when something
+ * goes wrong, so every one of them is a real tel: link — one tap to dial,
+ * never something to copy out by hand. A WhatsApp glyph sits alongside it
+ * because abroad, on a foreign SIM or hotel wifi, a message often gets through
+ * when a call costs money or won't connect at all.
+ */
+function CallLink({ phone, label }: { phone: string; label?: string }) {
+  const wa = whatsappNumber(phone);
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <a href={`tel:${phone.replace(/\s/g, '')}`} className="font-semibold text-brand underline">
+        {label ?? phone}
+      </a>
+      {wa && (
+        <a
+          href={`https://wa.me/${wa}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Message ${label ?? phone} on WhatsApp`}
+          className="text-[#25D366]"
+        >
+          <WhatsAppGlyph className="h-4 w-4" />
+        </a>
+      )}
+    </span>
   );
 }
 
@@ -67,6 +111,7 @@ function todayIndex(days: { date: string | null }[]): number {
  */
 export function ItineraryTab({ trip }: { trip: Trip }) {
   const days = useMemo(() => trip.itinerary?.days ?? [], [trip.itinerary]);
+  const travellerName = trip.traveler?.name ?? trip.booking.clientName;
   const [index, setIndex] = useState(0);
 
   // Deferred to an effect so the server and client first paint agree: the
@@ -126,6 +171,12 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
           Day {day.dayNumber} of {days.length}
           {day.date && ` · ${formatDate(day.date)}`}
         </p>
+        {/* Opens the day by name. A trip app that only lists times reads like
+            a logistics printout; this is the difference between being
+            processed and being looked after. */}
+        <p className="mt-2 rounded-2xl bg-brand-50 px-4 py-3 text-sm font-medium text-brand-800">
+          {dayOpener(travellerName, day.dayNumber, days.length)}
+        </p>
       </div>
 
       <div className="space-y-3 px-4 pt-3">
@@ -172,7 +223,19 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
             </div>
           </div>
         ))}
-        {day.events.length === 0 && <p className="px-1 text-sm text-slate-400">Free day.</p>}
+        {day.events.length === 0 && (
+          <p className="px-1 text-sm text-slate-400">
+            Nothing scheduled — the day is yours.
+          </p>
+        )}
+      </div>
+
+      {/* And signs it off. On the last day this becomes the farewell rather
+          than a "see you tomorrow" that would be plainly wrong. */}
+      <div className="px-4 pt-4">
+        <p className="rounded-2xl bg-gradient-to-br from-slate-800 to-slate-700 px-4 py-3 text-sm font-medium text-white">
+          {dayCloser(travellerName, day.dayNumber, days.length)}
+        </p>
       </div>
 
       {/* Both directions name the day they lead to, so the traveller knows
@@ -313,12 +376,25 @@ export function TransfersTab({ transfers, timezone }: { transfers: TripTransfer[
                   )}
                 </div>
                 {t.driverPhone && (
-                  <a
-                    href={`tel:${t.driverPhone.replace(/\s/g, '')}`}
-                    className="shrink-0 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-500/25"
-                  >
-                    Call
-                  </a>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <a
+                      href={`tel:${t.driverPhone.replace(/\s/g, '')}`}
+                      className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-500/25"
+                    >
+                      Call
+                    </a>
+                    {whatsappNumber(t.driverPhone) && (
+                      <a
+                        href={`https://wa.me/${whatsappNumber(t.driverPhone)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Message the driver on WhatsApp"
+                        className="flex items-center gap-1.5 rounded-xl bg-[#25D366] px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-500/25"
+                      >
+                        <WhatsAppGlyph className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -533,15 +609,28 @@ export function EssentialsTab({ trip }: { trip: Trip }) {
         <p className="text-sm font-bold text-white">24/7 Holiday Vibez support</p>
         <p className="mt-0.5 text-xs text-rose-100">Anywhere, any time — we pick up.</p>
         {trip.support.emergencyPhone ? (
-          <a
-            href={`tel:${trip.support.emergencyPhone.replace(/\s/g, '')}`}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-base font-bold text-rose-700"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4" aria-hidden="true">
-              <path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.6a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.5-1.2a2 2 0 012.1-.4c.8.3 1.7.5 2.6.6a2 2 0 011.7 2z" />
-            </svg>
-            {trip.support.emergencyPhone}
-          </a>
+          <div className="mt-3 flex gap-2">
+            <a
+              href={`tel:${trip.support.emergencyPhone.replace(/\s/g, '')}`}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-base font-bold text-rose-700"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4" aria-hidden="true">
+                <path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.6a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.5-1.2a2 2 0 012.1-.4c.8.3 1.7.5 2.6.6a2 2 0 011.7 2z" />
+              </svg>
+              {trip.support.emergencyPhone}
+            </a>
+            {whatsappNumber(trip.support.emergencyPhone) && (
+              <a
+                href={`https://wa.me/${whatsappNumber(trip.support.emergencyPhone)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Message Holiday Vibez support on WhatsApp"
+                className="flex shrink-0 items-center justify-center rounded-xl bg-[#25D366] px-4 text-white"
+              >
+                <WhatsAppGlyph className="h-5 w-5" />
+              </a>
+            )}
+          </div>
         ) : (
           <p className="mt-3 text-sm text-rose-100">No support number configured</p>
         )}

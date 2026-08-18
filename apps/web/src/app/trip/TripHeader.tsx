@@ -1,6 +1,7 @@
 'use client';
 
 import type { Trip } from '@/lib/traveler';
+import { greeting } from '@/lib/tripNotes';
 import { absoluteUploadUrl } from '@/lib/upload';
 
 /**
@@ -33,6 +34,8 @@ export function TripHeader({ trip, onSignOut }: { trip: Trip; onSignOut: () => v
   const title = itinerary?.title ?? trip.booking.clientName;
   const destinations = itinerary?.destinations ?? [];
   const range = formatRange(itinerary?.startDate ?? null, itinerary?.endDate ?? null);
+  // The traveller's own name where we have it, else whoever the booking is in.
+  const hello = greeting(trip.traveler?.name ?? trip.booking.clientName);
 
   const guests = itinerary
     ? [
@@ -67,6 +70,9 @@ export function TripHeader({ trip, onSignOut }: { trip: Trip; onSignOut: () => v
         </div>
 
         <div>
+          {/* Greet by name before naming the package — it's their holiday,
+              not a product they're browsing. */}
+          {hello && <p className="mb-0.5 text-sm font-semibold text-white/90">{hello}</p>}
           <h1 className="text-2xl font-extrabold leading-tight tracking-tight text-white drop-shadow-sm">
             {title}
           </h1>
