@@ -897,6 +897,11 @@ model ItineraryPlan {
   notes                 String?
   coverPhotoUrl         String?
   theme                 String?
+  // IANA zone of the destination (e.g. "Asia/Bangkok"). Hotel and flight times
+  // are stored as wall-clock strings that are already destination-local, but
+  // TripTransfer.scheduledAt is a real instant — without this the traveller app
+  // renders a Bangkok pickup in whatever timezone their phone is currently in.
+  timezone              String?
   status                ItineraryPlanStatus @default(DRAFT)
   showOnWebsite         Boolean             @default(false)
   websitePerPersonPrice Decimal?            @db.Decimal(14, 2)

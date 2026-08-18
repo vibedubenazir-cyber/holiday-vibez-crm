@@ -1,6 +1,6 @@
 'use client';
 
-import { formatCountdown, KIND_LABELS, toDate, type ScheduleItem } from './tripSchedule';
+import { formatCountdown, KIND_LABELS, type ScheduleItem } from './tripSchedule';
 
 /**
  * Builds an iCalendar file so the traveller's own phone calendar owns the
@@ -37,16 +37,13 @@ function utcStamp(date: Date): string {
 }
 
 /**
- * Floating form (no Z, no TZID) for wall-clock times. A 14:00 hotel check-in
- * should alarm at 14:00 local to wherever the traveller physically is, which
- * is exactly what a floating time means to a calendar client.
+ * Floating form (no Z, no TZID). Every schedule entry is already normalised to
+ * destination wall-clock time, and a floating time means "these digits, on
+ * whatever clock the device is on" — so a 14:00 check-in alarms at 14:00 once
+ * the traveller's phone picks up local time on landing.
  */
-function floatingStamp(value: string): string {
-  return `${value.slice(0, 10).replace(/-/g, '')}T${value.slice(11, 16).replace(':', '')}00`;
-}
-
 function dtstart(entry: ScheduleItem): string {
-  return entry.absolute ? utcStamp(toDate(entry)) : floatingStamp(entry.at);
+  return `${entry.at.slice(0, 10).replace(/-/g, '')}T${entry.at.slice(11, 16).replace(':', '')}00`;
 }
 
 /**

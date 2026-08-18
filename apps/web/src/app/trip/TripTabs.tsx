@@ -19,9 +19,20 @@ function formatDate(value: string | null) {
   return new Date(value).toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-function formatDateTime(value: string | null) {
+/**
+ * Renders a stored instant on the destination's clock. A pickup arranged for
+ * 07:45 in Bangkok has to read 07:45 whether the traveller checks it from
+ * Mumbai the week before or from the arrivals hall.
+ */
+function formatDateTime(value: string | null, timeZone: string | null) {
   if (!value) return '';
-  return new Date(value).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  return new Date(value).toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    ...(timeZone ? { timeZone } : {}),
+  });
 }
 
 const TRANSFER_LABELS: Record<string, string> = {
@@ -209,7 +220,7 @@ export function HotelsTab({ hotels }: { hotels: TripHotel[] }) {
   );
 }
 
-export function TransfersTab({ transfers }: { transfers: TripTransfer[] }) {
+export function TransfersTab({ transfers, timezone }: { transfers: TripTransfer[]; timezone: string | null }) {
   if (transfers.length === 0) {
     return (
       <p className="p-4 text-sm text-slate-500">
@@ -223,7 +234,9 @@ export function TransfersTab({ transfers }: { transfers: TripTransfer[] }) {
         <div key={t.id} className="rounded-xl border border-slate-200 bg-white p-3">
           <div className="flex items-center justify-between">
             <p className="font-semibold text-slate-800">{TRANSFER_LABELS[t.type] ?? t.type}</p>
-            {t.scheduledAt && <span className="text-xs text-slate-500">{formatDateTime(t.scheduledAt)}</span>}
+            {t.scheduledAt && (
+              <span className="text-xs text-slate-500">{formatDateTime(t.scheduledAt, timezone)}</span>
+            )}
           </div>
           {(t.fromLocation || t.toLocation) && (
             <p className="mt-1 text-sm text-slate-600">
@@ -265,7 +278,7 @@ function ScheduleRow({ entry, now }: { entry: ScheduleItem; now: Date | null }) 
         <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${KIND_STYLES[entry.kind]}`}>
           {KIND_LABELS[entry.kind]}
         </span>
-        {now && <span className="text-xs text-slate-400">{formatRelative(at, now)}</span>}
+        {now && <span className="text-xs text-slate-400">{formatRelative(entry.instant, now)}</span>}
       </div>
       <p className="mt-1.5 font-medium text-slate-800">{entry.title}</p>
       {entry.location && <p className="text-xs text-slate-500">{entry.location}</p>}
@@ -319,7 +332,7 @@ export function AlertsTab({ trip }: { trip: Trip }) {
 
   // Before the clock is available, treat everything as upcoming rather than
   // flashing the wrong card.
-  const upcoming = now ? schedule.filter((e) => toDate(e).getTime() >= now.getTime()) : schedule;
+  const upcoming = now ? schedule.filter((e) => e.instant.getTime() >= now.getTime()) : schedule;
   const next = upcoming[0];
   const later = upcoming.slice(1);
   const doneCount = schedule.length - upcoming.length;
@@ -336,7 +349,7 @@ export function AlertsTab({ trip }: { trip: Trip }) {
               </span>
               {now && (
                 <span className="text-sm font-semibold text-brand-700">
-                  {formatRelative(toDate(next), now)}
+                  {formatRelative(next.instant, now)}
                 </span>
               )}
             </div>

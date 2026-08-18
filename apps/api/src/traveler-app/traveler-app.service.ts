@@ -78,6 +78,7 @@ export class TravelerAppService {
             adultsCount: plan.adultsCount,
             childrenCount: plan.childrenCount,
             coverPhotoUrl: plan.coverPhotoUrl,
+            timezone: plan.timezone,
             days: plan.days.map((day) => ({
               id: day.id,
               dayNumber: day.dayNumber,

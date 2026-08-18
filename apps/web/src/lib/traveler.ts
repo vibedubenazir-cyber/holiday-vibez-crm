@@ -84,6 +84,8 @@ export interface Trip {
     adultsCount: number;
     childrenCount: number;
     coverPhotoUrl: string | null;
+    /** IANA zone of the destination; times are shown on this clock. */
+    timezone: string | null;
     days: TripDay[];
     packageTerms: Record<string, string | null> | null;
   } | null;

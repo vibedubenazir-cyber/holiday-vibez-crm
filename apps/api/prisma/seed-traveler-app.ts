@@ -9,6 +9,9 @@ import { PrismaClient, TripTransferType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+/** IANA zone the demo trip's destinations sit in; stored on the plan so the
+ *  traveller app can render every time on the destination's clock. */
+const DESTINATION_TIMEZONE = 'Asia/Bangkok';
 /** Thailand is UTC+7 year-round (no DST), so a fixed offset is safe here. */
 const DESTINATION_UTC_OFFSET_HOURS = 7;
 
@@ -69,6 +72,11 @@ async function main() {
     departureLeaves,
     -DROP_BEFORE_DEPARTURE_MINUTES,
   );
+
+  await prisma.itineraryPlan.update({
+    where: { id: plan.id },
+    data: { timezone: DESTINATION_TIMEZONE },
+  });
 
   const booking = await prisma.booking.findFirstOrThrow({
     where: { transfers: { some: {} } },

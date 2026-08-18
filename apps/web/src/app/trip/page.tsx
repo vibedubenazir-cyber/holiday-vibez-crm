@@ -8,6 +8,7 @@ import {
   signOutTraveler,
   type Trip,
 } from '@/lib/traveler';
+import { InstallPrompt } from './InstallPrompt';
 import { TripSignIn } from './TripSignIn';
 import { AlertsTab, EssentialsTab, HotelsTab, ItineraryTab, TransfersTab } from './TripTabs';
 
@@ -76,13 +77,18 @@ export default function TripPage() {
   }
 
   if (!signedIn) {
+    // The prompt shows here too: installing before signing in means the app is
+    // already on the home screen by the time the trip data lands in it.
     return (
-      <TripSignIn
-        onSignedIn={() => {
-          setSignedIn(true);
-          void load();
-        }}
-      />
+      <>
+        <InstallPrompt />
+        <TripSignIn
+          onSignedIn={() => {
+            setSignedIn(true);
+            void load();
+          }}
+        />
+      </>
     );
   }
 
@@ -92,6 +98,7 @@ export default function TripPage() {
 
   return (
     <div className="mx-auto max-w-lg pb-20">
+      <InstallPrompt />
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white px-4 py-3">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -120,15 +127,17 @@ export default function TripPage() {
         )}
       </header>
 
-      {/* Five labels don't fit across a 375px phone, so the strip scrolls
-          rather than squeezing the text to an unreadable size. */}
-      <nav className="flex overflow-x-auto border-b border-slate-200 bg-white">
+      {/* Wraps to two rows rather than scrolling sideways: five labels don't
+          fit across a 375px phone, and a tab you have to drag into view is a
+          tab you don't know exists. Three then two, each row filling the
+          width. */}
+      <nav className="flex flex-wrap border-b border-slate-200 bg-white">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`shrink-0 px-4 py-3 text-sm font-medium transition ${
-              tab === t.id ? 'border-b-2 border-brand text-brand-700' : 'text-slate-500'
+            className={`grow basis-1/3 border-b-2 px-2 py-3 text-sm font-medium transition ${
+              tab === t.id ? 'border-brand text-brand-700' : 'border-transparent text-slate-500'
             }`}
           >
             {t.label}
@@ -139,7 +148,9 @@ export default function TripPage() {
       {tab === 'itinerary' && <ItineraryTab trip={trip} />}
       {tab === 'alerts' && <AlertsTab trip={trip} />}
       {tab === 'hotels' && <HotelsTab hotels={trip.hotels} />}
-      {tab === 'transfers' && <TransfersTab transfers={trip.transfers} />}
+      {tab === 'transfers' && (
+        <TransfersTab transfers={trip.transfers} timezone={trip.itinerary?.timezone ?? null} />
+      )}
       {tab === 'essentials' && <EssentialsTab trip={trip} />}
     </div>
   );
