@@ -14,3 +14,4 @@ apps/api/uploads/*
 .env*
 apps/api/prisma/*.js
 apps/api/prisma/*.js.map
+apps/api/private-uploads/

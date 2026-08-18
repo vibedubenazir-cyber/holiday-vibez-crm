@@ -67,6 +67,7 @@ import { ItineraryEventTemplatesModule } from './itinerary-event-templates/itine
 import { TravelerAuthModule } from './traveler-auth/traveler-auth.module';
 import { TravelerAppModule } from './traveler-app/traveler-app.module';
 import { TripTransfersModule } from './trip-transfers/trip-transfers.module';
+import { TravelerDocumentsModule } from './traveler-documents/traveler-documents.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -139,6 +140,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     TravelerAuthModule,
     TravelerAppModule,
     TripTransfersModule,
+    TravelerDocumentsModule,
   ],
   providers: [
     PrismaService,

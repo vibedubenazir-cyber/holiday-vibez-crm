@@ -317,6 +317,7 @@ model User {
   grievancesRaised           GrievanceReport[]          @relation("GrievancesRaised")
   grievancesHandled          GrievanceReport[]          @relation("GrievancesHandled")
   itineraryPlans             ItineraryPlan[]
+  uploadedTravelerDocuments  TravelerDocument[]
   regularisationRequests     AttendanceRegularisation[] @relation("RegularisationRequests")
   regularisationReviews      AttendanceRegularisation[] @relation("RegularisationReviews")
   rosterEntries              RosterEntry[]              @relation("RosterEntries")
@@ -642,6 +643,7 @@ model Traveler {
   updatedAt         DateTime  @updatedAt
 
   appSessions TravelerSession[]
+  documents   TravelerDocument[]
 
   @@map("travelers")
 }
@@ -1058,6 +1060,7 @@ model Booking {
   dmcCommissions    DmcCommission[]
   transfers         TripTransfer[]
   travelerSessions  TravelerSession[]
+  documents         TravelerDocument[]
 
   @@map("bookings")
 }
@@ -2198,4 +2201,45 @@ model CountryGuide {
   updatedAt        DateTime @updatedAt
 
   @@map("country_guides")
+}
+
+enum TravelerDocumentType {
+  PASSPORT
+  VISA
+  FLIGHT_TICKET
+  HOTEL_VOUCHER
+  INSURANCE
+  ID_PROOF
+  OTHER
+}
+
+/// A file attached to a trip — a passport scan, a boarding pass, an insurance
+/// certificate. Deliberately NOT stored under the public /uploads path: that
+/// directory is served statically with no authentication, which is fine for an
+/// itinerary photo and completely unacceptable for a passport. Files live in
+/// private storage and are streamed only through an authenticated endpoint.
+model TravelerDocument {
+  id         String               @id @default(uuid())
+  bookingId  String
+  booking    Booking              @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  /// Whose document this is. NULL means it belongs to the whole booking and
+  /// every traveller on it can see it (a shared voucher, the group itinerary).
+  /// Set means it is private to that one traveller — which is what keeps one
+  /// family's passports invisible to the rest of a group tour.
+  travelerId String?
+  traveler   Traveler?            @relation(fields: [travelerId], references: [id], onDelete: Cascade)
+  type       TravelerDocumentType
+  label      String
+  /// Storage key, never a URL — there is no public address for this file.
+  storageKey String
+  mimeType   String
+  sizeBytes  Int
+  /// Set when a staff member uploaded it; null when the traveller did.
+  uploadedById String?
+  uploadedBy   User?              @relation(fields: [uploadedById], references: [id])
+  createdAt  DateTime             @default(now())
+
+  @@index([bookingId])
+  @@index([travelerId])
+  @@map("traveler_documents")
 }

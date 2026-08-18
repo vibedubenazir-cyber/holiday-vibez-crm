@@ -13,6 +13,7 @@ import { TripHeader } from './TripHeader';
 import { TripSignIn } from './TripSignIn';
 import { TripTabBar, type TabId } from './TripTabBar';
 import { AlertsTab, EssentialsTab, HotelsTab, ItineraryTab, TransfersTab } from './TripTabs';
+import { DocumentsTab } from './DocumentsTab';
 
 export default function TripPage() {
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
@@ -111,6 +112,7 @@ export default function TripPage() {
       {tab === 'transfers' && (
         <TransfersTab transfers={trip.transfers} timezone={trip.itinerary?.timezone ?? null} />
       )}
+      {tab === 'docs' && <DocumentsTab />}
       {tab === 'essentials' && <EssentialsTab trip={trip} />}
 
       <TripTabBar tab={tab} onChange={setTab} />

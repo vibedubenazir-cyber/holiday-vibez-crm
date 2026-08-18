@@ -10,7 +10,7 @@
  * tall so it's hittable without looking.
  */
 
-export type TabId = 'itinerary' | 'alerts' | 'hotels' | 'transfers' | 'essentials';
+export type TabId = 'itinerary' | 'alerts' | 'hotels' | 'transfers' | 'docs' | 'essentials';
 
 function Icon({ path, active }: { path: string; active: boolean }) {
   return (
@@ -21,7 +21,7 @@ function Icon({ path, active }: { path: string; active: boolean }) {
       strokeWidth={active ? 2.2 : 1.8}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-6 w-6"
+      className="h-5 w-5"
       aria-hidden="true"
     >
       <path d={path} />
@@ -51,6 +51,11 @@ const TABS: { id: TabId; label: string; path: string }[] = [
     path: 'M3 12l1.5-4.5A2 2 0 016.4 6h11.2a2 2 0 011.9 1.4L21 12M3 12h18M4 12v5h3m10 0h3v-5M7.5 15h.01M16.5 15h.01',
   },
   {
+    id: 'docs',
+    label: 'Docs',
+    path: 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 2v6h6M9 13h6M9 17h6',
+  },
+  {
     id: 'essentials',
     label: 'Essentials',
     path: 'M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.6a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.5-1.2a2 2 0 012.1-.4c.8.3 1.7.5 2.6.6a2 2 0 011.7 2z',
@@ -73,7 +78,7 @@ export function TripTabBar({ tab, onChange }: { tab: TabId; onChange: (id: TabId
             key={t.id}
             onClick={() => onChange(t.id)}
             aria-current={active ? 'page' : undefined}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 transition ${
+            className={`flex flex-1 flex-col items-center gap-0.5 py-2 transition ${
               active ? 'text-brand-700' : 'text-slate-400'
             }`}
           >

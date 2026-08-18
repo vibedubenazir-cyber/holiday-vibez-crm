@@ -187,3 +187,85 @@ export async function fetchTrip(): Promise<Trip> {
   }
   return trip;
 }
+
+export type TripDocumentType =
+  | 'PASSPORT'
+  | 'VISA'
+  | 'FLIGHT_TICKET'
+  | 'HOTEL_VOUCHER'
+  | 'INSURANCE'
+  | 'ID_PROOF'
+  | 'OTHER';
+
+export interface TripDocument {
+  id: string;
+  type: TripDocumentType;
+  label: string;
+  mimeType: string;
+  sizeBytes: number;
+  ownerName: string | null;
+  /** True when every traveller on the booking can see it. */
+  sharedWithBooking: boolean;
+  addedByStaff: boolean;
+  createdAt: string;
+}
+
+export async function fetchDocuments(): Promise<TripDocument[]> {
+  const token = getTripToken();
+  if (!token) throw new TripApiError(401, 'Not signed in');
+  const res = await fetch('/api/traveler/documents', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new TripApiError(res.status, 'Could not load your documents');
+  return (await res.json()) as TripDocument[];
+}
+
+/**
+ * Uploads with a raw fetch rather than the JSON helper: a multipart body must
+ * not carry a Content-Type we set ourselves, or the boundary is lost.
+ */
+export async function uploadDocument(file: File, type: TripDocumentType, label: string) {
+  const token = getTripToken();
+  const body = new FormData();
+  body.append('file', file);
+  body.append('type', type);
+  body.append('label', label);
+
+  const res = await fetch('/api/traveler/documents', {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body,
+  });
+  if (!res.ok) throw new TripApiError(res.status, 'Could not upload that file');
+  return (await res.json()) as TripDocument;
+}
+
+export async function deleteDocument(id: string) {
+  const token = getTripToken();
+  const res = await fetch(`/api/traveler/documents/${id}`, {
+    method: 'DELETE',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
+  if (!res.ok) throw new TripApiError(res.status, 'Could not remove that document');
+}
+
+/**
+ * Documents are streamed from an authenticated endpoint, so they can't be a
+ * plain href — the browser wouldn't send the token. Fetch the bytes, then hand
+ * the blob to the OS.
+ */
+export async function openDocument(doc: TripDocument) {
+  const token = getTripToken();
+  const res = await fetch(`/api/traveler/documents/${doc.id}/file`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
+  if (!res.ok) throw new TripApiError(res.status, 'Could not open that document');
+  const url = URL.createObjectURL(await res.blob());
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = doc.label;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
