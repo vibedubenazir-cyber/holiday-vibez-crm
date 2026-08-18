@@ -85,46 +85,72 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
   const next = safeIndex < days.length - 1 ? days[safeIndex + 1] : null;
 
   return (
-    <div className="p-4">
-      {/* Numbered pills double as the position indicator and a jump target,
-          so "where am I in the trip" and "take me to day 5" cost one glance. */}
-      <div className="-mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1 pb-1">
-        {days.map((d, i) => (
-          <button
-            key={d.id}
-            onClick={() => setIndex(i)}
-            aria-current={i === safeIndex ? 'true' : undefined}
-            className={`h-9 w-9 shrink-0 rounded-full text-sm font-semibold transition ${
-              i === safeIndex
-                ? 'bg-brand text-white shadow-sm'
-                : 'bg-white text-slate-500 ring-1 ring-slate-200'
-            }`}
-          >
-            {d.dayNumber}
-          </button>
-        ))}
+    <div>
+      {/* A calendar strip rather than bare numbered dots: the weekday and date
+          are what a traveller actually navigates by ("the Thursday we fly to
+          Phuket"), and carrying them here retires the separate day banner that
+          repeated the same thing in a blue slab underneath. */}
+      <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 py-3">
+          {days.map((d, i) => {
+            const active = i === safeIndex;
+            const date = d.date ? new Date(d.date) : null;
+            return (
+              <button
+                key={d.id}
+                onClick={() => setIndex(i)}
+                aria-current={active ? 'true' : undefined}
+                className={`flex w-14 shrink-0 flex-col items-center rounded-xl py-2 transition ${
+                  active
+                    ? 'bg-brand text-white shadow-sm shadow-brand-500/30'
+                    : 'bg-slate-50 text-slate-500 ring-1 ring-slate-200'
+                }`}
+              >
+                <span className={`text-[10px] font-semibold uppercase ${active ? 'text-blue-100' : 'text-slate-400'}`}>
+                  {date ? date.toLocaleDateString('en-IN', { weekday: 'short' }) : `Day`}
+                </span>
+                <span className="text-lg font-bold leading-tight">
+                  {date ? date.getDate() : d.dayNumber}
+                </span>
+                <span className={`text-[10px] ${active ? 'text-blue-100' : 'text-slate-400'}`}>
+                  Day {d.dayNumber}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="rounded-lg bg-brand px-3 py-2 text-white">
-        <p className="text-sm font-semibold">
-          Day {day.dayNumber}
-          <span className="font-normal text-blue-100"> of {days.length}</span>
+      <div className="px-4 pt-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          Day {day.dayNumber} of {days.length}
+          {day.date && ` · ${formatDate(day.date)}`}
         </p>
-        {day.date && <p className="text-xs text-blue-100">{formatDate(day.date)}</p>}
       </div>
 
-      <div className="mt-3 space-y-2">
+      <div className="space-y-3 px-4 pt-3">
         {day.events.map((event) => (
-          <div key={event.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div
+            key={event.id}
+            className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/70"
+          >
             {event.photoUrl && (
-              <div className="relative h-36 w-full">
+              <div className="relative h-40 w-full">
                 <img src={absoluteUploadUrl(event.photoUrl)} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                {/* The time rides on the photo so the card body opens with the
+                    name — scanning a day is a list of what, not of when. */}
+                {event.showTime && event.startTime && (
+                  <span className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                    {event.startTime}
+                    {event.endTime ? ` – ${event.endTime}` : ''}
+                  </span>
+                )}
               </div>
             )}
-            <div className="p-3">
-              <p className="font-semibold text-slate-800">{event.name}</p>
-              {event.showTime && (event.startTime || event.endTime) && (
-                <p className="text-xs text-slate-500">
+            <div className="p-4">
+              <p className="font-bold text-slate-800">{event.name}</p>
+              {event.showTime && (event.startTime || event.endTime) && !event.photoUrl && (
+                <p className="text-xs font-medium text-brand-600">
                   {event.startTime}
                   {event.endTime ? ` – ${event.endTime}` : ''}
                 </p>
@@ -151,22 +177,22 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
 
       {/* Both directions name the day they lead to, so the traveller knows
           where they're going before tapping. */}
-      <div className="mt-4 flex gap-2">
+      <div className="flex gap-2 px-4 pt-4">
         <button
           onClick={() => setIndex(safeIndex - 1)}
           disabled={!previous}
-          className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-3 text-left text-sm disabled:invisible"
+          className="flex-1 rounded-xl bg-white px-3 py-3 text-left text-sm shadow-sm ring-1 ring-slate-200/70 disabled:invisible"
         >
           <span className="block text-xs text-slate-400">← Previous</span>
-          <span className="font-medium text-slate-700">Day {previous?.dayNumber}</span>
+          <span className="font-semibold text-slate-700">Day {previous?.dayNumber}</span>
         </button>
         <button
           onClick={() => setIndex(safeIndex + 1)}
           disabled={!next}
-          className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-3 text-right text-sm disabled:invisible"
+          className="flex-1 rounded-xl bg-white px-3 py-3 text-right text-sm shadow-sm ring-1 ring-slate-200/70 disabled:invisible"
         >
           <span className="block text-xs text-slate-400">Next →</span>
-          <span className="font-medium text-slate-700">Day {next?.dayNumber}</span>
+          <span className="font-semibold text-slate-700">Day {next?.dayNumber}</span>
         </button>
       </div>
     </div>

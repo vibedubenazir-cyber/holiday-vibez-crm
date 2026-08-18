@@ -9,6 +9,7 @@ import {
   type Trip,
 } from '@/lib/traveler';
 import { InstallPrompt } from './InstallPrompt';
+import { TripHeader } from './TripHeader';
 import { TripSignIn } from './TripSignIn';
 import { TripTabBar, type TabId } from './TripTabBar';
 import { AlertsTab, EssentialsTab, HotelsTab, ItineraryTab, TransfersTab } from './TripTabs';
@@ -90,33 +91,19 @@ export default function TripPage() {
     // it) so the last card of any tab is never trapped underneath.
     <div className="mx-auto max-w-lg pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
       <InstallPrompt />
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white px-4 py-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand-500">
-              {trip.itinerary?.destinations.join(', ') || 'My trip'}
-            </p>
-            <h1 className="text-lg font-extrabold tracking-tight text-brand-700">
-              {trip.itinerary?.title ?? trip.booking.clientName}
-            </h1>
-          </div>
-          <button
-            onClick={() => {
-              signOutTraveler();
-              setSignedIn(false);
-              setTrip(null);
-            }}
-            className="shrink-0 text-xs text-slate-400 underline"
-          >
-            Sign out
-          </button>
-        </div>
-        {offline && (
-          <p className="mt-2 rounded-lg bg-amber-50 px-2 py-1 text-xs text-amber-800">
-            Offline — showing your saved copy from {new Date(trip.syncedAt).toLocaleString('en-IN')}
-          </p>
-        )}
-      </header>
+      <TripHeader
+        trip={trip}
+        onSignOut={() => {
+          signOutTraveler();
+          setSignedIn(false);
+          setTrip(null);
+        }}
+      />
+      {offline && (
+        <p className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+          Offline — showing your saved copy from {new Date(trip.syncedAt).toLocaleString('en-IN')}
+        </p>
+      )}
 
       {tab === 'itinerary' && <ItineraryTab trip={trip} />}
       {tab === 'alerts' && <AlertsTab trip={trip} />}

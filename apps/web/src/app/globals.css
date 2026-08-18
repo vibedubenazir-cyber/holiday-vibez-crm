@@ -10,3 +10,18 @@ body {
   scrollbar-color: rgb(148 163 184) transparent;
 }
 
+/*
+ * For horizontal strips that are swiped rather than scrolled — the trip app's
+ * day selector — where a visible scrollbar reads as a rendering artefact
+ * rather than an affordance. Phones don't draw one; desktop shouldn't either.
+ */
+@layer utilities {
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
