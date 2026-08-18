@@ -26,10 +26,12 @@ export function greeting(name: string | null | undefined): string | null {
   return first ? `Hi ${first} 👋` : null;
 }
 
+// These follow the "Hi <name>" line, so they are statements rather than
+// greetings — two hellos in one card reads like a form letter.
 const MIDDAY_OPENERS = [
-  (n: string) => `Good morning${n}. Here's how today looks.`,
-  (n: string) => `A new day${n} — everything's arranged, just show up.`,
-  (n: string) => `Morning${n}. Today's plan is below.`,
+  () => `Here's how today looks.`,
+  () => `Everything's arranged — all you have to do is show up.`,
+  () => `Today's plan is below, and it's all taken care of.`,
 ];
 
 const MIDDAY_CLOSERS = [
@@ -38,32 +40,55 @@ const MIDDAY_CLOSERS = [
   (d: number) => `That's Day ${d}. Sleep well — tomorrow's all set. 🌙`,
 ];
 
+export interface WeatherSentence {
+  /** Split so the temperature can be emphasised without re-parsing prose. */
+  prefix: string;
+  temp: string;
+  suffix: string;
+}
+
+/** Turns the numbers into something encouraging, and useful for packing. */
+function mood(maxC: number, code: number | null): string {
+  const wet = code != null && ((code >= 51 && code <= 67) || (code >= 80 && code <= 99));
+  if (wet) return 'carry a light umbrella and you’ll be all set';
+  if (maxC >= 30) return 'perfect beach weather';
+  if (maxC >= 25) return 'lovely for exploring';
+  if (maxC >= 18) return 'beautiful walking weather';
+  if (maxC >= 10) return 'crisp — a light jacket will do';
+  return 'chilly, so do wrap up warm';
+}
+
 /**
- * The weather sentence that leads the day's greeting.
+ * The weather line inside the welcome.
  *
  * A forecast is stated plainly; a figure taken from last year's same dates is
- * always hedged as "usually" and never presented as a prediction, because a
- * traveller packing for it deserves to know which one they're reading.
+ * always hedged as "usually" and never dressed up as a prediction, because a
+ * traveller packs based on this and deserves to know which one they're reading.
  */
-export function weatherLead(
+export function weatherSentence(
   destination: string | null | undefined,
   weather: { maxC: number; code: number | null; kind: 'forecast' | 'typical' } | null | undefined,
-): string | null {
+): WeatherSentence | null {
   if (!weather) return null;
-  const where = destination ? ` in ${destination}` : '';
-  const temp = Math.round(weather.maxC);
+  const where = destination ?? 'your destination';
+  const temp = `${Math.round(weather.maxC)}°C`;
+  const tail = mood(weather.maxC, weather.code);
 
   if (weather.kind === 'typical') {
-    return `${temp}°C${where} — that's what these dates usually bring.`;
+    return { prefix: `${where} is usually around `, temp, suffix: ` on these dates — ${tail}.` };
   }
   const sky = describeSky(weather.code);
-  return sky ? `${temp}°C and ${sky}${where} today.` : `${temp}°C${where} today.`;
+  return {
+    prefix: `Today's weather in ${where} is `,
+    temp,
+    suffix: sky ? `, ${sky} — ${tail}.` : ` — ${tail}.`,
+  };
 }
 
 /** Kept local so the notes module stays free of weather-API concerns. */
 function describeSky(code: number | null): string | null {
   if (code == null) return null;
-  if (code === 0) return 'sunny';
+  if (code === 0) return 'clear and sunny';
   if (code <= 2) return 'mostly sunny';
   if (code === 3) return 'overcast';
   if (code <= 48) return 'misty';
@@ -75,17 +100,14 @@ function describeSky(code: number | null): string | null {
   return 'stormy';
 }
 
-export function dayOpener(name: string | null | undefined, dayNumber: number, totalDays: number): string {
-  const first = firstName(name);
-  const suffix = first ? `, ${first}` : '';
-
+export function dayOpener(dayNumber: number, totalDays: number): string {
   if (dayNumber === 1) {
-    return `Your holiday starts today${suffix}. Everything below is taken care of — all you have to do is enjoy it. ✨`;
+    return `Your holiday starts today. Everything below is taken care of — all you have to do is enjoy it. ✨`;
   }
   if (dayNumber === totalDays) {
-    return `Last day${suffix}. Let's make it a good one.`;
+    return `Last day — let's make it a good one.`;
   }
-  return MIDDAY_OPENERS[dayNumber % MIDDAY_OPENERS.length](suffix);
+  return MIDDAY_OPENERS[dayNumber % MIDDAY_OPENERS.length]();
 }
 
 export function dayCloser(name: string | null | undefined, dayNumber: number, totalDays: number): string {

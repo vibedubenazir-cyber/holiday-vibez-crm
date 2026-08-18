@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { CountryGuide, Trip, TripHotel, TripTransfer } from '@/lib/traveler';
 import { absoluteUploadUrl } from '@/lib/upload';
 import { downloadTripIcs } from '@/lib/tripIcs';
-import { dayCloser, dayOpener, weatherLead } from '@/lib/tripNotes';
+import { dayCloser, dayOpener, greeting, weatherSentence } from '@/lib/tripNotes';
 import { useNotificationPermission, useTripReminders } from '@/lib/tripReminders';
 import { useTripWeather } from '@/lib/tripWeather';
 import {
@@ -143,9 +143,11 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
   const previous = safeIndex > 0 ? days[safeIndex - 1] : null;
   const next = safeIndex < days.length - 1 ? days[safeIndex + 1] : null;
 
-  // Split so the temperature can be set large without re-parsing the sentence.
-  const leadText = weatherLead(dayDestination, day.date ? weather?.byDate[day.date.slice(0, 10)] : null);
-  const lead = leadText ? { temp: leadText.split(' ')[0], rest: leadText.split(' ').slice(1).join(' ') } : null;
+  const hello = greeting(travellerName);
+  const sentence = weatherSentence(
+    dayDestination,
+    day.date ? weather?.byDate[day.date.slice(0, 10)] : null,
+  );
 
   return (
     <div>
@@ -189,20 +191,23 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
           Day {day.dayNumber} of {days.length}
           {day.date && ` · ${formatDate(day.date)}`}
         </p>
-        {/* Opens the day with the temperature, then by name. A trip app that
-            only lists times reads like a logistics printout; this is the
-            difference between being processed and being looked after. The
-            weather is omitted entirely when we couldn't fetch it — never
-            faked — so the greeting still reads naturally offline. */}
-        <div className="mt-2 rounded-2xl bg-brand-50 px-4 py-3">
-          {lead && (
-            <p className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-brand-700">{lead.temp}</span>
-              <span className="text-sm font-medium text-brand-800">{lead.rest}</span>
+        {/* One welcome, read top to bottom: who they are, what it's like
+            outside, then the day. A trip app that only lists times reads like
+            a logistics printout; this is the difference between being
+            processed and being looked after. The weather line is dropped
+            entirely when we couldn't fetch it — never faked — so the welcome
+            still reads naturally offline. */}
+        <div className="mt-2 rounded-2xl bg-brand-50 px-4 py-3.5">
+          {hello && <p className="text-base font-bold text-brand-800">{hello}</p>}
+          {sentence && (
+            <p className={`text-sm text-brand-900 ${hello ? 'mt-1' : ''}`}>
+              {sentence.prefix}
+              <span className="text-lg font-extrabold text-brand-700">{sentence.temp}</span>
+              {sentence.suffix}
             </p>
           )}
-          <p className={`text-sm font-medium text-brand-800 ${lead ? 'mt-1' : ''}`}>
-            {dayOpener(travellerName, day.dayNumber, days.length)}
+          <p className="mt-1 text-sm font-medium text-brand-800">
+            {dayOpener(day.dayNumber, days.length)}
           </p>
         </div>
       </div>
