@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import type { CountryGuide, Trip, TripHotel, TripTransfer } from '@/lib/traveler';
 import { absoluteUploadUrl } from '@/lib/upload';
 import { downloadTripIcs } from '@/lib/tripIcs';
-import { dayCloser, dayOpener } from '@/lib/tripNotes';
+import { dayCloser, dayOpener, weatherLead } from '@/lib/tripNotes';
 import { useNotificationPermission, useTripReminders } from '@/lib/tripReminders';
+import { useTripWeather } from '@/lib/tripWeather';
 import {
   buildSchedule,
   formatRelative,
@@ -114,6 +115,19 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
   const travellerName = trip.traveler?.name ?? trip.booking.clientName;
   const [index, setIndex] = useState(0);
 
+  const safeIndexForWeather = Math.min(index, Math.max(days.length - 1, 0));
+  // The city this day is actually spent in, so a Phuket day reports Phuket
+  // rather than the trip's first destination.
+  const dayDestination =
+    days[safeIndexForWeather]?.events.find((e) => e.destination)?.destination ??
+    trip.itinerary?.destinations[0] ??
+    null;
+  const tripDates = useMemo(
+    () => days.map((d) => d.date?.slice(0, 10)).filter((d): d is string => Boolean(d)),
+    [days],
+  );
+  const weather = useTripWeather(dayDestination, tripDates);
+
   // Deferred to an effect so the server and client first paint agree: the
   // current date isn't available during SSR, and diverging would hydrate wrong.
   useEffect(() => {
@@ -128,6 +142,10 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
   const day = days[safeIndex];
   const previous = safeIndex > 0 ? days[safeIndex - 1] : null;
   const next = safeIndex < days.length - 1 ? days[safeIndex + 1] : null;
+
+  // Split so the temperature can be set large without re-parsing the sentence.
+  const leadText = weatherLead(dayDestination, day.date ? weather?.byDate[day.date.slice(0, 10)] : null);
+  const lead = leadText ? { temp: leadText.split(' ')[0], rest: leadText.split(' ').slice(1).join(' ') } : null;
 
   return (
     <div>
@@ -171,12 +189,22 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
           Day {day.dayNumber} of {days.length}
           {day.date && ` · ${formatDate(day.date)}`}
         </p>
-        {/* Opens the day by name. A trip app that only lists times reads like
-            a logistics printout; this is the difference between being
-            processed and being looked after. */}
-        <p className="mt-2 rounded-2xl bg-brand-50 px-4 py-3 text-sm font-medium text-brand-800">
-          {dayOpener(travellerName, day.dayNumber, days.length)}
-        </p>
+        {/* Opens the day with the temperature, then by name. A trip app that
+            only lists times reads like a logistics printout; this is the
+            difference between being processed and being looked after. The
+            weather is omitted entirely when we couldn't fetch it — never
+            faked — so the greeting still reads naturally offline. */}
+        <div className="mt-2 rounded-2xl bg-brand-50 px-4 py-3">
+          {lead && (
+            <p className="flex items-baseline gap-2">
+              <span className="text-2xl font-extrabold text-brand-700">{lead.temp}</span>
+              <span className="text-sm font-medium text-brand-800">{lead.rest}</span>
+            </p>
+          )}
+          <p className={`text-sm font-medium text-brand-800 ${lead ? 'mt-1' : ''}`}>
+            {dayOpener(travellerName, day.dayNumber, days.length)}
+          </p>
+        </div>
       </div>
 
       <div className="space-y-3 px-4 pt-3">

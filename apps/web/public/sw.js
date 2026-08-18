@@ -82,8 +82,17 @@ self.addEventListener('fetch', (event) => {
   // be able to tell a cached flight time from a live one.
   if (new URL(event.request.url).pathname.startsWith('/api/')) return;
 
+  // On a thrown network error there is nothing to hand back but an error.
   const servedFromCache = () =>
     caches.match(event.request).then((hit) => hit ?? Response.error());
+
+  // For a response that arrived but wasn't ok, prefer a cached copy — and when
+  // there is none, hand back the ORIGINAL response rather than Response.error().
+  // Response.error() makes the page's fetch() reject with a TypeError, which
+  // would turn every genuine 400/404 into an indistinguishable "Failed to
+  // fetch" and hide the status the caller needs to handle it.
+  const preferCacheOver = (response) =>
+    caches.match(event.request).then((hit) => hit ?? response);
 
   event.respondWith(
     fetch(event.request)
@@ -92,7 +101,7 @@ self.addEventListener('fetch', (event) => {
         // but are still worth caching — `ok` is false for them, so allow them
         // through explicitly rather than treating them as failures.
         const cacheable = response.ok || response.type === 'opaque';
-        if (!cacheable) return servedFromCache();
+        if (!cacheable) return preferCacheOver(response);
 
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});

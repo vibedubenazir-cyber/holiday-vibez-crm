@@ -38,6 +38,43 @@ const MIDDAY_CLOSERS = [
   (d: number) => `That's Day ${d}. Sleep well — tomorrow's all set. 🌙`,
 ];
 
+/**
+ * The weather sentence that leads the day's greeting.
+ *
+ * A forecast is stated plainly; a figure taken from last year's same dates is
+ * always hedged as "usually" and never presented as a prediction, because a
+ * traveller packing for it deserves to know which one they're reading.
+ */
+export function weatherLead(
+  destination: string | null | undefined,
+  weather: { maxC: number; code: number | null; kind: 'forecast' | 'typical' } | null | undefined,
+): string | null {
+  if (!weather) return null;
+  const where = destination ? ` in ${destination}` : '';
+  const temp = Math.round(weather.maxC);
+
+  if (weather.kind === 'typical') {
+    return `${temp}°C${where} — that's what these dates usually bring.`;
+  }
+  const sky = describeSky(weather.code);
+  return sky ? `${temp}°C and ${sky}${where} today.` : `${temp}°C${where} today.`;
+}
+
+/** Kept local so the notes module stays free of weather-API concerns. */
+function describeSky(code: number | null): string | null {
+  if (code == null) return null;
+  if (code === 0) return 'sunny';
+  if (code <= 2) return 'mostly sunny';
+  if (code === 3) return 'overcast';
+  if (code <= 48) return 'misty';
+  if (code <= 57) return 'drizzly';
+  if (code <= 67) return 'rainy';
+  if (code <= 77) return 'snowy';
+  if (code <= 82) return 'showery';
+  if (code <= 86) return 'snowy';
+  return 'stormy';
+}
+
 export function dayOpener(name: string | null | undefined, dayNumber: number, totalDays: number): string {
   const first = firstName(name);
   const suffix = first ? `, ${first}` : '';
