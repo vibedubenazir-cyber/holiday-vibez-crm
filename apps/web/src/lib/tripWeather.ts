@@ -26,6 +26,8 @@ const CACHE_PREFIX = 'hv_trip_weather:';
 const CACHE_TTL_MS = 3 * 60 * 60 * 1000;
 /** Open-Meteo serves roughly 16 days ahead; stay a day inside that. */
 const FORECAST_HORIZON_DAYS = 15;
+/** Past years averaged when no forecast exists yet — see mergeTypical. */
+const TYPICAL_YEARS_SAMPLED = 3;
 
 export type WeatherKind = 'forecast' | 'typical';
 
@@ -98,6 +100,50 @@ function collectDaily(
   return out;
 }
 
+/** One past year's actuals for the trip's dates, keyed by the trip's own dates. */
+async function fetchArchive(
+  point: { lat: number; lon: number },
+  from: string,
+  to: string,
+  yearsAgo: number,
+): Promise<Record<string, DayWeather> | null> {
+  const shiftBack = (d: string) => `${Number(d.slice(0, 4)) - yearsAgo}${d.slice(4)}`;
+  const res = await fetch(
+    `https://archive-api.open-meteo.com/v1/archive?latitude=${point.lat}&longitude=${point.lon}` +
+      `&start_date=${shiftBack(from)}&end_date=${shiftBack(to)}` +
+      `&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto`,
+  );
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json.daily ? collectDaily(json.daily, 'typical', yearsAgo) : null;
+}
+
+/** Mean temperature and the most frequently observed sky, per date. */
+function mergeTypical(samples: Record<string, DayWeather>[]): Record<string, DayWeather> {
+  const merged: Record<string, DayWeather> = {};
+  const dates = new Set(samples.flatMap((s) => Object.keys(s)));
+
+  for (const date of dates) {
+    const rows = samples.map((s) => s[date]).filter(Boolean);
+    if (rows.length === 0) continue;
+
+    const counts = new Map<number, number>();
+    for (const row of rows) {
+      if (row.code == null) continue;
+      counts.set(row.code, (counts.get(row.code) ?? 0) + 1);
+    }
+    const modal = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+
+    merged[date] = {
+      maxC: rows.reduce((sum, r) => sum + r.maxC, 0) / rows.length,
+      minC: rows.reduce((sum, r) => sum + r.minC, 0) / rows.length,
+      code: modal,
+      kind: 'typical',
+    };
+  }
+  return merged;
+}
+
 async function loadWeather(destination: string, dates: string[]): Promise<TripWeather | null> {
   const point = await geocode(destination);
   if (!point) return null;
@@ -127,17 +173,17 @@ async function loadWeather(destination: string, dates: string[]): Promise<TripWe
 
   const uncovered = sorted.filter((d) => !byDate[d]);
   if (uncovered.length > 0) {
-    const shift = 1;
-    const lastYear = (d: string) => `${Number(d.slice(0, 4)) - shift}${d.slice(4)}`;
-    const res = await fetch(
-      `https://archive-api.open-meteo.com/v1/archive?latitude=${point.lat}&longitude=${point.lon}` +
-        `&start_date=${lastYear(uncovered[0])}&end_date=${lastYear(uncovered[uncovered.length - 1])}` +
-        `&daily=temperature_2m_max,temperature_2m_min&timezone=auto`,
+    // Sampled across several past years rather than just last year. A single
+    // year is a coin toss on whether it happened to rain, and labelling that
+    // "typical" would have travellers packing for one day's weather from a
+    // year ago. Averaging the temperatures and taking the most common sky is
+    // a claim the word actually supports.
+    const samples = await Promise.all(
+      Array.from({ length: TYPICAL_YEARS_SAMPLED }, (_, i) => i + 1).map((shift) =>
+        fetchArchive(point, uncovered[0], uncovered[uncovered.length - 1], shift),
+      ),
     );
-    if (res.ok) {
-      const json = await res.json();
-      if (json.daily) Object.assign(byDate, collectDaily(json.daily, 'typical', shift));
-    }
+    Object.assign(byDate, mergeTypical(samples.filter(Boolean) as Record<string, DayWeather>[]));
   }
 
   let current: TripWeather['current'] = null;
@@ -161,47 +207,67 @@ function readCache(destination: string): TripWeather | null {
   }
 }
 
-export function useTripWeather(destination: string | null, dates: string[]): TripWeather | null {
-  const [weather, setWeather] = useState<TripWeather | null>(null);
-  // Dates arrive as a fresh array each render; key on the content so the
-  // effect doesn't re-fire (and re-fetch) on every parent re-render.
+/**
+ * Weather for every city the trip visits, keyed by destination.
+ *
+ * Keyed rather than single because the day strip shows all six days at once,
+ * and a Phuket day must report Phuket even while a Bangkok day is selected.
+ * Fetching per destination (usually one to three) and caching each separately
+ * keeps that correct without re-hitting the network as the traveller moves
+ * between days.
+ */
+export function useTripWeather(
+  destinations: (string | null)[],
+  dates: string[],
+): Record<string, TripWeather> {
+  const [byDestination, setByDestination] = useState<Record<string, TripWeather>>({});
+  // Both arrive as fresh arrays each render; key on content so the effect
+  // doesn't re-fire, and re-fetch, on every parent re-render.
   const dateKey = dates.join(',');
+  const destinationKey = [...new Set(destinations.filter((d): d is string => Boolean(d)))]
+    .sort()
+    .join(',');
 
   useEffect(() => {
-    if (!destination || !dateKey) {
-      setWeather(null);
+    if (!destinationKey || !dateKey) {
+      setByDestination({});
       return;
     }
     let cancelled = false;
+    const wanted = destinationKey.split(',');
+    const tripDates = dateKey.split(',');
 
-    // Set unconditionally, including to null. Leaving the previous city's
-    // reading in place while a new one loads would print Bangkok's temperature
-    // under Phuket's name — worse than showing nothing for a moment.
-    const cached = readCache(destination);
-    setWeather(cached);
+    // Seed from cache first so an offline traveller sees their figures
+    // immediately, then refresh whatever has gone stale.
+    const seeded: Record<string, TripWeather> = {};
+    for (const destination of wanted) {
+      const cached = readCache(destination);
+      if (cached) seeded[destination] = cached;
+    }
+    setByDestination(seeded);
 
-    const fresh = cached && Date.now() - new Date(cached.fetchedAt).getTime() < CACHE_TTL_MS;
-    if (fresh) return;
+    for (const destination of wanted) {
+      const cached = seeded[destination];
+      if (cached && Date.now() - new Date(cached.fetchedAt).getTime() < CACHE_TTL_MS) continue;
 
-    loadWeather(destination, dateKey.split(','))
-      .then((next) => {
-        if (cancelled || !next) return;
-        setWeather(next);
-        try {
-          window.localStorage.setItem(CACHE_PREFIX + destination, JSON.stringify(next));
-        } catch {
-          // A full quota must not break the greeting.
-        }
-      })
-      // Offline, blocked, or the service is down — whatever was cached stands.
-      .catch(() => {});
+      loadWeather(destination, tripDates)
+        .then((next) => {
+          if (cancelled || !next) return;
+          setByDestination((prev) => ({ ...prev, [destination]: next }));
+          try {
+            window.localStorage.setItem(CACHE_PREFIX + destination, JSON.stringify(next));
+          } catch {
+            // A full quota must not break the greeting.
+          }
+        })
+        // Offline, blocked, or the service is down — whatever was cached stands.
+        .catch(() => {});
+    }
 
     return () => {
       cancelled = true;
     };
-  }, [destination, dateKey]);
+  }, [destinationKey, dateKey]);
 
-  // Belt and braces: a late-arriving response for a city the traveller has
-  // already navigated away from must never be attributed to the current one.
-  return weather && weather.destination === destination ? weather : null;
+  return byDestination;
 }

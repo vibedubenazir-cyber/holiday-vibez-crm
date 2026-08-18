@@ -7,6 +7,7 @@ import { downloadTripIcs } from '@/lib/tripIcs';
 import { dayCloser, dayOpener, greeting, weatherSentence } from '@/lib/tripNotes';
 import { useNotificationPermission, useTripReminders } from '@/lib/tripReminders';
 import { useTripWeather } from '@/lib/tripWeather';
+import { WeatherIcon } from './WeatherIcon';
 import {
   buildSchedule,
   formatRelative,
@@ -115,18 +116,32 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
   const travellerName = trip.traveler?.name ?? trip.booking.clientName;
   const [index, setIndex] = useState(0);
 
-  const safeIndexForWeather = Math.min(index, Math.max(days.length - 1, 0));
-  // The city this day is actually spent in, so a Phuket day reports Phuket
-  // rather than the trip's first destination.
-  const dayDestination =
-    days[safeIndexForWeather]?.events.find((e) => e.destination)?.destination ??
-    trip.itinerary?.destinations[0] ??
-    null;
+  // The city each day is actually spent in, so a Phuket day reports Phuket
+  // rather than the trip's first destination — and so the strip can show all
+  // six days at once, each on its own city's weather.
+  const dayDestinations = useMemo(
+    () =>
+      days.map(
+        (d) =>
+          d.events.find((e) => e.destination)?.destination ??
+          trip.itinerary?.destinations[0] ??
+          null,
+      ),
+    [days, trip.itinerary],
+  );
   const tripDates = useMemo(
     () => days.map((d) => d.date?.slice(0, 10)).filter((d): d is string => Boolean(d)),
     [days],
   );
-  const weather = useTripWeather(dayDestination, tripDates);
+  const weatherByDestination = useTripWeather(dayDestinations, tripDates);
+
+  /** That day's own city's reading, or null while it loads / offline. */
+  function weatherForDay(i: number) {
+    const destination = dayDestinations[i];
+    const iso = days[i]?.date?.slice(0, 10);
+    if (!destination || !iso) return null;
+    return weatherByDestination[destination]?.byDate[iso] ?? null;
+  }
 
   // Deferred to an effect so the server and client first paint agree: the
   // current date isn't available during SSR, and diverging would hydrate wrong.
@@ -145,7 +160,7 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
 
   const hello = greeting(travellerName);
   const dayIso = day.date?.slice(0, 10) ?? null;
-  const sentence = weatherSentence(dayDestination, dayIso ? weather?.byDate[dayIso] : null, {
+  const sentence = weatherSentence(dayDestinations[safeIndex], weatherForDay(safeIndex), {
     date: dayIso,
     isToday: dayIso === new Date().toISOString().slice(0, 10),
   });
@@ -161,12 +176,13 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
           {days.map((d, i) => {
             const active = i === safeIndex;
             const date = d.date ? new Date(d.date) : null;
+            const w = weatherForDay(i);
             return (
               <button
                 key={d.id}
                 onClick={() => setIndex(i)}
                 aria-current={active ? 'true' : undefined}
-                className={`flex w-14 shrink-0 flex-col items-center rounded-xl py-2 transition ${
+                className={`flex w-16 shrink-0 flex-col items-center gap-0.5 rounded-xl py-2 transition ${
                   active
                     ? 'bg-brand text-white shadow-sm shadow-brand-500/30'
                     : 'bg-slate-50 text-slate-500 ring-1 ring-slate-200'
@@ -175,10 +191,20 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
                 <span className={`text-[10px] font-semibold uppercase ${active ? 'text-blue-100' : 'text-slate-400'}`}>
                   {date ? date.toLocaleDateString('en-IN', { weekday: 'short' }) : `Day`}
                 </span>
-                <span className="text-lg font-bold leading-tight">
+                <span className="text-lg font-bold leading-none">
                   {date ? date.getDate() : d.dayNumber}
                 </span>
-                <span className={`text-[10px] ${active ? 'text-blue-100' : 'text-slate-400'}`}>
+                {/* Reserve the row even with no reading, so chips don't jump
+                    height as each city's weather arrives. */}
+                <span className="flex h-4 items-center gap-1">
+                  {w && (
+                    <>
+                      <WeatherIcon code={w.code} inverted={active} />
+                      <span className="text-[10px] font-semibold">{Math.round(w.maxC)}°</span>
+                    </>
+                  )}
+                </span>
+                <span className={`text-[10px] leading-none ${active ? 'text-blue-100' : 'text-slate-400'}`}>
                   Day {d.dayNumber}
                 </span>
               </button>
