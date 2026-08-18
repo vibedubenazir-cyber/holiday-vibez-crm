@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CouponsService } from '../coupons/coupons.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreatePaymentDto } from './dto/payment.dto';
 
 const RAZORPAY_API_URL = 'https://api.razorpay.com/v1/payment_links';
@@ -12,6 +13,7 @@ export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly coupons: CouponsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   findAll(bookingId?: string, branchId?: string) {
@@ -155,6 +157,10 @@ export class PaymentsService {
 
     if (count > 0 && payment.type === 'CLIENT_RECEIPT') {
       await this.applyToTargets(payment.bookingId, Number(payment.amount));
+      // Inside the count > 0 branch on purpose: Razorpay retries webhooks
+      // aggressively, and only the caller that actually flipped the row gets
+      // here — so the traveller is invited to their trip app exactly once.
+      await this.sendTravellerAppInvite(payment.bookingId);
     }
     return this.prisma.payment.findUniqueOrThrow({ where: { id: payment.id } });
   }
@@ -170,6 +176,51 @@ export class PaymentsService {
   // Feeds Target.revenue_achieved automatically on payment (spec Section 13 API
   // reference, Bookings & Finance row) — credits both the consultant's and their
   // branch's currently open target, if one exists.
+  /**
+   * Invites the traveller into the companion app once their booking is paid.
+   *
+   * The app has no password — the link is just the front door, and whoever
+   * opens it still has to pass an OTP sent to the phone or email on the
+   * booking. So the message carries no credential and is safe to sit in a
+   * WhatsApp history.
+   *
+   * Sent once per booking, not per payment: a booking paid in three
+   * instalments should not produce three identical invitations. Dedup is by
+   * looking for an existing notification with the same relatedEntity, the same
+   * approach bookings.service.ts uses for its one-shot reminders.
+   */
+  private async sendTravellerAppInvite(bookingId: string) {
+    const relatedEntity = `traveler_app_invite:${bookingId}`;
+    const already = await this.prisma.notification.findFirst({ where: { relatedEntity } });
+    if (already) return;
+
+    const booking = await this.prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { quotation: { include: { lead: { include: { travelers: true } } } } },
+    });
+    const lead = booking?.quotation.lead;
+    if (!lead) return;
+
+    // The person travelling isn't always the person who paid, so prefer a
+    // traveller's own number and fall back to the lead contact.
+    const phone = lead.travelers.find((t) => t.phone)?.phone ?? lead.phone;
+    if (!phone) return;
+
+    const url = `${process.env.WEB_ORIGIN}/trip`;
+    await this.notifications.send({
+      channel: 'WHATSAPP',
+      triggerType: 'traveler_app_invite',
+      recipient: phone,
+      relatedEntity,
+      body:
+        `Hi ${lead.clientName}, your booking is confirmed — thank you!\n\n` +
+        `Your trip app is ready: ${url}\n\n` +
+        `It has your day-by-day plan, hotel check-in details, driver contacts and 24/7 emergency numbers, ` +
+        `and it works offline once you open it. Sign in with this phone number.\n\n` +
+        `Tip: add it to your home screen so it's there when you land.`,
+    });
+  }
+
   private async applyToTargets(bookingId: string, amount: number) {
     const booking = await this.prisma.booking.findUnique({
       where: { id: bookingId },

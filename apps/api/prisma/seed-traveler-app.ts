@@ -39,6 +39,50 @@ function destinationLocalToInstant(date: Date, clock: string, shiftMinutes: numb
   return new Date(utc + shiftMinutes * 60_000);
 }
 
+/**
+ * Per-city guides. Phuket was originally a copy of the Bangkok row, which read
+ * as obviously wrong to anyone actually standing in Phuket — the embassy is
+ * 850km away and the restaurant addresses were Sukhumvit ones. Thailand has no
+ * Indian consulate in Phuket, so the Bangkok embassy is listed here
+ * deliberately, but labelled with the distance rather than presented as local.
+ */
+const COUNTRY_GUIDES = [
+  {
+    country: 'Bangkok',
+    emergencyPolice: '191',
+    emergencyMedical: '1669',
+    embassyName: 'Embassy of India, Bangkok',
+    embassyPhone: '+66-2-258-0300',
+    embassyAddress: '46 Soi Prasarnmitr, Sukhumvit 23, Bangkok 10110',
+    cabServices: [
+      { name: 'Grab Thailand', phone: '+66-2-100-9000', notes: 'App-based, English support' },
+      { name: 'Bolt', phone: '+66-2-026-5000' },
+    ],
+    restaurants: [
+      { name: 'Indian Hut', phone: '+66-2-635-7876', address: '311/2-5 Surawong Rd, Bangkok', cuisine: 'North Indian' },
+      { name: 'Saras Vegetarian', phone: '+66-2-663-4085', address: 'Sukhumvit Soi 20, Bangkok', cuisine: 'Gujarati / South Indian' },
+    ],
+    notes: 'Tap water is not potable — use bottled water. The BTS Skytrain avoids most traffic.',
+  },
+  {
+    country: 'Phuket',
+    emergencyPolice: '191',
+    emergencyMedical: '1669',
+    embassyName: 'Embassy of India, Bangkok (nearest — ~850km)',
+    embassyPhone: '+66-2-258-0300',
+    embassyAddress: 'No Indian consulate in Phuket. Tourist Police (English): 1155',
+    cabServices: [
+      { name: 'Grab Thailand', phone: '+66-2-100-9000', notes: 'App-based, English support' },
+      { name: 'Phuket Metered Taxi', phone: '+66-76-232-157', notes: 'Insist on the meter' },
+    ],
+    restaurants: [
+      { name: 'Tandoori Flames', phone: '+66-76-341-002', address: 'Rat-U-Thit 200 Pi Rd, Patong', cuisine: 'North Indian' },
+      { name: 'Namaste Indian Restaurant', phone: '+66-95-419-4642', address: 'Karon Beach Rd, Karon', cuisine: 'Indian / vegetarian' },
+    ],
+    notes: 'Red flags on the beach mean dangerous currents — do not swim. Tap water is not potable.',
+  },
+];
+
 async function main() {
   const plan = await prisma.itineraryPlan.findFirstOrThrow({
     where: { title: { contains: 'Thailand' } },
@@ -103,6 +147,15 @@ async function main() {
     }
     await prisma.tripTransfer.update({ where: { id: existing.id }, data: { scheduledAt: at } });
     console.log(`${type} → ${at.toISOString()} (${at.toISOString().slice(11, 16)} UTC)`);
+  }
+
+  for (const guide of COUNTRY_GUIDES) {
+    await prisma.countryGuide.upsert({
+      where: { country: guide.country },
+      create: guide,
+      update: guide,
+    });
+    console.log(`Country guide: ${guide.country}`);
   }
 
   console.log(`Booking ${booking.id} realigned to ${plan.startDate?.toISOString().slice(0, 10)}.`);
