@@ -190,10 +190,6 @@ export class PaymentsService {
    * approach bookings.service.ts uses for its one-shot reminders.
    */
   private async sendTravellerAppInvite(bookingId: string) {
-    const relatedEntity = `traveler_app_invite:${bookingId}`;
-    const already = await this.prisma.notification.findFirst({ where: { relatedEntity } });
-    if (already) return;
-
     const booking = await this.prisma.booking.findUnique({
       where: { id: bookingId },
       include: { quotation: { include: { lead: { include: { travelers: true } } } } },
@@ -201,24 +197,47 @@ export class PaymentsService {
     const lead = booking?.quotation.lead;
     if (!lead) return;
 
-    // The person travelling isn't always the person who paid, so prefer a
-    // traveller's own number and fall back to the lead contact.
-    const phone = lead.travelers.find((t) => t.phone)?.phone ?? lead.phone;
-    if (!phone) return;
+    // Every traveller gets their own invitation, on every channel we hold for
+    // them. Sign-in matches any traveller on the booking by their own phone or
+    // email, so a couple each end up with their own copy of the app on their
+    // own phone — sending only to the lead contact would leave the second
+    // person waiting for a forwarded link.
+    const recipients: { channel: 'WHATSAPP' | 'EMAIL'; to: string; name: string }[] = [];
+    for (const traveller of lead.travelers) {
+      if (traveller.phone) recipients.push({ channel: 'WHATSAPP', to: traveller.phone, name: traveller.name });
+      if (traveller.email) recipients.push({ channel: 'EMAIL', to: traveller.email, name: traveller.name });
+    }
+    // Fall back to the booking contact only when no traveller has details of
+    // their own, rather than always adding them — otherwise the person who
+    // booked for their family gets a duplicate of their own invitation.
+    if (recipients.length === 0) {
+      if (lead.phone) recipients.push({ channel: 'WHATSAPP', to: lead.phone, name: lead.clientName });
+      if (lead.email) recipients.push({ channel: 'EMAIL', to: lead.email, name: lead.clientName });
+    }
 
     const url = `${process.env.WEB_ORIGIN}/trip`;
-    await this.notifications.send({
-      channel: 'WHATSAPP',
-      triggerType: 'traveler_app_invite',
-      recipient: phone,
-      relatedEntity,
-      body:
-        `Hi ${lead.clientName}, your booking is confirmed — thank you!\n\n` +
-        `Your trip app is ready: ${url}\n\n` +
-        `It has your day-by-day plan, hotel check-in details, driver contacts and 24/7 emergency numbers, ` +
-        `and it works offline once you open it. Sign in with this phone number.\n\n` +
-        `Tip: add it to your home screen so it's there when you land.`,
-    });
+    for (const { channel, to, name } of recipients) {
+      // Deduped per recipient, not per booking: a trip paid in instalments
+      // must not re-invite, but each traveller must still get their own.
+      const relatedEntity = `traveler_app_invite:${bookingId}:${to}`;
+      const already = await this.prisma.notification.findFirst({ where: { relatedEntity } });
+      if (already) continue;
+
+      const signInWith = channel === 'WHATSAPP' ? 'this phone number' : 'this email address';
+      await this.notifications.send({
+        channel,
+        triggerType: 'traveler_app_invite',
+        recipient: to,
+        relatedEntity,
+        subject: 'Your Holiday Vibez trip app is ready',
+        body:
+          `Hi ${name.split(' ')[0]}, your booking is confirmed — thank you!\n\n` +
+          `Your trip app is ready: ${url}\n\n` +
+          `It has your day-by-day plan, hotel check-in details, driver contacts and 24/7 emergency numbers, ` +
+          `and it works offline once you open it. Sign in with ${signInWith} — we'll send you a code.\n\n` +
+          `Tip: add it to your home screen so it's there when you land.`,
+      });
+    }
   }
 
   private async applyToTargets(bookingId: string, amount: number) {

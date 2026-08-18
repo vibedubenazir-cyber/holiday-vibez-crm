@@ -46,6 +46,14 @@ export function TripSignIn({ onSignedIn }: { onSignedIn: () => void }) {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
+      {/* The logo, not just a title: this is the first screen a traveller sees
+          after tapping a link from WhatsApp, and it has to look unmistakably
+          like the company they booked with before they type a phone number
+          into it. */}
+      <div className="mb-5 flex justify-center">
+        <img src="/logo.png" alt="Holiday Vibez" className="h-14 w-auto" />
+      </div>
+
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-xl font-extrabold tracking-tight text-brand-700">My Trip</h1>
 
