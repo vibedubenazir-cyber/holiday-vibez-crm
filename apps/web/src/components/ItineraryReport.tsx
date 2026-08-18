@@ -14,6 +14,7 @@ export interface ItineraryReportDetails {
   quad?: number | null;
   cwb?: number | null;
   cnb?: number | null;
+  descriptionBullets?: boolean | null;
 }
 
 export interface ItineraryReportEvent {
@@ -116,12 +117,14 @@ function roomSummary(details?: ItineraryReportDetails | null): string | null {
   return parts.length ? parts.join(', ') : null;
 }
 
-// A plain textarea's newlines rendered as a bulleted list — matches how the
-// Build tab's description editor stores multi-point activity notes (one
-// point per line) rather than a single paragraph.
-function DescriptionBlock({ text, className }: { text: string; className?: string }) {
-  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
-  if (lines.length > 1) {
+// Renders a bulleted <ul> only when the consultant explicitly opted in
+// (details.descriptionBullets, set from the Build tab's "Show as bullet
+// points in report" checkbox) — never automatically just because the text
+// happens to span multiple lines. Otherwise renders as a plain paragraph,
+// preserving manual line breaks via white-space: pre-line.
+function DescriptionBlock({ text, bullets, className }: { text: string; bullets?: boolean | null; className?: string }) {
+  if (bullets) {
+    const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
     return (
       <ul className={`list-disc space-y-0.5 pl-4 ${className ?? ''}`}>
         {lines.map((line, i) => (
@@ -130,7 +133,7 @@ function DescriptionBlock({ text, className }: { text: string; className?: strin
       </ul>
     );
   }
-  return <p className={className}>{text}</p>;
+  return <p className={`whitespace-pre-line ${className ?? ''}`}>{text}</p>;
 }
 
 // Shared presentational component — rendered both as the authenticated
@@ -249,7 +252,7 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
                           </span>
                         )}
                         {a.destination && <p className="mt-2 text-xs text-slate-400">{a.destination}</p>}
-                        {a.description && <DescriptionBlock text={a.description} className="mt-1.5 text-sm text-slate-500" />}
+                        {a.description && <DescriptionBlock text={a.description} bullets={a.details?.descriptionBullets} className="mt-1.5 text-sm text-slate-500" />}
                       </div>
                     </div>
                   </div>
@@ -286,7 +289,7 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
                           {event.name}
                           <StarRating details={event.details} />
                         </p>
-                        {event.description && <DescriptionBlock text={event.description} className="mt-1.5 text-sm leading-relaxed text-slate-500" />}
+                        {event.description && <DescriptionBlock text={event.description} bullets={event.details?.descriptionBullets} className="mt-1.5 text-sm leading-relaxed text-slate-500" />}
                       </div>
                     </div>
                   ) : (
@@ -295,7 +298,7 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
                         {event.name}
                         <StarRating details={event.details} />
                       </p>
-                      {event.description && <DescriptionBlock text={event.description} className="mt-1.5 text-sm leading-relaxed text-slate-500" />}
+                      {event.description && <DescriptionBlock text={event.description} bullets={event.details?.descriptionBullets} className="mt-1.5 text-sm leading-relaxed text-slate-500" />}
                     </div>
                   ),
                 )}
@@ -330,7 +333,7 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
             body ? (
               <div key={heading}>
                 <h3 className="text-base font-bold text-brand">{heading}</h3>
-                <DescriptionBlock text={body} className="mt-1 text-sm text-slate-600" />
+                <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{body}</p>
               </div>
             ) : null,
           )}

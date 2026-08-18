@@ -741,6 +741,7 @@ export class ItinerariesService {
     'toDestination',
     'durationMinutes',
     'mealType',
+    'descriptionBullets',
   ] as const;
 
   private sanitizePublicDetails(details: unknown): Record<string, unknown> | undefined {

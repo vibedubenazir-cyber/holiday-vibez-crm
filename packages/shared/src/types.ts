@@ -1152,7 +1152,18 @@ export interface ItineraryMealDetails {
   mealType?: string;
 }
 
-export type ItineraryEventDetails = ItineraryAccommodationDetails & ItineraryFlightDetails & ItineraryMealDetails;
+// Cross-cutting, not tied to any one event type: whether this event's
+// description should render as a bulleted list in the client report. Off by
+// default — a consultant opts in per event rather than every multi-line
+// description silently becoming a list.
+export interface ItineraryDescriptionFormatDetails {
+  descriptionBullets?: boolean;
+}
+
+export type ItineraryEventDetails = ItineraryAccommodationDetails &
+  ItineraryFlightDetails &
+  ItineraryMealDetails &
+  ItineraryDescriptionFormatDetails;
 
 export interface ItineraryPlanEventDTO {
   id: string;

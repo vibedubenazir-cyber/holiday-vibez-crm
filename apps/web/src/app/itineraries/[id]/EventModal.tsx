@@ -37,6 +37,7 @@ type FormState = {
   endTime: string;
   showTime: boolean;
   description: string;
+  bulletPoints: boolean;
   photoUrl: string;
   transferType: TransportationType | '';
   netAmount: string;
@@ -68,6 +69,7 @@ function emptyForm(type: ItineraryEventType): FormState {
     endTime: '',
     showTime: true,
     description: '',
+    bulletPoints: false,
     photoUrl: '',
     transferType: '',
     netAmount: '',
@@ -102,6 +104,7 @@ function formFromEvent(event: ItineraryPlanEventDTO): FormState {
     endTime: event.endTime ?? '',
     showTime: event.showTime,
     description: event.description ?? '',
+    bulletPoints: Boolean(details.descriptionBullets),
     photoUrl: event.photoUrl ?? '',
     transferType: event.transferType ?? '',
     netAmount: event.netAmount !== null ? String(event.netAmount) : '',
@@ -126,11 +129,23 @@ function formFromEvent(event: ItineraryPlanEventDTO): FormState {
 
 const numOrUndef = (v: string) => (v === '' ? undefined : Number(v));
 
-// Turns the plain-text description into a list of bullet points a consultant
-// can add/edit/remove one at a time — still stored as a single newline-joined
-// string (no schema change), which DescriptionBlock in ItineraryReport then
-// renders as an actual <ul> whenever there's more than one line.
-function BulletListEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+// Turns the plain-text description into a list of points a consultant can
+// add/edit/remove one at a time — still stored as a single newline-joined
+// string (no schema change). Whether the report actually renders these as a
+// bulleted <ul> is a separate, explicit opt-in (bulletPoints) rather than
+// automatic from having more than one line — see DescriptionBlock in
+// ItineraryReport.
+function BulletListEditor({
+  value,
+  onChange,
+  bulletPoints,
+  onBulletPointsChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  bulletPoints: boolean;
+  onBulletPointsChange: (v: boolean) => void;
+}) {
   const lines = value ? value.split('\n') : [''];
   function setLine(idx: number, text: string) {
     const next = [...lines];
@@ -148,9 +163,15 @@ function BulletListEditor({ value, onChange }: { value: string; onChange: (v: st
     <div className="col-span-2">
       <div className="mb-1 flex items-center justify-between">
         <label className="text-xs text-slate-500">Description</label>
-        <button type="button" onClick={addLine} className="text-xs text-brand hover:underline">
-          + Add point
-        </button>
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-1.5 text-xs text-slate-500">
+            <input type="checkbox" checked={bulletPoints} onChange={(e) => onBulletPointsChange(e.target.checked)} />
+            Show as bullet points in report
+          </label>
+          <button type="button" onClick={addLine} className="text-xs text-brand hover:underline">
+            + Add point
+          </button>
+        </div>
       </div>
       <div className="space-y-1.5">
         {lines.map((line, idx) => (
@@ -278,6 +299,7 @@ export function EventModal({
         if (form[key]) details[key] = Number(form[key]);
       }
     }
+    if (form.bulletPoints) details.descriptionBullets = true;
     if (type === ItineraryEventType.MEAL && form.mealType) details.mealType = form.mealType;
     if (type === ItineraryEventType.FLIGHT) {
       if (form.flightNumber) details.flightNumber = form.flightNumber;
@@ -475,7 +497,12 @@ export function EventModal({
           </>
         )}
 
-        <BulletListEditor value={form.description} onChange={(v) => setForm({ ...form, description: v })} />
+        <BulletListEditor
+          value={form.description}
+          onChange={(v) => setForm({ ...form, description: v })}
+          bulletPoints={form.bulletPoints}
+          onBulletPointsChange={(v) => setForm({ ...form, bulletPoints: v })}
+        />
 
         <div className="col-span-2">
           <label className="text-xs text-slate-500">Photo</label>
