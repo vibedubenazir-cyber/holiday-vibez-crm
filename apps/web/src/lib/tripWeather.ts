@@ -24,6 +24,15 @@ import { useEffect, useState } from 'react';
 
 const CACHE_PREFIX = 'hv_trip_weather:';
 const CACHE_TTL_MS = 3 * 60 * 60 * 1000;
+/**
+ * Bump whenever the cached shape changes meaning. v2 added weather_code —
+ * without this, a device that had opened the app before that change kept
+ * serving code-less entries for hours: no icon on the day strip, and a
+ * greeting that called a rainy day "perfect beach weather" because the mood
+ * fell back to temperature alone. A TTL doesn't help there; the entry isn't
+ * stale, it's the wrong shape.
+ */
+const CACHE_VERSION = 2;
 /** Open-Meteo serves roughly 16 days ahead; stay a day inside that. */
 const FORECAST_HORIZON_DAYS = 15;
 /** Past years averaged when no forecast exists yet — see mergeTypical. */
@@ -39,6 +48,8 @@ export interface DayWeather {
 }
 
 export interface TripWeather {
+  /** Shape marker; entries written by an older build are discarded on read. */
+  version: number;
   destination: string;
   byDate: Record<string, DayWeather>;
   current: { tempC: number; code: number } | null;
@@ -195,13 +206,17 @@ async function loadWeather(destination: string, dates: string[]): Promise<TripWe
     }
   }
 
-  return { destination, byDate, current, fetchedAt: new Date().toISOString() };
+  return { version: CACHE_VERSION, destination, byDate, current, fetchedAt: new Date().toISOString() };
 }
 
 function readCache(destination: string): TripWeather | null {
   try {
     const raw = window.localStorage.getItem(CACHE_PREFIX + destination);
-    return raw ? (JSON.parse(raw) as TripWeather) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as TripWeather;
+    // An entry from an older build is not stale, it's the wrong shape — drop
+    // it outright rather than letting the TTL keep serving it.
+    return parsed.version === CACHE_VERSION ? parsed : null;
   } catch {
     return null;
   }
