@@ -1061,6 +1061,7 @@ model Booking {
   transfers         TripTransfer[]
   travelerSessions  TravelerSession[]
   documents         TravelerDocument[]
+  flights           TripFlight[]
 
   @@map("bookings")
 }
@@ -2242,4 +2243,51 @@ model TravelerDocument {
   @@index([bookingId])
   @@index([travelerId])
   @@map("traveler_documents")
+}
+
+enum FlightStatusCode {
+  SCHEDULED
+  ON_TIME
+  DELAYED
+  BOARDING
+  DEPARTED
+  LANDED
+  CANCELLED
+}
+
+/// Live-ish status for a flight on a booking: delay, terminal, gate, belt.
+///
+/// Deliberately separate from the FLIGHT event on the itinerary. The itinerary
+/// is the plan that was sold and shouldn't be rewritten because an aircraft is
+/// forty minutes late; this is what is actually happening today, it changes
+/// repeatedly, and every change notifies the traveller. Keeping them apart also
+/// means one itinerary reused across bookings can't leak one group's gate to
+/// another.
+///
+/// Filled by staff today. A flight-data API would populate exactly these same
+/// columns later without anything downstream changing.
+model TripFlight {
+  id                 String           @id @default(uuid())
+  bookingId          String
+  booking            Booking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  /// The itinerary event this describes, so the app can attach the status to
+  /// the right flight card. Null when the flight isn't on the plan.
+  eventId            String?
+  flightNumber       String
+  fromAirport        String?
+  toAirport          String?
+  scheduledDeparture DateTime?
+  /// Set only when it moves — the app shows the original struck through.
+  revisedDeparture   DateTime?
+  status             FlightStatusCode @default(SCHEDULED)
+  terminal           String?
+  gate               String?
+  baggageBelt        String?
+  /// Free text shown verbatim: "Inbound aircraft delayed, new time confirmed".
+  note               String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@index([bookingId])
+  @@map("trip_flights")
 }

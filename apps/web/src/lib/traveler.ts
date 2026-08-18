@@ -60,6 +60,33 @@ export interface TripTransfer {
   notes: string | null;
 }
 
+export type FlightStatusCode =
+  | 'SCHEDULED'
+  | 'ON_TIME'
+  | 'DELAYED'
+  | 'BOARDING'
+  | 'DEPARTED'
+  | 'LANDED'
+  | 'CANCELLED';
+
+export interface TripFlight {
+  id: string;
+  /** Links to the itinerary FLIGHT event this describes, when there is one. */
+  eventId: string | null;
+  flightNumber: string;
+  fromAirport: string | null;
+  toAirport: string | null;
+  scheduledDeparture: string | null;
+  /** Present only when the time moved; the original is then shown struck out. */
+  revisedDeparture: string | null;
+  status: FlightStatusCode;
+  terminal: string | null;
+  gate: string | null;
+  baggageBelt: string | null;
+  note: string | null;
+  updatedAt: string;
+}
+
 export interface CountryGuide {
   country: string;
   emergencyPolice: string | null;
@@ -91,6 +118,7 @@ export interface Trip {
   } | null;
   hotels: TripHotel[];
   transfers: TripTransfer[];
+  flights: TripFlight[];
   countryGuides: CountryGuide[];
   support: { companyName: string; emergencyPhone: string; email: string };
   syncedAt: string;

@@ -8,6 +8,7 @@ import { dayCloser, dayOpener, greeting, weatherSentence } from '@/lib/tripNotes
 import { useNotificationPermission, useTripReminders } from '@/lib/tripReminders';
 import { useTripWeather } from '@/lib/tripWeather';
 import { WeatherIcon } from './WeatherIcon';
+import { FlightStatusCard } from './FlightStatusCard';
 import {
   buildSchedule,
   formatRelative,
@@ -546,8 +547,23 @@ export function AlertsTab({ trip }: { trip: Trip }) {
   const later = upcoming.slice(1);
   const doneCount = schedule.length - upcoming.length;
 
+  // Anything not already history — a landed flight is noise, a delayed one
+  // is the most important thing on the screen.
+  const liveFlights = trip.flights.filter((f) => f.status !== 'LANDED' && f.status !== 'DEPARTED');
+
   return (
     <div className="space-y-4 p-4">
+      {liveFlights.length > 0 && (
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Your flights</p>
+          <div className="space-y-2">
+            {liveFlights.map((f) => (
+              <FlightStatusCard key={f.id} flight={f} timezone={trip.itinerary?.timezone ?? null} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {next ? (
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Next up</p>

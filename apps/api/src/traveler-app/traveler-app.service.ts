@@ -30,6 +30,7 @@ export class TravelerAppService {
           },
         },
         transfers: { orderBy: { scheduledAt: 'asc' } },
+        flights: { orderBy: [{ scheduledDeparture: 'asc' }, { createdAt: 'asc' }] },
       },
     });
     if (!booking) throw new NotFoundException('Trip not found');
@@ -132,6 +133,21 @@ export class TravelerAppService {
         vehicleNumber: t.vehicleNumber,
         vehicleType: t.vehicleType,
         notes: t.notes,
+      })),
+      flights: booking.flights.map((f) => ({
+        id: f.id,
+        eventId: f.eventId,
+        flightNumber: f.flightNumber,
+        fromAirport: f.fromAirport,
+        toAirport: f.toAirport,
+        scheduledDeparture: f.scheduledDeparture,
+        revisedDeparture: f.revisedDeparture,
+        status: f.status,
+        terminal: f.terminal,
+        gate: f.gate,
+        baggageBelt: f.baggageBelt,
+        note: f.note,
+        updatedAt: f.updatedAt,
       })),
       countryGuides: guides.map((g) => ({
         country: g.country,

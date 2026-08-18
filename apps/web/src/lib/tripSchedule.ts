@@ -166,8 +166,19 @@ function flightItems(trip: Trip, zone: string | null): ScheduleItem[] {
   return days.flatMap((day) =>
     day.events.flatMap((event) => {
       if (event.type !== 'FLIGHT') return [];
-      const at = floating(event.date ?? day.date, event.startTime);
+
+      // A delayed flight must move its own alarm. Waking someone three hours
+      // before a departure that no longer exists is worse than not alarming at
+      // all — they'd arrive to a closed desk and a rebooked aircraft.
+      const live = trip.flights?.find((f) => f.eventId === event.id);
+      const at = live?.revisedDeparture
+        ? instantToWallTime(new Date(live.revisedDeparture), zone)
+        : floating(event.date ?? day.date, event.startTime);
       if (!at) return [];
+
+      // A cancelled flight keeps no alarm at all; the status card carries it.
+      if (live?.status === 'CANCELLED') return [];
+
       return [item(event.id, 'FLIGHT', event.name, event.destination, at, zone)];
     }),
   );

@@ -68,6 +68,7 @@ import { TravelerAuthModule } from './traveler-auth/traveler-auth.module';
 import { TravelerAppModule } from './traveler-app/traveler-app.module';
 import { TripTransfersModule } from './trip-transfers/trip-transfers.module';
 import { TravelerDocumentsModule } from './traveler-documents/traveler-documents.module';
+import { TripFlightsModule } from './trip-flights/trip-flights.module';
 import { PrismaService } from './prisma.service';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
@@ -141,6 +142,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     TravelerAppModule,
     TripTransfersModule,
     TravelerDocumentsModule,
+    TripFlightsModule,
   ],
   providers: [
     PrismaService,
