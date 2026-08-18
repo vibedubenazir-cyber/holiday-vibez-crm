@@ -10,19 +10,8 @@ import {
 } from '@/lib/traveler';
 import { InstallPrompt } from './InstallPrompt';
 import { TripSignIn } from './TripSignIn';
+import { TripTabBar, type TabId } from './TripTabBar';
 import { AlertsTab, EssentialsTab, HotelsTab, ItineraryTab, TransfersTab } from './TripTabs';
-
-type TabId = 'itinerary' | 'alerts' | 'hotels' | 'transfers' | 'essentials';
-
-// Alerts sits second: after "what am I doing today", the next question on any
-// travel day is "when do I need to be somewhere".
-const TABS: { id: TabId; label: string }[] = [
-  { id: 'itinerary', label: 'Itinerary' },
-  { id: 'alerts', label: 'Alerts' },
-  { id: 'hotels', label: 'Hotels' },
-  { id: 'transfers', label: 'Transfers' },
-  { id: 'essentials', label: 'Essentials' },
-];
 
 export default function TripPage() {
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
@@ -97,7 +86,9 @@ export default function TripPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg pb-20">
+    // Bottom padding clears the fixed tab bar (and the home indicator below
+    // it) so the last card of any tab is never trapped underneath.
+    <div className="mx-auto max-w-lg pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
       <InstallPrompt />
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white px-4 py-3">
         <div className="flex items-start justify-between gap-3">
@@ -127,24 +118,6 @@ export default function TripPage() {
         )}
       </header>
 
-      {/* Wraps to two rows rather than scrolling sideways: five labels don't
-          fit across a 375px phone, and a tab you have to drag into view is a
-          tab you don't know exists. Three then two, each row filling the
-          width. */}
-      <nav className="flex flex-wrap border-b border-slate-200 bg-white">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`grow basis-1/3 border-b-2 px-2 py-3 text-sm font-medium transition ${
-              tab === t.id ? 'border-brand text-brand-700' : 'border-transparent text-slate-500'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
-
       {tab === 'itinerary' && <ItineraryTab trip={trip} />}
       {tab === 'alerts' && <AlertsTab trip={trip} />}
       {tab === 'hotels' && <HotelsTab hotels={trip.hotels} />}
@@ -152,6 +125,8 @@ export default function TripPage() {
         <TransfersTab transfers={trip.transfers} timezone={trip.itinerary?.timezone ?? null} />
       )}
       {tab === 'essentials' && <EssentialsTab trip={trip} />}
+
+      <TripTabBar tab={tab} onChange={setTab} />
     </div>
   );
 }
