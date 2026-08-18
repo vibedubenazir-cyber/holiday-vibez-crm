@@ -7,6 +7,7 @@ import { downloadTripIcs } from '@/lib/tripIcs';
 import { useNotificationPermission, useTripReminders } from '@/lib/tripReminders';
 import {
   buildSchedule,
+  formatRelative,
   formatRemindBefore,
   KIND_LABELS,
   toDate,
@@ -256,47 +257,57 @@ const KIND_STYLES: Record<string, string> = {
   TRANSFER: 'bg-violet-100 text-violet-700',
 };
 
-function ScheduleRow({ entry, past }: { entry: ScheduleItem; past: boolean }) {
+function ScheduleRow({ entry, now }: { entry: ScheduleItem; now: Date | null }) {
   const at = toDate(entry);
   return (
-    <div className={`rounded-xl border border-slate-200 bg-white p-3 ${past ? 'opacity-50' : ''}`}>
+    <div className="rounded-xl border border-slate-200 bg-white p-3">
       <div className="flex items-center justify-between gap-2">
         <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${KIND_STYLES[entry.kind]}`}>
           {KIND_LABELS[entry.kind]}
         </span>
-        <span className="text-sm font-semibold text-slate-700">
-          {at.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-        </span>
+        {now && <span className="text-xs text-slate-400">{formatRelative(at, now)}</span>}
       </div>
       <p className="mt-1.5 font-medium text-slate-800">{entry.title}</p>
       {entry.location && <p className="text-xs text-slate-500">{entry.location}</p>}
-      <p className="mt-1 text-xs text-slate-400">
-        ⏰ Alarm {formatRemindBefore(entry.remindMinutesBefore)}
+      <p className="mt-1 text-sm text-slate-600">
+        {at.toLocaleString('en-IN', {
+          weekday: 'short',
+          day: '2-digit',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
       </p>
+      <p className="mt-0.5 text-xs text-slate-400">⏰ Alarm {formatRemindBefore(entry.remindMinutesBefore)}</p>
     </div>
   );
 }
 
+/**
+ * Leads with the single next thing, and keeps the rest of the trip folded
+ * away until asked for. Showing every flight, check-in and transfer at once —
+ * past ones included — turned the one question this tab exists to answer
+ * ("what do I need to be ready for?") into a search task.
+ */
 export function AlertsTab({ trip }: { trip: Trip }) {
   const schedule = useMemo(() => buildSchedule(trip), [trip]);
   const [permission, requestPermission] = useNotificationPermission();
   const [added, setAdded] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   useTripReminders(schedule, permission === 'granted');
 
-  const tripTitle = trip.itinerary?.title ?? trip.booking.clientName;
-  const now = Date.now();
+  // Held in state and ticked, rather than read during render: the server has
+  // no clock to agree with, and the countdown would otherwise freeze at
+  // whatever "now" was when the tab first mounted.
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const timer = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
 
-  // Grouped by calendar day so the list reads as an agenda rather than a
-  // flat stream of timestamps.
-  const byDay = useMemo(() => {
-    const groups = new Map<string, ScheduleItem[]>();
-    for (const entry of schedule) {
-      const key = toDate(entry).toDateString();
-      groups.set(key, [...(groups.get(key) ?? []), entry]);
-    }
-    return [...groups.entries()];
-  }, [schedule]);
+  const tripTitle = trip.itinerary?.title ?? trip.booking.clientName;
 
   if (schedule.length === 0) {
     return (
@@ -306,53 +317,99 @@ export function AlertsTab({ trip }: { trip: Trip }) {
     );
   }
 
+  // Before the clock is available, treat everything as upcoming rather than
+  // flashing the wrong card.
+  const upcoming = now ? schedule.filter((e) => toDate(e).getTime() >= now.getTime()) : schedule;
+  const next = upcoming[0];
+  const later = upcoming.slice(1);
+  const doneCount = schedule.length - upcoming.length;
+
   return (
     <div className="space-y-4 p-4">
-      <div className="rounded-xl border border-brand-200 bg-brand-50 p-3">
-        <p className="text-sm font-semibold text-brand-700">Alarms on your phone</p>
-        <p className="mt-1 text-xs text-brand-900/70">
-          Add these to your phone&apos;s calendar and it will alarm you 3 hours before every flight and
-          hotel check-in — with no internet, even with this app closed.
+      {next ? (
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Next up</p>
+          <div className="rounded-2xl border border-brand-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between gap-2">
+              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${KIND_STYLES[next.kind]}`}>
+                {KIND_LABELS[next.kind]}
+              </span>
+              {now && (
+                <span className="text-sm font-semibold text-brand-700">
+                  {formatRelative(toDate(next), now)}
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-lg font-bold leading-snug text-slate-800">{next.title}</p>
+            {next.location && <p className="text-sm text-slate-500">{next.location}</p>}
+            <p className="mt-2 text-sm font-medium text-slate-700">
+              {toDate(next).toLocaleString('en-IN', {
+                weekday: 'short',
+                day: '2-digit',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </p>
+            <p className="mt-1 text-xs text-slate-400">⏰ Alarm {formatRemindBefore(next.remindMinutesBefore)}</p>
+          </div>
+        </div>
+      ) : (
+        <p className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
+          That&apos;s everything — no more scheduled times on this trip. Safe travels.
         </p>
-        <button
-          onClick={() => {
-            downloadTripIcs(schedule, tripTitle);
-            setAdded(true);
-          }}
-          className="mt-2.5 w-full rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-brand-500/25"
-        >
-          {added ? 'Add to calendar again' : `Add ${schedule.length} reminders to my calendar`}
-        </button>
-      </div>
+      )}
 
-      {permission !== 'granted' && permission !== 'unsupported' && (
-        <div className="rounded-xl border border-slate-200 bg-white p-3">
-          <p className="text-sm font-semibold text-slate-800">Alerts while the app is open</p>
-          <p className="mt-1 text-xs text-slate-500">
-            Optional extra. Your phone&apos;s calendar above is what reminds you when the app is closed.
-          </p>
+      {/* Secondary to "next up", but still the thing that makes the alarms
+          real, so it stays visible rather than hidden behind the fold. */}
+      <button
+        onClick={() => {
+          downloadTripIcs(schedule, tripTitle);
+          setAdded(true);
+        }}
+        className="w-full rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-brand-500/25"
+      >
+        {added ? '✓ Added — tap to add again' : `Add all ${schedule.length} alarms to my phone`}
+      </button>
+      <p className="-mt-2 px-1 text-xs text-slate-400">
+        Your phone&apos;s own calendar will alarm you even with no internet and this app closed.
+      </p>
+
+      {later.length > 0 && (
+        <div>
           <button
-            onClick={() => void requestPermission()}
-            disabled={permission === 'denied'}
-            className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 disabled:opacity-50"
+            onClick={() => setShowAll((v) => !v)}
+            aria-expanded={showAll}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600"
           >
-            {permission === 'denied' ? 'Blocked in browser settings' : 'Turn on notifications'}
+            {showAll ? 'Hide the rest' : `Then ${later.length} more`} {showAll ? '▲' : '▼'}
           </button>
+
+          {showAll && (
+            <div className="mt-3 space-y-2">
+              {later.map((entry) => (
+                <ScheduleRow key={entry.id} entry={entry} now={now} />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {byDay.map(([label, entries]) => (
-        <div key={label}>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            {new Date(label).toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' })}
-          </p>
-          <div className="space-y-2">
-            {entries.map((entry) => (
-              <ScheduleRow key={entry.id} entry={entry} past={toDate(entry).getTime() < now} />
-            ))}
-          </div>
-        </div>
-      ))}
+      {doneCount > 0 && (
+        <p className="px-1 text-center text-xs text-slate-400">{doneCount} already done</p>
+      )}
+
+      {permission !== 'granted' && permission !== 'unsupported' && (
+        <button
+          onClick={() => void requestPermission()}
+          disabled={permission === 'denied'}
+          className="w-full px-1 text-left text-xs text-slate-400 underline disabled:no-underline"
+        >
+          {permission === 'denied'
+            ? 'In-app alerts are blocked in your browser settings'
+            : 'Also alert me inside the app while it’s open'}
+        </button>
+      )}
     </div>
   );
 }

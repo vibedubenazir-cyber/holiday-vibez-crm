@@ -186,3 +186,16 @@ export function formatRemindBefore(minutes: number): string {
 export function formatCountdown(minutes: number): string {
   return `in ${humanise(minutes)}`;
 }
+
+/**
+ * How far away something is, in the coarsest useful unit: a traveller
+ * checking "when is my flight" wants "in 3 days", not "in 68 hours".
+ */
+export function formatRelative(target: Date, now: Date): string {
+  const minutes = Math.round((target.getTime() - now.getTime()) / 60_000);
+  if (minutes < 0) return 'done';
+  if (minutes < 60) return `in ${minutes} min`;
+  if (minutes < 24 * 60) return `in ${Math.round(minutes / 60)} hr`;
+  const days = Math.round(minutes / (24 * 60));
+  return days === 1 ? 'tomorrow' : `in ${days} days`;
+}
