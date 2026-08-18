@@ -9,12 +9,15 @@ import {
   type Trip,
 } from '@/lib/traveler';
 import { TripSignIn } from './TripSignIn';
-import { EssentialsTab, HotelsTab, ItineraryTab, TransfersTab } from './TripTabs';
+import { AlertsTab, EssentialsTab, HotelsTab, ItineraryTab, TransfersTab } from './TripTabs';
 
-type TabId = 'itinerary' | 'hotels' | 'transfers' | 'essentials';
+type TabId = 'itinerary' | 'alerts' | 'hotels' | 'transfers' | 'essentials';
 
+// Alerts sits second: after "what am I doing today", the next question on any
+// travel day is "when do I need to be somewhere".
 const TABS: { id: TabId; label: string }[] = [
   { id: 'itinerary', label: 'Itinerary' },
+  { id: 'alerts', label: 'Alerts' },
   { id: 'hotels', label: 'Hotels' },
   { id: 'transfers', label: 'Transfers' },
   { id: 'essentials', label: 'Essentials' },
@@ -117,12 +120,14 @@ export default function TripPage() {
         )}
       </header>
 
-      <nav className="flex border-b border-slate-200 bg-white">
+      {/* Five labels don't fit across a 375px phone, so the strip scrolls
+          rather than squeezing the text to an unreadable size. */}
+      <nav className="flex overflow-x-auto border-b border-slate-200 bg-white">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 px-2 py-3 text-sm font-medium transition ${
+            className={`shrink-0 px-4 py-3 text-sm font-medium transition ${
               tab === t.id ? 'border-b-2 border-brand text-brand-700' : 'text-slate-500'
             }`}
           >
@@ -132,6 +137,7 @@ export default function TripPage() {
       </nav>
 
       {tab === 'itinerary' && <ItineraryTab trip={trip} />}
+      {tab === 'alerts' && <AlertsTab trip={trip} />}
       {tab === 'hotels' && <HotelsTab hotels={trip.hotels} />}
       {tab === 'transfers' && <TransfersTab transfers={trip.transfers} />}
       {tab === 'essentials' && <EssentialsTab trip={trip} />}
