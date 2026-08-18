@@ -206,49 +206,51 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
       {data.pricingOptions.some((o) => o.accommodations.length > 0) && (
         <div className="mt-8">
           <h2 className="text-lg font-bold text-slate-800">Hotels</h2>
-          <div className="mt-3 space-y-4">
+          <div className="mt-3 space-y-5">
             {data.pricingOptions.flatMap((option) =>
               option.accommodations.map((a) => {
                 const room = roomSummary(a.details);
-                const roomMeal = [room && `Room: ${room}`, a.details?.mealPlan && `Meal: ${a.details.mealPlan}`].filter(Boolean).join(' | ');
+                const roomMeal = [room && `Room: ${room}`, a.details?.mealPlan && `Meal: ${a.details.mealPlan}`, a.details?.roomName && `Room Type: ${a.details.roomName}`]
+                  .filter(Boolean)
+                  .join(' | ');
+                const nights = a.date && a.endDate ? Math.round((new Date(a.endDate).getTime() - new Date(a.date).getTime()) / 86_400_000) : null;
                 return (
-                  <div key={`${option.id}-${a.id}`} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:flex">
-                    {a.photoUrl && (
-                      <div className="relative h-40 w-full shrink-0 sm:h-auto sm:w-48">
-                        <img src={absoluteUploadUrl(a.photoUrl)} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                      </div>
-                    )}
-                    <div className="flex-1 p-4">
-                      <div className="flex flex-wrap items-center gap-2">
+                  <div key={`${option.id}-${a.id}`} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <div className="border-l-4 border-brand bg-brand-50/60 px-4 py-2 text-sm font-semibold text-slate-700">
+                      Hotel {option.label}
+                    </div>
+                    <div className="sm:flex">
+                      {a.photoUrl && (
+                        <div className="relative h-40 w-full shrink-0 sm:h-auto sm:w-48">
+                          <img src={absoluteUploadUrl(a.photoUrl)} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                        </div>
+                      )}
+                      <div className="flex-1 p-4">
                         <p className="font-semibold text-slate-700">
                           {a.name}
                           <StarRating details={a.details} />
                         </p>
-                        <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand">{option.label}</span>
+                        <div className="mt-2 space-y-0.5 text-xs text-slate-600">
+                          {a.date && (
+                            <p>
+                              <span className="font-semibold text-slate-700">Check-in:</span> {formatDate(a.date)}
+                            </p>
+                          )}
+                          {a.endDate && (
+                            <p>
+                              <span className="font-semibold text-slate-700">Check-out:</span> {formatDate(a.endDate)}
+                            </p>
+                          )}
+                          {roomMeal && <p className="font-semibold text-slate-700">{roomMeal}</p>}
+                        </div>
+                        {nights !== null && nights > 0 && (
+                          <span className="mt-2 inline-block rounded-lg bg-brand px-2.5 py-1 text-xs font-semibold text-white">
+                            {nights} Night{nights === 1 ? '' : 's'} Stay
+                          </span>
+                        )}
+                        {a.destination && <p className="mt-2 text-xs text-slate-400">{a.destination}</p>}
+                        {a.description && <DescriptionBlock text={a.description} className="mt-1.5 text-sm text-slate-500" />}
                       </div>
-                      <div className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 text-xs text-slate-500 sm:grid-cols-3">
-                        {a.date && (
-                          <span>
-                            <span className="text-slate-400">Check-in </span>
-                            {formatDate(a.date)}
-                          </span>
-                        )}
-                        {a.endDate && (
-                          <span>
-                            <span className="text-slate-400">Check-out </span>
-                            {formatDate(a.endDate)}
-                          </span>
-                        )}
-                        {a.details?.roomName && (
-                          <span>
-                            <span className="text-slate-400">Room Type </span>
-                            {a.details.roomName}
-                          </span>
-                        )}
-                      </div>
-                      {roomMeal && <p className="mt-1 text-xs font-medium text-slate-600">{roomMeal}</p>}
-                      {a.destination && <p className="mt-1 text-xs text-slate-400">{a.destination}</p>}
-                      {a.description && <DescriptionBlock text={a.description} className="mt-1.5 text-sm text-slate-500" />}
                     </div>
                   </div>
                 );
