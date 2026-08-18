@@ -1,0 +1,13 @@
+{
+  "name": "My Holiday Vibez Trip",
+  "short_name": "My Trip",
+  "description": "Your itinerary, hotels, drivers and emergency contacts — available offline",
+  "start_url": "/trip",
+  "scope": "/trip",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#005aaa",
+  "icons": [
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
