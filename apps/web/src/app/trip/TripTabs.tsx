@@ -199,6 +199,20 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
   );
 }
 
+/** Short form for the check-in/out columns: "Tue, 10 Nov". */
+function shortDate(value: string | null) {
+  if (!value) return '';
+  return new Date(value).toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
+}
+
+function Chip({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+      <span className="font-semibold text-slate-500">{label}</span> {value}
+    </span>
+  );
+}
+
 export function HotelsTab({ hotels }: { hotels: TripHotel[] }) {
   if (hotels.length === 0) {
     return <p className="p-4 text-sm text-slate-500">No hotels have been added to your trip yet.</p>;
@@ -206,39 +220,47 @@ export function HotelsTab({ hotels }: { hotels: TripHotel[] }) {
   return (
     <div className="space-y-3 p-4">
       {hotels.map((h) => (
-        <div key={`${h.optionLabel}-${h.id}`} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div
+          key={`${h.optionLabel}-${h.id}`}
+          className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/70"
+        >
           {h.photoUrl && (
-            <div className="relative h-40 w-full">
+            <div className="relative h-44 w-full">
               <img src={absoluteUploadUrl(h.photoUrl)} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              {h.destination && (
+                <span className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                  {h.destination}
+                </span>
+              )}
             </div>
           )}
-          <div className="p-3">
-            <p className="font-semibold text-slate-800">{h.name}</p>
-            {h.destination && <p className="text-xs text-slate-500">{h.destination}</p>}
-            <div className="mt-2 space-y-0.5 text-sm text-slate-600">
-              {h.checkIn && (
-                <p>
-                  <span className="font-semibold text-slate-700">Check-in:</span> {formatDate(h.checkIn)}
-                  {h.checkInTime ? ` at ${h.checkInTime}` : ''}
-                </p>
-              )}
-              {h.checkOut && (
-                <p>
-                  <span className="font-semibold text-slate-700">Check-out:</span> {formatDate(h.checkOut)}
-                  {h.checkOutTime ? ` at ${h.checkOutTime}` : ''}
-                </p>
-              )}
-              {typeof h.details?.roomName === 'string' && (
-                <p>
-                  <span className="font-semibold text-slate-700">Room:</span> {h.details.roomName}
-                </p>
-              )}
-              {typeof h.details?.mealPlan === 'string' && (
-                <p>
-                  <span className="font-semibold text-slate-700">Meals:</span> {h.details.mealPlan}
-                </p>
-              )}
-            </div>
+          <div className="p-4">
+            <p className="text-lg font-bold leading-tight text-slate-800">{h.name}</p>
+            {h.destination && !h.photoUrl && <p className="text-xs text-slate-500">{h.destination}</p>}
+
+            {/* Split like a boarding pass: the two dates a traveller checks
+                are read against each other, not down a list of labels. */}
+            {(h.checkIn || h.checkOut) && (
+              <div className="mt-3 flex divide-x divide-slate-200 rounded-xl bg-slate-50 text-center">
+                <div className="flex-1 px-3 py-2.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Check-in</p>
+                  <p className="text-sm font-semibold text-slate-800">{shortDate(h.checkIn)}</p>
+                  {h.checkInTime && <p className="text-xs text-brand-600">{h.checkInTime}</p>}
+                </div>
+                <div className="flex-1 px-3 py-2.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Check-out</p>
+                  <p className="text-sm font-semibold text-slate-800">{shortDate(h.checkOut)}</p>
+                  {h.checkOutTime && <p className="text-xs text-brand-600">{h.checkOutTime}</p>}
+                </div>
+              </div>
+            )}
+
+            {(typeof h.details?.roomName === 'string' || typeof h.details?.mealPlan === 'string') && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {typeof h.details?.roomName === 'string' && <Chip label="Room" value={h.details.roomName} />}
+                {typeof h.details?.mealPlan === 'string' && <Chip label="Meals" value={h.details.mealPlan} />}
+              </div>
+            )}
           </div>
         </div>
       ))}
@@ -257,32 +279,54 @@ export function TransfersTab({ transfers, timezone }: { transfers: TripTransfer[
   return (
     <div className="space-y-3 p-4">
       {transfers.map((t) => (
-        <div key={t.id} className="rounded-xl border border-slate-200 bg-white p-3">
-          <div className="flex items-center justify-between">
-            <p className="font-semibold text-slate-800">{TRANSFER_LABELS[t.type] ?? t.type}</p>
-            {t.scheduledAt && (
-              <span className="text-xs text-slate-500">{formatDateTime(t.scheduledAt, timezone)}</span>
+        <div key={t.id} className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/70">
+          <div className="p-4">
+            <div className="flex items-start justify-between gap-2">
+              <p className="font-bold text-slate-800">{TRANSFER_LABELS[t.type] ?? t.type}</p>
+              {t.scheduledAt && (
+                <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700">
+                  {formatDateTime(t.scheduledAt, timezone)}
+                </span>
+              )}
+            </div>
+            {(t.fromLocation || t.toLocation) && (
+              <p className="mt-1.5 text-sm text-slate-600">
+                {t.fromLocation}
+                {t.fromLocation && t.toLocation ? ' → ' : ''}
+                {t.toLocation}
+              </p>
             )}
           </div>
-          {(t.fromLocation || t.toLocation) && (
-            <p className="mt-1 text-sm text-slate-600">
-              {t.fromLocation}
-              {t.fromLocation && t.toLocation ? ' → ' : ''}
-              {t.toLocation}
-            </p>
+
+          {/* The driver block is tinted and sits apart, because at an airport
+              this is the only part of the card anyone reads. */}
+          {(t.driverName || t.driverPhone || t.vehicleType || t.vehicleNumber) && (
+            <div className="border-t border-slate-100 bg-slate-50 px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Driver</p>
+                  <p className="truncate font-semibold text-slate-800">{t.driverName ?? 'To be assigned'}</p>
+                  {(t.vehicleType || t.vehicleNumber) && (
+                    <p className="truncate text-xs text-slate-500">
+                      {t.vehicleType} {t.vehicleNumber && `· ${t.vehicleNumber}`}
+                    </p>
+                  )}
+                </div>
+                {t.driverPhone && (
+                  <a
+                    href={`tel:${t.driverPhone.replace(/\s/g, '')}`}
+                    className="shrink-0 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-500/25"
+                  >
+                    Call
+                  </a>
+                )}
+              </div>
+            </div>
           )}
-          {(t.driverName || t.driverPhone) && (
-            <p className="mt-2 text-sm text-slate-700">
-              Driver: <span className="font-medium">{t.driverName ?? 'To be assigned'}</span>
-              {t.driverPhone && <> · <CallLink phone={t.driverPhone} /></>}
-            </p>
+
+          {t.notes && (
+            <p className="border-t border-slate-100 px-4 py-3 text-sm text-slate-500">{t.notes}</p>
           )}
-          {(t.vehicleType || t.vehicleNumber) && (
-            <p className="text-sm text-slate-500">
-              {t.vehicleType} {t.vehicleNumber && `· ${t.vehicleNumber}`}
-            </p>
-          )}
-          {t.notes && <p className="mt-1 text-sm text-slate-500">{t.notes}</p>}
         </div>
       ))}
     </div>
@@ -453,19 +497,55 @@ export function AlertsTab({ trip }: { trip: Trip }) {
   );
 }
 
+/** A section heading inside a guide card, with a hairline above it. */
+function GuideSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="border-t border-slate-100 px-4 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{title}</p>
+      <div className="mt-1.5 space-y-1.5 text-sm text-slate-700">{children}</div>
+    </div>
+  );
+}
+
+/**
+ * A whole-tile call target for the numbers dialled in a genuine emergency.
+ * At that moment nobody is aiming carefully at an inline link, so police and
+ * ambulance get thumb-sized tiles of their own.
+ */
+function EmergencyTile({ label, phone }: { label: string; phone: string }) {
+  return (
+    <a
+      href={`tel:${phone.replace(/\s/g, '')}`}
+      className="flex-1 rounded-xl bg-rose-50 px-3 py-2.5 text-center ring-1 ring-rose-100"
+    >
+      <span className="block text-[10px] font-semibold uppercase tracking-wide text-rose-400">{label}</span>
+      <span className="block text-lg font-bold text-rose-700">{phone}</span>
+    </a>
+  );
+}
+
 export function EssentialsTab({ trip }: { trip: Trip }) {
   return (
     <div className="space-y-4 p-4">
-      <div className="rounded-xl border border-rose-200 bg-rose-50 p-3">
-        <p className="text-sm font-semibold text-rose-800">24/7 Holiday Vibez support</p>
-        <p className="mt-1 text-sm text-rose-900">
-          {trip.support.emergencyPhone ? (
-            <CallLink phone={trip.support.emergencyPhone} />
-          ) : (
-            <span className="text-rose-700">No support number configured</span>
-          )}
-        </p>
-        {trip.support.email && <p className="text-xs text-rose-700">{trip.support.email}</p>}
+      {/* The one number that reaches Holiday Vibez leads the tab and is a
+          full-width button, not a link inside a sentence. */}
+      <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-rose-600 to-rose-500 p-4 shadow-sm shadow-rose-500/25">
+        <p className="text-sm font-bold text-white">24/7 Holiday Vibez support</p>
+        <p className="mt-0.5 text-xs text-rose-100">Anywhere, any time — we pick up.</p>
+        {trip.support.emergencyPhone ? (
+          <a
+            href={`tel:${trip.support.emergencyPhone.replace(/\s/g, '')}`}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-base font-bold text-rose-700"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4" aria-hidden="true">
+              <path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.6a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.5-1.2a2 2 0 012.1-.4c.8.3 1.7.5 2.6.6a2 2 0 011.7 2z" />
+            </svg>
+            {trip.support.emergencyPhone}
+          </a>
+        ) : (
+          <p className="mt-3 text-sm text-rose-100">No support number configured</p>
+        )}
+        {trip.support.email && <p className="mt-2 text-center text-xs text-rose-100">{trip.support.email}</p>}
       </div>
 
       {trip.countryGuides.length === 0 && (
@@ -475,63 +555,55 @@ export function EssentialsTab({ trip }: { trip: Trip }) {
       )}
 
       {trip.countryGuides.map((g: CountryGuide) => (
-        <div key={g.country} className="rounded-xl border border-slate-200 bg-white p-3">
-          <p className="font-semibold text-slate-800">{g.country}</p>
+        <div key={g.country} className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/70">
+          <p className="px-4 pt-4 text-lg font-bold text-slate-800">{g.country}</p>
 
           {(g.emergencyPolice || g.emergencyMedical) && (
-            <div className="mt-2 text-sm text-slate-700">
-              {g.emergencyPolice && (
-                <p>
-                  Police: <CallLink phone={g.emergencyPolice} />
-                </p>
-              )}
-              {g.emergencyMedical && (
-                <p>
-                  Ambulance: <CallLink phone={g.emergencyMedical} />
-                </p>
-              )}
+            <div className="flex gap-2 px-4 pt-3">
+              {g.emergencyPolice && <EmergencyTile label="Police" phone={g.emergencyPolice} />}
+              {g.emergencyMedical && <EmergencyTile label="Ambulance" phone={g.emergencyMedical} />}
             </div>
           )}
 
+          <div className="pt-3" />
+
           {g.embassyName && (
-            <div className="mt-2 text-sm text-slate-700">
-              <p className="font-medium">{g.embassyName}</p>
+            <GuideSection title="Embassy">
+              <p className="font-medium text-slate-800">{g.embassyName}</p>
               {g.embassyPhone && <CallLink phone={g.embassyPhone} />}
               {g.embassyAddress && <p className="text-xs text-slate-500">{g.embassyAddress}</p>}
-            </div>
+            </GuideSection>
           )}
 
           {g.cabServices && g.cabServices.length > 0 && (
-            <div className="mt-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Cabs</p>
-              <ul className="mt-1 space-y-1 text-sm text-slate-700">
-                {g.cabServices.map((c, i) => (
-                  <li key={i}>
-                    {c.name}
-                    {c.phone && <> · <CallLink phone={c.phone} /></>}
-                    {c.notes && <span className="text-slate-500"> — {c.notes}</span>}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <GuideSection title="Cabs">
+              {g.cabServices.map((c, i) => (
+                <div key={i}>
+                  <span className="font-medium text-slate-800">{c.name}</span>
+                  {c.phone && <> · <CallLink phone={c.phone} /></>}
+                  {c.notes && <p className="text-xs text-slate-500">{c.notes}</p>}
+                </div>
+              ))}
+            </GuideSection>
           )}
 
           {g.restaurants && g.restaurants.length > 0 && (
-            <div className="mt-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Indian restaurants</p>
-              <ul className="mt-1 space-y-1 text-sm text-slate-700">
-                {g.restaurants.map((r, i) => (
-                  <li key={i}>
-                    {r.name}
-                    {r.phone && <> · <CallLink phone={r.phone} /></>}
-                    {r.address && <span className="block text-xs text-slate-500">{r.address}</span>}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <GuideSection title="Indian restaurants">
+              {g.restaurants.map((r, i) => (
+                <div key={i}>
+                  <span className="font-medium text-slate-800">{r.name}</span>
+                  {r.phone && <> · <CallLink phone={r.phone} /></>}
+                  {r.address && <p className="text-xs text-slate-500">{r.address}</p>}
+                </div>
+              ))}
+            </GuideSection>
           )}
 
-          {g.notes && <p className="mt-2 text-sm text-slate-500">{g.notes}</p>}
+          {/* Local knowledge — don't drink the tap water, red flags mean rip
+              currents — is a warning, so it gets a warning's colour. */}
+          {g.notes && (
+            <p className="border-t border-slate-100 bg-amber-50 px-4 py-3 text-sm text-amber-900">{g.notes}</p>
+          )}
         </div>
       ))}
     </div>
