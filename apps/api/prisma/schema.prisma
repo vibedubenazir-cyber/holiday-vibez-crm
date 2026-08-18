@@ -1357,6 +1357,10 @@ model Notification {
   recipient     String
   status        NotificationStatus  @default(SENT)
   relatedEntity String?
+  /// What was actually said. Stored so the traveller app's in-app updates feed
+  /// and the staff notification log can show the real message, not a paraphrase
+  /// reconstructed from current state that history has since overwritten.
+  body          String?
   // WhatsApp message id (WAMID) returned by Meta's Cloud API on send — lets the
   // webhook's delivery/read/failed status callbacks correlate back to this row.
   externalId    String?

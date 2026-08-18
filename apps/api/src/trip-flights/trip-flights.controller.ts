@@ -36,6 +36,12 @@ export class TripFlightsController {
   }
 
   @Roles(...OPS_ROLES)
+  @Post('trip-flights/:id/refresh')
+  refresh(@Param('id') id: string, @Req() req: AuthedRequest) {
+    return this.flights.refreshFromApi(id, req.user);
+  }
+
+  @Roles(...OPS_ROLES)
   @Delete('trip-flights/:id')
   remove(@Param('id') id: string, @Req() req: AuthedRequest) {
     return this.flights.remove(id, req.user);

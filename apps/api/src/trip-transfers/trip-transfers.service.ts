@@ -111,10 +111,19 @@ export class TripTransfersService {
     const lead = booking?.quotation.lead;
     if (!lead) return;
 
-    // Prefer a traveller's own number over the lead contact — the person on the
-    // trip is not always the person who booked it.
-    const phone = lead.travelers.find((t) => t.phone)?.phone ?? lead.phone;
-    if (!phone) return;
+    // Every traveller on the booking, on both channels we hold — a driver
+    // change matters to whoever is standing at the kerb, and email survives a
+    // switched-off number with a travel SIM in it.
+    const recipients: { channel: 'WHATSAPP' | 'EMAIL'; to: string }[] = [];
+    for (const traveller of lead.travelers) {
+      if (traveller.phone) recipients.push({ channel: 'WHATSAPP', to: traveller.phone });
+      if (traveller.email) recipients.push({ channel: 'EMAIL', to: traveller.email });
+    }
+    if (recipients.length === 0) {
+      if (lead.phone) recipients.push({ channel: 'WHATSAPP', to: lead.phone });
+      if (lead.email) recipients.push({ channel: 'EMAIL', to: lead.email });
+    }
+    if (recipients.length === 0) return;
 
     const label = TYPE_LABELS[transfer.type] ?? 'transfer';
     const when = transfer.scheduledAt
@@ -131,16 +140,19 @@ export class TripTransfersService {
       `\n\nFull details in your trip app: ${process.env.WEB_ORIGIN}/trip`,
     ];
 
-    await this.notifications.send({
-      channel: 'WHATSAPP',
-      triggerType: 'trip_transfer_changed',
-      recipient: phone,
-      // Deliberately not deduped on relatedEntity: unlike the one-shot
-      // engagement reminders, a transfer can legitimately change more than
-      // once and the traveller needs to hear about each one.
-      relatedEntity: `trip_transfer:${transfer.id}`,
-      body: lines.filter(Boolean).join(''),
-    });
+    for (const { channel, to } of recipients) {
+      await this.notifications.send({
+        channel,
+        triggerType: 'trip_transfer_changed',
+        recipient: to,
+        // Deliberately not deduped on relatedEntity: unlike the one-shot
+        // engagement reminders, a transfer can legitimately change more than
+        // once and the traveller needs to hear about each one.
+        relatedEntity: `trip_transfer:${transfer.id}`,
+        subject: `Your ${label} has been ${verb}`,
+        body: lines.filter(Boolean).join(''),
+      });
+    }
   }
 
   private async loadBooking(bookingId: string, actor: Actor) {

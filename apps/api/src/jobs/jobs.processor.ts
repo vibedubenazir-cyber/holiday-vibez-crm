@@ -7,6 +7,7 @@ import { CurrencyService } from '../currency/currency.service';
 import { ReportsService } from '../reports/reports.service';
 import { BookingsService } from '../bookings/bookings.service';
 import { CalendarService } from '../calendar/calendar.service';
+import { TripFlightsService } from '../trip-flights/trip-flights.service';
 import { SCHEDULED_JOBS_QUEUE } from './jobs.constants';
 import type { JobName } from './jobs.scheduler';
 
@@ -20,6 +21,7 @@ export class JobsProcessor extends WorkerHost {
     private readonly reportsService: ReportsService,
     private readonly bookingsService: BookingsService,
     private readonly calendarService: CalendarService,
+    private readonly tripFlightsService: TripFlightsService,
   ) {
     super();
   }
@@ -41,6 +43,8 @@ export class JobsProcessor extends WorkerHost {
           return await this.bookingsService.sendEngagementReminders();
         case 'consultant-departure-reminders':
           return await this.calendarService.notifyUpcomingDepartures();
+        case 'flight-status-poll':
+          return await this.tripFlightsService.pollLiveStatuses();
       }
     } catch (err) {
       console.error(`Scheduled job "${job.name}" failed`, err);

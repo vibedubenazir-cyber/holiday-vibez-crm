@@ -10,7 +10,8 @@ export type JobName =
   | 'currency-refresh'
   | 'compliance-check'
   | 'engagement-reminders'
-  | 'consultant-departure-reminders';
+  | 'consultant-departure-reminders'
+  | 'flight-status-poll';
 
 // upsertJobScheduler is idempotent: calling it again with the same scheduler
 // id (re)sets the schedule instead of creating a duplicate, so this can run
@@ -34,6 +35,10 @@ const SCHEDULES: { id: JobName; pattern: string; comment: string }[] = [
   // Consultant-facing PUSH — same "once a day" real cadence, shortened for
   // the same demonstrability reason as the others.
   { id: 'consultant-departure-reminders', pattern: '0 */6 * * *', comment: 'every 6 hours (shortened for demonstrability)' },
+  // Live flight data: a gate can change inside half an hour, so this is the
+  // one job whose real cadence IS this fast. Costs nothing until
+  // FLIGHT_API_KEY is set — the handler no-ops without it.
+  { id: 'flight-status-poll', pattern: '*/30 * * * *', comment: 'every 30 minutes' },
 ];
 
 @Injectable()

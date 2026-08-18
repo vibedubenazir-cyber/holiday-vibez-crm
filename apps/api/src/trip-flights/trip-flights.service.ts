@@ -3,6 +3,7 @@ import { FlightStatusCode, Role, TripFlight } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateTripFlightDto, UpdateTripFlightDto } from './dto/trip-flight.dto';
+import { fetchLiveFlightStatus, isFlightApiConfigured, LiveFlightStatus } from './flight-api.util';
 
 type Actor = { id: string; role: Role; branchId: string | null };
 
@@ -59,19 +60,86 @@ export class TripFlightsService {
     await this.assertEventBelongs(dto.eventId, booking.quotation.leadId);
 
     const { notifyTraveller, ...data } = dto;
-    const after = await this.prisma.tripFlight.update({
-      where: { id },
-      data: {
-        ...data,
-        ...(dto.scheduledDeparture ? { scheduledDeparture: new Date(dto.scheduledDeparture) } : {}),
-        ...(dto.revisedDeparture ? { revisedDeparture: new Date(dto.revisedDeparture) } : {}),
+    return this.persist(before, {
+      ...data,
+      ...(dto.scheduledDeparture ? { scheduledDeparture: new Date(dto.scheduledDeparture) } : {}),
+      ...(dto.revisedDeparture ? { revisedDeparture: new Date(dto.revisedDeparture) } : {}),
+    }, Boolean(notifyTraveller));
+  }
+
+  /**
+   * Staff "refresh from live data" for one flight. Same persist path as a
+   * manual edit, so a delay the API discovers notifies exactly like a delay a
+   * consultant typed in.
+   */
+  async refreshFromApi(id: string, actor: Actor) {
+    if (!isFlightApiConfigured()) {
+      throw new BadRequestException('Flight data API is not configured yet (FLIGHT_API_KEY)');
+    }
+    const before = await this.prisma.tripFlight.findUnique({ where: { id } });
+    if (!before) throw new NotFoundException('Flight not found');
+    await this.loadBooking(before.bookingId, actor);
+
+    const live = await fetchLiveFlightStatus(before.flightNumber, before.scheduledDeparture);
+    if (!live) return before;
+    return this.persist(before, this.livePatch(live));
+  }
+
+  /**
+   * Scheduled poll (see jobs.scheduler.ts 'flight-status-poll'): every flight
+   * departing in the next 48 hours — or in the last 6, for gate/belt on
+   * arrival — gets checked against the live feed, and any change flows through
+   * the same notify path as a staff edit. A no-op until FLIGHT_API_KEY is set.
+   */
+  async pollLiveStatuses() {
+    if (!isFlightApiConfigured()) return { polled: 0, updated: 0 };
+    const now = Date.now();
+    const candidates = await this.prisma.tripFlight.findMany({
+      where: {
+        status: { notIn: ['LANDED', 'CANCELLED'] },
+        scheduledDeparture: { gte: new Date(now - 6 * 3600_000), lte: new Date(now + 48 * 3600_000) },
+        booking: { status: { not: 'CANCELLED' } },
       },
+      // Quota discipline: a run that somehow finds hundreds of flights should
+      // spread them across runs rather than burn the plan in one poll.
+      take: 25,
+      orderBy: { scheduledDeparture: 'asc' },
     });
 
-    // Only when something a traveller would act on actually moved. Correcting
-    // an internal typo must not buzz a phone at 3am in another timezone, but
-    // staff can force a send when they want to restate the situation.
-    if (notifyTraveller || this.travellerVisibleChange(before, after)) {
+    let updated = 0;
+    for (const flight of candidates) {
+      const live = await fetchLiveFlightStatus(flight.flightNumber, flight.scheduledDeparture);
+      if (!live) continue;
+      const after = await this.persist(flight, this.livePatch(live));
+      if (this.travellerVisibleChange(flight, after)) updated++;
+    }
+    return { polled: candidates.length, updated };
+  }
+
+  /** Only patch the fields the feed actually reported — never blank a column. */
+  private livePatch(live: LiveFlightStatus) {
+    return {
+      ...(live.status ? { status: live.status } : {}),
+      ...(live.revisedDeparture ? { revisedDeparture: live.revisedDeparture } : {}),
+      ...(live.terminal ? { terminal: live.terminal } : {}),
+      ...(live.gate ? { gate: live.gate } : {}),
+      ...(live.baggageBelt ? { baggageBelt: live.baggageBelt } : {}),
+    };
+  }
+
+  /**
+   * The single write path: persist, diff, and notify only when something a
+   * traveller would act on actually moved. Correcting an internal typo must
+   * not buzz a phone at 3am in another timezone, but staff can force a send
+   * when they want to restate the situation.
+   */
+  private async persist(
+    before: TripFlight,
+    data: Parameters<typeof this.prisma.tripFlight.update>[0]['data'],
+    forceNotify = false,
+  ) {
+    const after = await this.prisma.tripFlight.update({ where: { id: before.id }, data });
+    if (forceNotify || this.travellerVisibleChange(before, after)) {
       await this.notify(after);
     }
     return after;
@@ -106,9 +174,18 @@ export class TripFlightsService {
     if (!lead) return;
 
     // Every traveller on the booking, not just the lead contact — a gate change
-    // matters to whoever is walking to the gate.
-    const numbers = lead.travelers.map((t) => t.phone).filter((p): p is string => Boolean(p));
-    const recipients = numbers.length > 0 ? numbers : lead.phone ? [lead.phone] : [];
+    // matters to whoever is walking to the gate. And on both channels we hold:
+    // WhatsApp reaches a phone on roaming, email survives a number that's
+    // switched off with a travel SIM in the drawer.
+    const recipients: { channel: 'WHATSAPP' | 'EMAIL'; to: string }[] = [];
+    for (const traveller of lead.travelers) {
+      if (traveller.phone) recipients.push({ channel: 'WHATSAPP', to: traveller.phone });
+      if (traveller.email) recipients.push({ channel: 'EMAIL', to: traveller.email });
+    }
+    if (recipients.length === 0) {
+      if (lead.phone) recipients.push({ channel: 'WHATSAPP', to: lead.phone });
+      if (lead.email) recipients.push({ channel: 'EMAIL', to: lead.email });
+    }
     if (recipients.length === 0) return;
 
     const when = flight.revisedDeparture ?? flight.scheduledDeparture;
@@ -122,14 +199,15 @@ export class TripFlightsService {
       `\n\nLive details in your trip app: ${process.env.WEB_ORIGIN}/trip`,
     ];
 
-    for (const to of recipients) {
+    for (const { channel, to } of recipients) {
       await this.notifications.send({
-        channel: 'WHATSAPP',
+        channel,
         triggerType: 'trip_flight_update',
         recipient: to,
         // Not deduped: a flight can be delayed, moved, then delayed again, and
         // the traveller needs each one.
         relatedEntity: `trip_flight:${flight.id}`,
+        subject: `Flight ${flight.flightNumber} ${STATUS_HEADLINE[flight.status]}`,
         body: lines.filter(Boolean).join(''),
       });
     }

@@ -438,3 +438,17 @@ approves (auto-sends) → converted to a booking with a departure date → payme
 recorded and marked paid → feeds the consultant/branch Target and branch P&L → shows
 up on the Departure Calendar, color-coded by readiness → visible on the Director
 dashboard.
+
+## Live flight data (optional)
+
+Flight status on bookings (delay, terminal, gate, baggage belt) is staff-entered
+by default. To automate it, purchase an [aviationstack](https://aviationstack.com)
+key and set on the API service:
+
+- `FLIGHT_API_KEY` — the access key. Unset = the integration is dormant.
+- `FLIGHT_API_BASE` — optional, defaults to `https://api.aviationstack.com/v1`.
+
+Once set, a scheduled job polls every flight departing within 48 hours every 30
+minutes and applies changes through the same path as a manual edit — so a delay
+found by the feed notifies travellers on WhatsApp + email exactly like one a
+consultant typed. Staff also get a per-flight "Refresh live" button.

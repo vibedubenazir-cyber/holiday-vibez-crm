@@ -60,6 +60,7 @@ export class NotificationsService {
         triggerType: input.triggerType,
         recipient: input.recipient,
         relatedEntity: input.relatedEntity,
+        body: input.body,
         status: 'SENT',
       },
     });

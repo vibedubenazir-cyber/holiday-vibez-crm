@@ -99,6 +99,14 @@ export interface CountryGuide {
   notes: string | null;
 }
 
+/** A message that was sent to the travellers — mirrored inside the app. */
+export interface TripUpdate {
+  id: string;
+  triggerType: string;
+  body: string;
+  createdAt: string;
+}
+
 export interface Trip {
   traveler: { id: string; name: string } | null;
   booking: { id: string; status: string; departureDate: string; returnDate: string | null; clientName: string };
@@ -119,6 +127,7 @@ export interface Trip {
   hotels: TripHotel[];
   transfers: TripTransfer[];
   flights: TripFlight[];
+  updates: TripUpdate[];
   countryGuides: CountryGuide[];
   support: { companyName: string; emergencyPhone: string; email: string };
   syncedAt: string;

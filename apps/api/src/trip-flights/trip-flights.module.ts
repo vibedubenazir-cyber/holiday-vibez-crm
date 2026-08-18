@@ -9,5 +9,6 @@ import { TripFlightsService } from './trip-flights.service';
   imports: [AuthModule, NotificationsModule],
   controllers: [TripFlightsController],
   providers: [TripFlightsService, PrismaService],
+  exports: [TripFlightsService],
 })
 export class TripFlightsModule {}

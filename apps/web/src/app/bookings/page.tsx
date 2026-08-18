@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { useAuth } from '@/lib/auth-context';
 import { api, ApiError } from '@/lib/api';
+import { FlightsSection } from './FlightsSection';
 import { BookingStatus, Role } from '@holiday-vibez/shared';
 import type { BookingDTO, InvoiceDTO, VoucherDTO, ReviewDTO, TripFeedbackDTO, InsurancePolicyDTO, SupplierDTO } from '@holiday-vibez/shared';
 
@@ -36,6 +37,9 @@ const REVIEW_FEEDBACK_INSURANCE_ROLES = [Role.DIRECTOR, Role.ADMIN, Role.BRANCH_
 export default function BookingsPage() {
   const { user: me } = useAuth();
   const canManagePayments = !!me && PAYMENT_MANAGE_ROLES.includes(me.role);
+  // Mirrors the API's OPS_ROLES on the flights endpoints — Finance/Auditor
+  // would only see 403s, so don't render the section for them at all.
+  const canManageFlights = !!me && ['DIRECTOR', 'ADMIN', 'BRANCH_MANAGER', 'TRAVEL_CONSULTANT'].includes(me.role);
   const canChangeStatus = !!me && STATUS_CHANGE_ROLES.includes(me.role);
   const canGenerateVoucher = !!me && VOUCHER_ROLES.includes(me.role);
   const canGenerateInvoice = !!me && INVOICE_ROLES.includes(me.role);
@@ -369,6 +373,8 @@ export default function BookingsPage() {
                   <button onClick={() => handleAddPayment(b.id)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-4 py-2 text-sm font-medium text-white hover:opacity-90">Add payment</button>
                 </div>
                 )}
+
+                {canManageFlights && <FlightsSection bookingId={b.id} />}
 
                 <div className="mt-4 border-t border-slate-100 pt-3">
                   <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Vouchers</p>

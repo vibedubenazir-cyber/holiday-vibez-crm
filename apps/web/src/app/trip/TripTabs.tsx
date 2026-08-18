@@ -100,6 +100,64 @@ function CallLink({ phone, label }: { phone: string; label?: string }) {
   );
 }
 
+/**
+ * A Google Maps directions link for a named place. The universal URL scheme
+ * needs no API key and hands over to the native Maps app on both platforms —
+ * directions start from wherever the traveller is standing, which is the whole
+ * point of "get me there" in an unfamiliar city.
+ */
+function mapsDirectionsUrl(query: string): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
+}
+
+function MapPinGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
+/** Inline "Directions" link for lists and card bodies. */
+function DirectionsLink({ query, className }: { query: string; className?: string }) {
+  return (
+    <a
+      href={mapsDirectionsUrl(query)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`inline-flex items-center gap-1 text-sm font-semibold text-brand-700 ${className ?? ''}`}
+    >
+      <MapPinGlyph className="h-3.5 w-3.5" />
+      Directions
+    </a>
+  );
+}
+
+/** "2 hr ago" for the updates feed. */
+function timeAgo(iso: string): string {
+  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes} min ago`;
+  if (minutes < 24 * 60) return `${Math.round(minutes / 60)} hr ago`;
+  return `${Math.round(minutes / (24 * 60))} days ago`;
+}
+
+const UPDATE_TITLES: Record<string, string> = {
+  trip_flight_update: 'Flight update',
+  trip_transfer_changed: 'Transfer update',
+  departure_countdown: 'From Holiday Vibez',
+};
+
 /** Index of the day matching today, or 0 when the trip isn't running yet. */
 function todayIndex(days: { date: string | null }[]): number {
   const today = new Date().toISOString().slice(0, 10);
@@ -284,6 +342,13 @@ export function ItineraryTab({ trip }: { trip: Trip }) {
                 ) : (
                   <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{event.description}</p>
                 ))}
+              {/* A flight isn't a place you walk to; everything else is. */}
+              {event.type !== 'FLIGHT' && (
+                <DirectionsLink
+                  query={[event.name, event.destination ?? dayDestinations[safeIndex] ?? ''].filter(Boolean).join(', ')}
+                  className="mt-2"
+                />
+              )}
             </div>
           </div>
         ))}
@@ -388,6 +453,17 @@ export function HotelsTab({ hotels }: { hotels: TripHotel[] }) {
                 {typeof h.details?.mealPlan === 'string' && <Chip label="Meals" value={h.details.mealPlan} />}
               </div>
             )}
+
+            {/* The one thing someone in a taxi with a suitcase actually needs. */}
+            <a
+              href={mapsDirectionsUrl([h.name, h.destination ?? ''].filter(Boolean).join(', '))}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-500/25"
+            >
+              <MapPinGlyph className="h-4 w-4" />
+              Get directions
+            </a>
           </div>
         </div>
       ))}
@@ -467,6 +543,13 @@ export function TransfersTab({ transfers, timezone }: { transfers: TripTransfer[
           {t.notes && (
             <p className="border-t border-slate-100 px-4 py-3 text-sm text-slate-500">{t.notes}</p>
           )}
+
+          {t.fromLocation && (
+            <div className="border-t border-slate-100 px-4 py-3">
+              <DirectionsLink query={t.fromLocation} />
+              <span className="ml-1.5 text-xs text-slate-400">to your pickup point</span>
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -517,6 +600,7 @@ export function AlertsTab({ trip }: { trip: Trip }) {
   const [permission, requestPermission] = useNotificationPermission();
   const [added, setAdded] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [showAllUpdates, setShowAllUpdates] = useState(false);
 
   useTripReminders(schedule, permission === 'granted');
 
@@ -561,6 +645,35 @@ export function AlertsTab({ trip }: { trip: Trip }) {
               <FlightStatusCard key={f.id} flight={f} timezone={trip.itinerary?.timezone ?? null} />
             ))}
           </div>
+        </div>
+      )}
+
+      {/* The same messages that went to WhatsApp and email, mirrored here —
+          so a missed message is never gone, just scrolled. */}
+      {trip.updates.length > 0 && (
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Recent updates</p>
+          <div className="space-y-2">
+            {(showAllUpdates ? trip.updates : trip.updates.slice(0, 3)).map((u) => (
+              <div key={u.id} className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200/70">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-brand-700">
+                    {UPDATE_TITLES[u.triggerType] ?? 'Update'}
+                  </span>
+                  <span className="text-xs text-slate-400">{timeAgo(u.createdAt)}</span>
+                </div>
+                <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{u.body}</p>
+              </div>
+            ))}
+          </div>
+          {trip.updates.length > 3 && (
+            <button
+              onClick={() => setShowAllUpdates((v) => !v)}
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600"
+            >
+              {showAllUpdates ? 'Show fewer' : `Show all ${trip.updates.length} updates`}
+            </button>
+          )}
         </div>
       )}
 
@@ -739,7 +852,14 @@ export function EssentialsTab({ trip }: { trip: Trip }) {
             <GuideSection title="Embassy">
               <p className="font-medium text-slate-800">{g.embassyName}</p>
               {g.embassyPhone && <CallLink phone={g.embassyPhone} />}
-              {g.embassyAddress && <p className="text-xs text-slate-500">{g.embassyAddress}</p>}
+              {g.embassyAddress && (
+                <p className="text-xs text-slate-500">
+                  {g.embassyAddress}
+                  {!g.embassyAddress.toLowerCase().includes('no ') && (
+                    <> · <DirectionsLink query={[g.embassyName ?? 'Embassy', g.embassyAddress].join(', ')} /></>
+                  )}
+                </p>
+              )}
             </GuideSection>
           )}
 
@@ -761,7 +881,11 @@ export function EssentialsTab({ trip }: { trip: Trip }) {
                 <div key={i}>
                   <span className="font-medium text-slate-800">{r.name}</span>
                   {r.phone && <> · <CallLink phone={r.phone} /></>}
-                  {r.address && <p className="text-xs text-slate-500">{r.address}</p>}
+                  {r.address && (
+                    <p className="text-xs text-slate-500">
+                      {r.address} · <DirectionsLink query={`${r.name}, ${r.address}`} />
+                    </p>
+                  )}
                 </div>
               ))}
             </GuideSection>

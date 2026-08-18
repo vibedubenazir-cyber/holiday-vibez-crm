@@ -108,10 +108,10 @@ export class BookingsService {
   // schema fields — each reminder type fires exactly once per booking/payment.
   async sendEngagementReminders() {
     const now = new Date();
-    const preDepartureCount = await this.sendPreDepartureReminders(now);
+    const countdownCount = await this.sendDepartureCountdowns(now);
     const paymentDueCount = await this.sendPaymentDueReminders(now);
     const reviewRequestCount = await this.sendPostTripReviewRequests(now);
-    return { preDeparture: preDepartureCount, paymentDue: paymentDueCount, reviewRequests: reviewRequestCount };
+    return { countdown: countdownCount, paymentDue: paymentDueCount, reviewRequests: reviewRequestCount };
   }
 
   private async alreadySent(relatedEntity: string) {
@@ -119,25 +119,116 @@ export class BookingsService {
     return !!existing;
   }
 
-  private async sendPreDepartureReminders(now: Date) {
-    const windowEnd = new Date(now.getTime() + 3 * MS_PER_DAY);
+  // The countdown milestones, and the voice of each. Excitement builds as the
+  // day approaches; the last two carry the practical reminders because that's
+  // when someone actually packs.
+  private static readonly COUNTDOWN_DAYS = [15, 10, 5, 3, 1] as const;
+
+  private countdownMessage(days: number, first: string, destination: string, flightLine: string, url: string): { subject: string; body: string } {
+    const name = first ? `, ${first}` : '';
+    switch (days) {
+      case 15:
+        return {
+          subject: `✈️ 15 days to ${destination}!`,
+          body: `Hi${name}! 🌴 Just 15 days until ${destination}. Your trip is booked, confirmed and waiting for you — we're already excited on your behalf. Nothing to do yet except look forward to it.\n\nYour full plan lives here: ${url}`,
+        };
+      case 10:
+        return {
+          subject: `10 days to ${destination} 🌞`,
+          body: `Hi${name}! 10 days to go. ${destination} is getting ready for you — a good moment to check your passport is where you think it is. 😄\n\nEverything about your trip: ${url}`,
+        };
+      case 5:
+        return {
+          subject: `5 days — nearly there!`,
+          body: `Hi${name}! Only 5 days now. ✨ Your hotels, drivers and day-by-day plan are all arranged — take a look and start dreaming.\n\nYour trip, day by day: ${url}`,
+        };
+      case 3:
+        return {
+          subject: `3 days to ${destination} ✈️`,
+          body: `Hi${name}! 3 days! Time to pack. Keep your passport and documents handy — everything else is taken care of.\n\nAdd your documents to your trip app so they're always with you: ${url}`,
+        };
+      default:
+        return {
+          subject: `Tomorrow's the day! 🎉`,
+          body: `Hi${name}! Tomorrow's the day — ${destination} is waiting for you! 🎉${flightLine}\n\nYour driver details, hotel check-in and 24/7 support number are all in your trip app, and it works even with no signal.\n\nOpen your trip app: ${url}\n\nHave a wonderful trip — we're with you the whole way.`,
+        };
+    }
+  }
+
+  /**
+   * The excitement countdown: a message at 15, 10, 5, 3 and 1 days before
+   * departure, to every traveller on the booking, on every channel we hold.
+   *
+   * Deduped per booking + milestone + recipient (the same pattern as the app
+   * invite), so a job that runs six-hourly still sends each milestone once —
+   * and a milestone missed entirely (job down that day) stays missed rather
+   * than arriving late and wrong.
+   */
+  private async sendDepartureCountdowns(now: Date) {
+    const windowEnd = new Date(now.getTime() + 16 * MS_PER_DAY);
     const upcoming = await this.prisma.booking.findMany({
       where: { status: 'CONFIRMED', departureDate: { gte: now, lte: windowEnd } },
-      include: { quotation: { include: { lead: true } } },
+      include: {
+        quotation: { include: { lead: { include: { travelers: true } } } },
+        flights: { orderBy: { scheduledDeparture: 'asc' } },
+      },
     });
+
+    // Whole calendar days between today and departure, both truncated to UTC
+    // dates — departureDate is stored as a UTC-midnight date, so mixing in
+    // time-of-day would make the milestone fire a day early in the evening.
+    const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+
     let sent = 0;
     for (const booking of upcoming) {
-      const relatedEntity = `booking:${booking.id}:pre-departure`;
-      if (await this.alreadySent(relatedEntity)) continue;
+      const dep = new Date(booking.departureDate);
+      const depUtc = Date.UTC(dep.getUTCFullYear(), dep.getUTCMonth(), dep.getUTCDate());
+      const daysUntil = Math.round((depUtc - todayUtc) / MS_PER_DAY);
+      if (!BookingsService.COUNTDOWN_DAYS.includes(daysUntil as 15 | 10 | 5 | 3 | 1)) continue;
+
       const lead = booking.quotation.lead;
-      await this.notifications.send({
-        channel: 'WHATSAPP',
-        triggerType: 'pre_departure_reminder',
-        recipient: lead.phone,
-        relatedEntity,
-        body: `Hi ${lead.clientName}, your trip to ${lead.destination} departs on ${new Date(booking.departureDate).toLocaleDateString()}. Please keep your travel documents ready — safe travels!`,
-      });
-      sent++;
+      const destination = lead.destination || 'your destination';
+      const url = `${process.env.WEB_ORIGIN}/trip`;
+
+      // The day-before message names their flight when we know it.
+      const firstFlight = booking.flights.find((f) => f.status !== 'CANCELLED');
+      const flightLine =
+        daysUntil === 1 && firstFlight
+          ? `\n\nFlight ${firstFlight.flightNumber}${
+              firstFlight.scheduledDeparture
+                ? ` departs ${new Date(firstFlight.scheduledDeparture).toISOString().replace('T', ' ').slice(0, 16)} UTC`
+                : ''
+            } — we'll message you if anything changes.`
+          : '';
+
+      // Every traveller, both channels — same recipient logic as the app
+      // invite, falling back to the lead contact only when no traveller has
+      // details of their own.
+      const recipients: { channel: 'WHATSAPP' | 'EMAIL'; to: string; name: string }[] = [];
+      for (const traveller of lead.travelers) {
+        if (traveller.phone) recipients.push({ channel: 'WHATSAPP', to: traveller.phone, name: traveller.name });
+        if (traveller.email) recipients.push({ channel: 'EMAIL', to: traveller.email, name: traveller.name });
+      }
+      if (recipients.length === 0) {
+        if (lead.phone) recipients.push({ channel: 'WHATSAPP', to: lead.phone, name: lead.clientName });
+        if (lead.email) recipients.push({ channel: 'EMAIL', to: lead.email, name: lead.clientName });
+      }
+
+      for (const { channel, to, name } of recipients) {
+        const relatedEntity = `booking:${booking.id}:countdown:${daysUntil}:${to}`;
+        if (await this.alreadySent(relatedEntity)) continue;
+        const first = name.trim().split(/\s+/)[0] ?? '';
+        const { subject, body } = this.countdownMessage(daysUntil, first, destination, flightLine, url);
+        await this.notifications.send({
+          channel,
+          triggerType: 'departure_countdown',
+          recipient: to,
+          relatedEntity,
+          subject,
+          body,
+        });
+        sent++;
+      }
     }
     return sent;
   }

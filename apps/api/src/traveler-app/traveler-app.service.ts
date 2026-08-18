@@ -60,6 +60,79 @@ export class TravelerAppService {
 
     const company = await getPublicCompanyInfo(this.prisma);
 
+    // The same messages that went out on WhatsApp/email, surfaced inside the
+    // app — so "check the app" is always true even if a message was missed.
+    // Sourced from the Notification log rather than a new table: one write
+    // path, and the app shows exactly what was sent, not a paraphrase.
+    const updateEntities = [
+      ...booking.flights.map((f) => `trip_flight:${f.id}`),
+      ...booking.transfers.map((t) => `trip_transfer:${t.id}`),
+    ];
+    const rawUpdates = await this.prisma.notification.findMany({
+      where: {
+        OR: [
+          ...(updateEntities.length ? [{ relatedEntity: { in: updateEntities } }] : []),
+          { relatedEntity: { startsWith: `booking:${booking.id}:countdown:` } },
+        ],
+        body: { not: null },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 60,
+    });
+    // One notification event fans out to several recipients (rows). Collapse
+    // to one entry per (trigger, cleaned body) — the recipient-specific
+    // relatedEntity would show the same countdown once per phone number, and
+    // must never leak contact details to whoever is signed in.
+    // Every outbound message ends with an "open your trip app" line; inside
+    // the app that line is noise, so drop lines carrying the app URL — but
+    // only URL-bearing lines, and if that somehow eats the whole message,
+    // show it with the bare URL excised rather than losing it.
+    // Countdown messages are personalised per recipient ("Hi, Priya!"), and
+    // relatedEntity ends with that recipient. Keep one row per milestone,
+    // preferring the copy addressed to whoever is signed in — falling back to
+    // the newest row when none matches (lead-contact fallback sends).
+    const countdownByMilestone = new Map<string, (typeof rawUpdates)[number]>();
+    const otherRows: typeof rawUpdates = [];
+    for (const row of rawUpdates) {
+      const entity = row.relatedEntity ?? '';
+      if (!entity.includes(':countdown:')) {
+        otherRows.push(row);
+        continue;
+      }
+      const milestone = entity.slice(0, entity.lastIndexOf(':'));
+      const to = entity.slice(entity.lastIndexOf(':') + 1);
+      const addressedToMe = traveler != null && (to === traveler.phone || to === traveler.email);
+      if (!countdownByMilestone.has(milestone) || addressedToMe) {
+        countdownByMilestone.set(milestone, row);
+      }
+    }
+    const feedRows = [...countdownByMilestone.values(), ...otherRows].sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+    );
+
+    const appLink = /https?:\/\/\S*\/trip\b/;
+    const seenUpdates = new Set<string>();
+    const updates: { id: string; triggerType: string; body: string; createdAt: Date }[] = [];
+    for (const row of feedRows) {
+      let body = (row.body ?? '')
+        .split('\n')
+        .filter((line) => !appLink.test(line))
+        .join('\n')
+        .trim();
+      if (!body) {
+        body = (row.body ?? '')
+          .replace(/https?:\/\/\S*\/trip\S*/g, '')
+          .replace(/[\s:]+$/, '')
+          .trim();
+      }
+      if (!body) continue;
+      const key = `${row.triggerType}|${body}`;
+      if (seenUpdates.has(key)) continue;
+      seenUpdates.add(key);
+      updates.push({ id: row.id, triggerType: row.triggerType, body, createdAt: row.createdAt });
+      if (updates.length >= 20) break;
+    }
+
     return {
       traveler: traveler ? { id: traveler.id, name: traveler.name } : null,
       booking: {
@@ -167,6 +240,7 @@ export class TravelerAppService {
         emergencyPhone: company.phone,
         email: company.email,
       },
+      updates,
       // Stamped so the PWA can show "last synced" when running from cache.
       syncedAt: new Date().toISOString(),
     };
