@@ -641,6 +641,8 @@ model Traveler {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
+  appSessions TravelerSession[]
+
   @@map("travelers")
 }
 
@@ -1049,6 +1051,8 @@ model Booking {
   feedback          TripFeedback[]
   insurancePolicies InsurancePolicy[]
   dmcCommissions    DmcCommission[]
+  transfers         TripTransfer[]
+  travelerSessions  TravelerSession[]
 
   @@map("bookings")
 }
@@ -2099,4 +2103,94 @@ model AppraisalGoal {
   sortOrder     Int       @default(0)
 
   @@map("appraisal_goals")
+}
+
+// --- Traveler companion app -------------------------------------------------
+// The client-facing PWA travellers install after paying. Auth is deliberately
+// separate from the staff User/JWT stack: a traveller is not a User, has no
+// password, and proves identity with a one-time code sent to the phone/email
+// already on their Traveler record.
+
+enum TripTransferType {
+  ARRIVAL_PICKUP
+  DEPARTURE_DROP
+  INTERCITY
+  DAY_TRANSFER
+}
+
+model TravelerOtp {
+  id         String    @id @default(uuid())
+  // Normalised phone (last 10 digits) or lowercased email — whichever the
+  // traveller typed. Never store the code itself, only a SHA-256 hash, so a
+  // database read cannot be replayed as a login.
+  identifier String
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([identifier, expiresAt])
+  @@map("traveler_otps")
+}
+
+model TravelerSession {
+  id         String    @id @default(uuid())
+  // SHA-256 of the bearer token handed to the device. Same reasoning as the
+  // OTP hash: a leaked DB dump must not yield usable sessions.
+  tokenHash  String    @unique
+  travelerId String
+  traveler   Traveler  @relation(fields: [travelerId], references: [id], onDelete: Cascade)
+  bookingId  String
+  booking    Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  lastSeenAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+
+  @@index([travelerId])
+  @@map("traveler_sessions")
+}
+
+model TripTransfer {
+  id            String           @id @default(uuid())
+  bookingId     String
+  booking       Booking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  type          TripTransferType
+  scheduledAt   DateTime?
+  fromLocation  String?
+  toLocation    String?
+  driverName    String?
+  driverPhone   String?
+  vehicleNumber String?
+  vehicleType   String?
+  notes         String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([bookingId])
+  @@map("trip_transfers")
+}
+
+// Per-destination survival info the traveller app shows offline: local
+// emergency numbers, vetted cab operators, Indian restaurants. Staff-managed
+// so it can differ per country without a code change.
+model CountryGuide {
+  id               String   @id @default(uuid())
+  country          String   @unique
+  emergencyPolice  String?
+  emergencyMedical String?
+  embassyName      String?
+  embassyPhone     String?
+  embassyAddress   String?
+  // [{ name, phone, notes? }]
+  cabServices      Json?
+  // [{ name, address?, phone?, cuisine? }]
+  restaurants      Json?
+  notes            String?
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("country_guides")
 }
