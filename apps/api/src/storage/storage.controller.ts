@@ -3,7 +3,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { extname, join } from 'path';
 import { randomUUID } from 'crypto';
-import { writeFile } from 'fs/promises';
+import { mkdir, writeFile } from 'fs/promises';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -19,6 +19,11 @@ const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
  * back to local disk under apps/api/uploads/ (served statically, see main.ts's
  * useStaticAssets) otherwise. Every caller (CMS content, Package cover images) just
  * needs a URL string back either way, so nothing downstream changes.
+ *
+ * The local-disk path is resolved from __dirname, not process.cwd() — Railway's
+ * start command runs `node apps/api/dist/main.js` from the repo root, so cwd there
+ * is the repo root, not apps/api/. Writing to `${cwd}/uploads` silently wrote to a
+ * directory nothing serves (and one that doesn't exist, so every upload 500'd).
  */
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('storage')
@@ -56,7 +61,11 @@ export class StorageController {
   }
 
   private async writeToLocalDisk(buffer: Buffer, key: string): Promise<string> {
-    await writeFile(join(process.cwd(), 'uploads', key), buffer);
+    // __dirname at runtime is apps/api/dist/storage; the same apps/api/uploads
+    // directory main.ts serves at /uploads/* is two levels up.
+    const dir = join(__dirname, '..', '..', 'uploads');
+    await mkdir(dir, { recursive: true });
+    await writeFile(join(dir, key), buffer);
     return `/uploads/${key}`;
   }
 }
