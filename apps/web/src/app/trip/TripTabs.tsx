@@ -63,6 +63,23 @@ function whatsappNumber(phone: string): string | null {
   return null;
 }
 
+function PhoneGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.6a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.5-1.2a2 2 0 012.1-.4c.8.3 1.7.5 2.6.6a2 2 0 011.7 2z" />
+    </svg>
+  );
+}
+
 function WhatsAppGlyph({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
@@ -531,9 +548,10 @@ export function TransfersTab({ transfers, timezone }: { transfers: TripTransfer[
                   <div className="flex shrink-0 items-center gap-2">
                     <a
                       href={`tel:${t.driverPhone.replace(/\s/g, '')}`}
-                      className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-500/25"
+                      className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 text-sm font-semibold text-white shadow-sm shadow-brand-500/25"
+                      aria-label="Call the driver"
                     >
-                      Call
+                      <PhoneGlyph className="h-4 w-4" />
                     </a>
                     {whatsappNumber(t.driverPhone) && (
                       <a
@@ -541,7 +559,7 @@ export function TransfersTab({ transfers, timezone }: { transfers: TripTransfer[
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Message the driver on WhatsApp"
-                        className="flex items-center gap-1.5 rounded-xl bg-[#25D366] px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-500/25"
+                        className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#25D366] text-sm font-semibold text-white shadow-sm shadow-emerald-500/25"
                       >
                         <WhatsAppGlyph className="h-4 w-4" />
                       </a>
