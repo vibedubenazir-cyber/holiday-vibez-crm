@@ -4,6 +4,14 @@ import { Response } from 'express';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 
+// __dirname at runtime is apps/api/dist/itineraries; apps/api/uploads (the
+// same directory storage.controller.ts writes to and main.ts serves at
+// /uploads/*) is two levels up. Railway's start command runs
+// `node apps/api/dist/main.js` from the repo root, so process.cwd() there is
+// the repo root, not apps/api/ — resolving against cwd silently looked in a
+// directory that doesn't exist, so every local-disk-stored image was skipped.
+const UPLOADS_DIR = join(__dirname, '..', '..', 'uploads');
+
 const BRAND_BLUE = '#005aaa';
 const SLATE = '#334155';
 const SLATE_LIGHT = '#64748b';
@@ -103,7 +111,7 @@ async function loadImageBuffer(url: string | null | undefined): Promise<Buffer |
       buffer = Buffer.from(await res.arrayBuffer());
     } else {
       const key = url.replace(/^\/uploads\//, '');
-      buffer = await readFile(join(process.cwd(), 'uploads', key));
+      buffer = await readFile(join(UPLOADS_DIR, key));
     }
   } catch (err) {
     console.warn(`[itinerary-pdf] image load failed — skipping: ${url}`, err);

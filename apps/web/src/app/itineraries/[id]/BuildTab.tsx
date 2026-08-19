@@ -50,6 +50,8 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
   const [uploadingCover, setUploadingCover] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openDropdownDayId, setOpenDropdownDayId] = useState<string | null>(null);
+  const [editingDayId, setEditingDayId] = useState<string | null>(null);
+  const [editDayDate, setEditDayDate] = useState('');
   const [modalState, setModalState] = useState<{ dayId: string; type: ItineraryEventType; existing?: ItineraryPlanEventDTO } | null>(null);
   const [savingTerms, setSavingTerms] = useState(false);
   const [terms, setTerms] = useState({
@@ -100,6 +102,21 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
       onReload();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to remove day');
+    }
+  }
+
+  function startEditDay(dayId: string, date: string | null) {
+    setEditingDayId(dayId);
+    setEditDayDate(date ? date.slice(0, 10) : '');
+  }
+
+  async function handleSaveDayDate(dayId: string) {
+    try {
+      await api.patch(`/itineraries/${plan.id}/days/${dayId}`, { date: editDayDate || undefined });
+      setEditingDayId(null);
+      onReload();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to save day');
     }
   }
 
@@ -198,12 +215,37 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
           {plan.days.map((day) => (
             <div key={day.id} id={`day-${day.id}`} className="rounded-xl border border-slate-200 bg-white dark:bg-slate-800 p-4">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="font-semibold text-slate-800 dark:text-slate-100">
-                  Day {day.dayNumber} {day.date && <span className="ml-2 text-sm font-normal text-slate-400">{formatDate(day.date)}</span>}
-                </h3>
-                <button onClick={() => handleRemoveDay(day.id)} className="text-xs text-slate-400 hover:text-red-500">
-                  Remove Day
-                </button>
+                {editingDayId === day.id ? (
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-100">Day {day.dayNumber}</h3>
+                    <input
+                      type="date"
+                      value={editDayDate}
+                      onChange={(e) => setEditDayDate(e.target.value)}
+                      className="rounded-lg border border-slate-300 px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-900"
+                    />
+                    <button onClick={() => handleSaveDayDate(day.id)} className="text-xs font-medium text-brand hover:underline">
+                      Save
+                    </button>
+                    <button onClick={() => setEditingDayId(null)} className="text-xs text-slate-400 hover:text-slate-600">
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                    Day {day.dayNumber} {day.date && <span className="ml-2 text-sm font-normal text-slate-400">{formatDate(day.date)}</span>}
+                  </h3>
+                )}
+                {editingDayId !== day.id && (
+                  <div className="flex gap-3">
+                    <button onClick={() => startEditDay(day.id, day.date)} className="text-xs text-brand hover:underline">
+                      Edit
+                    </button>
+                    <button onClick={() => handleRemoveDay(day.id)} className="text-xs text-slate-400 hover:text-red-500">
+                      Remove Day
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
