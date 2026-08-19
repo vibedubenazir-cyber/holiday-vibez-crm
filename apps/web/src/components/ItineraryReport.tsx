@@ -136,6 +136,34 @@ function DescriptionBlock({ text, bullets, className }: { text: string; bullets?
   return <p className={`whitespace-pre-line ${className ?? ''}`}>{text}</p>;
 }
 
+// Package terms are free text a consultant types or an AI draft generates —
+// sometimes one clause per line, sometimes "·"-separated within a line (or
+// both, e.g. an "INCLUDES:" line and an "EXCLUDES:" line each themselves
+// "·"-joined), sometimes just plain sentences. Split each line on "·" first
+// so every item gets its own bullet, then fall back to sentence-splitting
+// only when nothing multi-part was found at all; a single clause reads
+// better as plain text than as a list with one bullet.
+function splitTermsClauses(text: string): string[] {
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const clauses = lines.flatMap((line) => (line.includes('·') ? line.split('·').map((c) => c.trim()).filter(Boolean) : [line]));
+  if (clauses.length > 1) return clauses;
+  return text.split(/(?<=[.!?])\s+(?=[A-Z(])/).map((c) => c.trim()).filter(Boolean);
+}
+
+function TermsBlock({ text }: { text: string }) {
+  const clauses = splitTermsClauses(text);
+  if (clauses.length <= 1) {
+    return <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{text}</p>;
+  }
+  return (
+    <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-slate-600">
+      {clauses.map((clause, i) => (
+        <li key={i}>{clause}</li>
+      ))}
+    </ul>
+  );
+}
+
 // Shared presentational component — rendered both as the authenticated
 // Final-tab preview and (unmodified) on the public /itinerary/[id]/final
 // page, so what a consultant previews is exactly what a client sees.
@@ -333,7 +361,7 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
             body ? (
               <div key={heading}>
                 <h3 className="text-base font-bold text-brand">{heading}</h3>
-                <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{body}</p>
+                <TermsBlock text={body} />
               </div>
             ) : null,
           )}

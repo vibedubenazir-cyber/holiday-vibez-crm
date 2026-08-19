@@ -140,6 +140,18 @@ async function loadImageBuffer(url: string | null | undefined): Promise<Buffer |
   return buffer;
 }
 
+// Mirrors ItineraryReport.tsx's splitTermsClauses: package terms are free
+// text that's sometimes one clause per line, sometimes "·"-separated within
+// a line (or both), sometimes plain sentences — split each line on "·" first
+// so every item gets its own bullet, matching the bulleted client report
+// instead of printing one dense paragraph.
+function splitTermsClauses(text: string): string[] {
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const clauses = lines.flatMap((line) => (line.includes('·') ? line.split('·').map((c) => c.trim()).filter(Boolean) : [line]));
+  if (clauses.length > 1) return clauses;
+  return text.split(/(?<=[.!?])\s+(?=[A-Z(])/).map((c) => c.trim()).filter(Boolean);
+}
+
 function formatDate(value?: string | Date | null): string {
   if (!value) return '';
   return new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -336,12 +348,28 @@ export async function streamItineraryPdf(res: Response, plan: ItineraryPdfInput)
     for (const [heading, body] of sections) {
       if (!body) continue;
       y = ensureSpace(y, 40);
-      doc.fontSize(11).font('Helvetica-Bold').fillColor(BRAND_BLUE).text(heading, MARGIN_X, y, { width: contentWidth });
+      doc.fontSize(11).font('Helvetica-Bold').fillColor(BRAND_BLUE).text(heading, MARGIN_X, y);
       y += 16;
-      const textHeight = doc.heightOfString(winAnsi(body), { width: contentWidth });
-      y = ensureSpace(y, textHeight + 12);
-      doc.fontSize(9).font('Helvetica').fillColor(SLATE).text(winAnsi(body), MARGIN_X, y, { width: contentWidth });
-      y += textHeight + 16;
+
+      const clauses = splitTermsClauses(body);
+      doc.fontSize(9).font('Helvetica').fillColor(SLATE);
+      if (clauses.length <= 1) {
+        const textHeight = doc.heightOfString(winAnsi(body), { width: contentWidth });
+        y = ensureSpace(y, textHeight + 12);
+        doc.text(winAnsi(body), MARGIN_X, y, { width: contentWidth });
+        y += textHeight + 16;
+      } else {
+        const bulletIndent = 12;
+        const bulletWidth = contentWidth - bulletIndent;
+        for (const clause of clauses) {
+          const clauseHeight = doc.heightOfString(winAnsi(clause), { width: bulletWidth });
+          y = ensureSpace(y, clauseHeight + 6);
+          doc.text('•', MARGIN_X, y, { width: bulletIndent });
+          doc.text(winAnsi(clause), MARGIN_X + bulletIndent, y, { width: bulletWidth });
+          y += clauseHeight + 6;
+        }
+        y += 10;
+      }
     }
   }
 
