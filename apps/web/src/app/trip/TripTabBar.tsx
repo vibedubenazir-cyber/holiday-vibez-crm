@@ -67,7 +67,7 @@ export function TripTabBar({ tab, onChange }: { tab: TabId; onChange: (id: TabId
     <nav
       // The padding rides on env(safe-area-inset-bottom) so the labels clear
       // the iPhone home indicator instead of sitting under it.
-      className="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-lg border-t border-slate-200 bg-white/95 backdrop-blur"
+      className="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-lg rounded-t-2xl border-t border-slate-200/80 bg-white/95 shadow-[0_-8px_24px_-8px_rgba(15,23,42,0.12)] backdrop-blur"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       aria-label="Trip sections"
     >
@@ -78,11 +78,17 @@ export function TripTabBar({ tab, onChange }: { tab: TabId; onChange: (id: TabId
             key={t.id}
             onClick={() => onChange(t.id)}
             aria-current={active ? 'page' : undefined}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2 transition ${
-              active ? 'text-brand-700' : 'text-slate-400'
+            className={`group relative flex flex-1 flex-col items-center gap-1 py-2 transition-colors ${
+              active ? 'text-brand-700' : 'text-slate-400 active:text-slate-500'
             }`}
           >
-            <Icon path={t.path} active={active} />
+            <span
+              className={`flex h-8 w-11 items-center justify-center rounded-full transition-all duration-200 ${
+                active ? 'scale-100 bg-brand-50' : 'scale-90 bg-transparent group-active:scale-100 group-active:bg-slate-100'
+              }`}
+            >
+              <Icon path={t.path} active={active} />
+            </span>
             <span className={`text-[10px] leading-tight ${active ? 'font-semibold' : 'font-medium'}`}>
               {t.label}
             </span>
