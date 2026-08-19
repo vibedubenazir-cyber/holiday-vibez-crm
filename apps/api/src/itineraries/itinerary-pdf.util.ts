@@ -3,6 +3,8 @@ import sharp from 'sharp';
 import { Response } from 'express';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
+import { getClient, isS3Configured } from '../storage/s3.util';
 
 // __dirname at runtime is apps/api/dist/itineraries; apps/api/uploads (the
 // same directory storage.controller.ts writes to and main.ts serves at
@@ -110,8 +112,21 @@ async function loadImageBuffer(url: string | null | undefined): Promise<Buffer |
       }
       buffer = Buffer.from(await res.arrayBuffer());
     } else {
+      // Relative "/uploads/:key" — resolves to local disk when the app is
+      // running off local-disk storage, or to the S3-compatible bucket when
+      // OBJECT_STORAGE_* is configured (a Railway Bucket has no public-read
+      // mode, so uploads never touch disk in that mode — see s3.util.ts).
       const key = url.replace(/^\/uploads\//, '');
-      buffer = await readFile(join(UPLOADS_DIR, key));
+      if (isS3Configured()) {
+        const res = await getClient().send(
+          new GetObjectCommand({ Bucket: process.env.OBJECT_STORAGE_BUCKET!, Key: key }),
+        );
+        const chunks: Buffer[] = [];
+        for await (const chunk of res.Body as AsyncIterable<Buffer>) chunks.push(chunk);
+        buffer = Buffer.concat(chunks);
+      } else {
+        buffer = await readFile(join(UPLOADS_DIR, key));
+      }
     }
   } catch (err) {
     console.warn(`[itinerary-pdf] image load failed — skipping: ${url}`, err);

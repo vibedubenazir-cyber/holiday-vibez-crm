@@ -324,6 +324,29 @@ Finance, Targets/Calendar/Reporting, and Mobile/Hardening basics.
   `Authorization` header, `x-amz-content-sha256`, path, body) is correct by
   pointing the same `S3Client`/`PutObjectCommand` calls at a local mock
   server (no real AWS account exists in this sandbox to upload against).
+- **Object storage: presigned URLs for non-AWS S3-compatible buckets** — a
+  Railway Bucket (this project's production `OBJECT_STORAGE_*` target,
+  backed by Tigris) has no public-read mode: a bare object URL 403s,
+  `PutBucketPolicy` returns `NotImplemented`, `PutBucketAcl public-read`
+  returns `AccessDenied`. Confirmed by testing directly against a live
+  bucket before writing any code. `uploadToS3()` now returns the same
+  relative `/uploads/:key` shape the local-disk fallback already used,
+  instead of a permanent public bucket URL. A new, deliberately
+  unauthenticated `UploadsRedirectController`
+  (`apps/api/src/storage/uploads-redirect.controller.ts`) handles
+  `GET /uploads/:key` when S3 is configured, minting a fresh 1-hour
+  presigned GET URL per request and 302-redirecting to it —
+  `main.ts`'s static-disk middleware is tried first and only falls through
+  to this controller when the file isn't on local disk (i.e. S3 mode,
+  where uploads never touch disk), so both storage modes serve from the
+  exact same URL shape and every existing caller (itinerary photos, PDF
+  generation, CMS, LMS course images) needed zero changes. Added
+  `OBJECT_STORAGE_ENDPOINT` (optional; unset for real AWS S3) for
+  S3-compatible providers with a non-`amazonaws.com` endpoint. Verified
+  end-to-end against the real Railway Bucket: uploaded a file, confirmed
+  the redirect resolves to a working signed URL, confirmed the itinerary
+  PDF (which reads S3 objects directly via the SDK rather than an HTTP
+  round-trip) embeds the image correctly.
 - **Day Itinerary and Hotel/Room Type/Meal Plan masters**: four new admin-managed
   masters (`apps/api/src/day-itineraries/`, `apps/api/src/hotels/`,
   `apps/api/src/room-types/`, `apps/api/src/meal-plans/`), each a simple CRUD

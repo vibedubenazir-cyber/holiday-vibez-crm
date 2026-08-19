@@ -26,6 +26,7 @@ function client(): S3Client {
   if (!cachedClient) {
     cachedClient = new S3Client({
       region: process.env.OBJECT_STORAGE_REGION!,
+      ...(process.env.OBJECT_STORAGE_ENDPOINT ? { endpoint: process.env.OBJECT_STORAGE_ENDPOINT } : {}),
       credentials: {
         accessKeyId: process.env.OBJECT_STORAGE_ACCESS_KEY_ID!,
         secretAccessKey: process.env.OBJECT_STORAGE_KEY!,

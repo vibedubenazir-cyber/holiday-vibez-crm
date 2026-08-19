@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import cookieParser = require('cookie-parser');
@@ -18,12 +18,20 @@ async function bootstrap() {
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useGlobalFilters(new AllExceptionsFilter());
-  app.setGlobalPrefix('api');
+  // 'uploads' is excluded from the /api prefix so it stays at plain
+  // "/uploads/:key" — both the local-disk static middleware below and
+  // UploadsRedirectController's presigned-URL fallback (see
+  // storage/uploads-redirect.controller.ts) need to live at that exact path,
+  // since storage.controller.ts returns "/uploads/:key" for both storage modes.
+  app.setGlobalPrefix('api', { exclude: [{ path: 'uploads/(.*)', method: RequestMethod.ALL }] });
 
   // Local-disk stand-in for real object storage (see storage.controller.ts) —
   // served at /uploads/*, outside the /api prefix set above. __dirname is
   // apps/api/dist at runtime, so this must go up exactly one level to reach
   // apps/api/uploads — the same directory storage.controller.ts writes to.
+  // When a file isn't found here (S3 mode, where uploads never touch disk),
+  // this middleware calls next() and falls through to
+  // UploadsRedirectController's route at the same path.
   app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/uploads/' });
 
   // Scheduled background jobs (SLA escalation, birthday/anniversary check,
