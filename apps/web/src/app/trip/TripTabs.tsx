@@ -147,7 +147,7 @@ function DirectionsLink({ query, className }: { query: string; className?: strin
       href={mapsDirectionsUrl(query)}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex items-center gap-1 text-sm font-semibold text-brand-700 ${className ?? ''}`}
+      className={`inline-flex items-center gap-1 rounded-full bg-brand-50 py-1 pl-2 pr-2.5 text-sm font-semibold text-brand-700 transition-colors active:bg-brand-100 ${className ?? ''}`}
     >
       <MapPinGlyph className="h-3.5 w-3.5" />
       Directions
