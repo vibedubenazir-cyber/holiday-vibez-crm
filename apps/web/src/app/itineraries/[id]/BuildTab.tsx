@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { uploadFile } from '@/lib/upload';
 import { FormattedTextArea } from '@/components/FormattedTextArea';
+import { RichTextEditor } from '@/components/RichTextEditor';
 import { ItineraryEventType, type ItineraryPlanDTO, type ItineraryPlanEventDTO } from '@holiday-vibez/shared';
 import { EventModal, EVENT_TYPE_LABELS } from './EventModal';
 
@@ -336,12 +337,10 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
               <div key={key}>
                 <label className="text-xs font-semibold text-slate-500">{label}</label>
                 <div className="mt-1">
-                  <FormattedTextArea
+                  <RichTextEditor
                     value={terms[key]}
                     onChange={(v) => setTerms((prev) => ({ ...prev, [key]: v }))}
-                    rows={5}
                     placeholder="Add terms…"
-                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs dark:border-slate-600 dark:bg-slate-900"
                   />
                 </div>
               </div>

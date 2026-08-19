@@ -177,6 +177,37 @@ function stripFormatting(text: string): string {
   return text.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/^[•\-*]\s+/, '');
 }
 
+const HTML_ENTITIES: Record<string, string> = {
+  '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&nbsp;': ' ',
+};
+
+function decodeHtmlEntities(text: string): string {
+  return text.replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (m) => HTML_ENTITIES[m] ?? m);
+}
+
+function stripTags(html: string): string {
+  return decodeHtmlEntities(html.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+}
+
+function looksLikeHtml(text: string): boolean {
+  return /<[a-z][\s\S]*>/i.test(text);
+}
+
+// Package Terms are edited with a real WYSIWYG editor (RichTextEditor,
+// apps/web) and saved as HTML — pdfkit has no HTML renderer, so this pulls
+// out just the structure it can reproduce (one clause per <li>, or one per
+// <p> when there's no list) and drops all inline formatting (bold/italic/
+// links/color), matching the same plain-text trade-off stripFormatting()
+// already makes for markdown-lite content elsewhere in this file.
+function htmlToClauses(html: string): string[] {
+  const items = Array.from(html.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)).map((m) => stripTags(m[1])).filter(Boolean);
+  if (items.length) return items;
+  const paras = Array.from(html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)).map((m) => stripTags(m[1])).filter(Boolean);
+  if (paras.length) return paras;
+  const plain = stripTags(html);
+  return plain ? [plain] : [];
+}
+
 function formatDate(value?: string | Date | null): string {
   if (!value) return '';
   return new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -376,10 +407,10 @@ export async function streamItineraryPdf(res: Response, plan: ItineraryPdfInput)
       doc.fontSize(11).font('Helvetica-Bold').fillColor(BRAND_BLUE).text(heading, MARGIN_X, y);
       y += 16;
 
-      const clauses = splitTermsClauses(body);
+      const clauses = looksLikeHtml(body) ? htmlToClauses(body) : splitTermsClauses(body);
       doc.fontSize(9).font('Helvetica').fillColor(SLATE);
       if (clauses.length <= 1) {
-        const cleanBody = stripFormatting(body);
+        const cleanBody = stripFormatting(clauses[0] ?? body);
         const textHeight = doc.heightOfString(winAnsi(cleanBody), { width: contentWidth });
         y = ensureSpace(y, textHeight + 12);
         doc.text(winAnsi(cleanBody), MARGIN_X, y, { width: contentWidth });

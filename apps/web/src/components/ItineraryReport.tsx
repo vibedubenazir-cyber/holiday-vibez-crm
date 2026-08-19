@@ -173,7 +173,20 @@ function splitTermsClauses(text: string): string[] {
   return text.split(/(?<=[.!?])\s+(?=[A-Z(])/).map((c) => c.trim()).filter(Boolean);
 }
 
+// Package Terms are edited with a real WYSIWYG editor (RichTextEditor) and
+// stored as actual HTML — rendered verbatim here rather than re-parsed, so
+// the client sees exactly what the consultant formatted. Older itineraries
+// saved before that editor existed hold plain text with no tags; detecting
+// that (no "<" at all) keeps them readable via the previous line/clause
+// splitting instead of dumping raw angle-bracket-free text unstyled.
+function looksLikeHtml(text: string): boolean {
+  return /<[a-z][\s\S]*>/i.test(text);
+}
+
 function TermsBlock({ text }: { text: string }) {
+  if (looksLikeHtml(text)) {
+    return <div className="prose prose-sm mt-1 max-w-none text-slate-600" dangerouslySetInnerHTML={{ __html: text }} />;
+  }
   const clauses = splitTermsClauses(text);
   if (clauses.length <= 1) {
     return <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{renderFormatted(text, 't')}</p>;
