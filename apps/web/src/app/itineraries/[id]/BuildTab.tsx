@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { uploadFile } from '@/lib/upload';
+import { FormattedTextArea } from '@/components/FormattedTextArea';
 import { ItineraryEventType, type ItineraryPlanDTO, type ItineraryPlanEventDTO } from '@holiday-vibez/shared';
 import { EventModal, EVENT_TYPE_LABELS } from './EventModal';
 
@@ -20,17 +21,6 @@ const TERMS_FIELDS = [
   ['liability', 'Liability'],
 ] as const;
 type TermsKey = (typeof TERMS_FIELDS)[number][0];
-
-// Splits existing terms text into editable points — mirrors the client
-// report's own splitting so a term saved elsewhere (typed as one blob,
-// AI-generated, "·"-joined) opens here as the same points it renders as.
-// Saved back out one point per line, which the report/PDF read as
-// one-bullet-per-line directly, no further splitting needed.
-function splitToBullets(text: string): string[] {
-  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
-  const points = lines.flatMap((line) => (line.includes('·') ? line.split('·').map((c) => c.trim()).filter(Boolean) : [line]));
-  return points.length ? points : [''];
-}
 
 const EVENT_TYPE_ICONS: Record<ItineraryEventType, string> = {
   [ItineraryEventType.ACCOMMODATION]: '🏨',
@@ -73,27 +63,12 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
   const [editDayDate, setEditDayDate] = useState('');
   const [modalState, setModalState] = useState<{ dayId: string; type: ItineraryEventType; existing?: ItineraryPlanEventDTO } | null>(null);
   const [savingTerms, setSavingTerms] = useState(false);
-  const [termsBullets, setTermsBullets] = useState<Record<TermsKey, string[]>>({
-    bookingAndPayment: splitToBullets(plan.packageTerms?.bookingAndPayment ?? ''),
-    pricingAndInclusions: splitToBullets(plan.packageTerms?.pricingAndInclusions ?? ''),
-    cancellationsAndRefunds: splitToBullets(plan.packageTerms?.cancellationsAndRefunds ?? ''),
-    liability: splitToBullets(plan.packageTerms?.liability ?? ''),
+  const [terms, setTerms] = useState<Record<TermsKey, string>>({
+    bookingAndPayment: plan.packageTerms?.bookingAndPayment ?? '',
+    pricingAndInclusions: plan.packageTerms?.pricingAndInclusions ?? '',
+    cancellationsAndRefunds: plan.packageTerms?.cancellationsAndRefunds ?? '',
+    liability: plan.packageTerms?.liability ?? '',
   });
-
-  function updateTermPoint(key: TermsKey, index: number, value: string) {
-    setTermsBullets((prev) => ({ ...prev, [key]: prev[key].map((p, i) => (i === index ? value : p)) }));
-  }
-
-  function addTermPoint(key: TermsKey) {
-    setTermsBullets((prev) => ({ ...prev, [key]: [...prev[key], ''] }));
-  }
-
-  function removeTermPoint(key: TermsKey, index: number) {
-    setTermsBullets((prev) => {
-      const next = prev[key].filter((_, i) => i !== index);
-      return { ...prev, [key]: next.length ? next : [''] };
-    });
-  }
   const [uploadingGallery, setUploadingGallery] = useState(false);
 
   async function handleTitleBlur() {
@@ -166,10 +141,8 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
   async function handleSaveTerms() {
     setSavingTerms(true);
     try {
-      const terms = Object.fromEntries(
-        TERMS_FIELDS.map(([key]) => [key, termsBullets[key].map((p) => p.trim()).filter(Boolean).join('\n')]),
-      );
-      await api.put(`/itineraries/${plan.id}/package-terms`, terms);
+      const payload = Object.fromEntries(TERMS_FIELDS.map(([key]) => [key, terms[key].trim()]));
+      await api.put(`/itineraries/${plan.id}/package-terms`, payload);
       onReload();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to save package terms');
@@ -362,29 +335,15 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
             {TERMS_FIELDS.map(([key, label]) => (
               <div key={key}>
                 <label className="text-xs font-semibold text-slate-500">{label}</label>
-                <div className="mt-1 space-y-1.5">
-                  {termsBullets[key].map((point, i) => (
-                    <div key={i} className="flex items-start gap-1.5">
-                      <span className="mt-2 text-slate-400">•</span>
-                      <input
-                        value={point}
-                        onChange={(e) => updateTermPoint(key, i, e.target.value)}
-                        placeholder="Add a point…"
-                        className="flex-1 rounded-lg border border-slate-300 px-2 py-1.5 text-xs dark:border-slate-600 dark:bg-slate-900"
-                      />
-                      <button
-                        onClick={() => removeTermPoint(key, i)}
-                        title="Remove point"
-                        className="mt-1 px-1 text-slate-400 hover:text-red-500"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
+                <div className="mt-1">
+                  <FormattedTextArea
+                    value={terms[key]}
+                    onChange={(v) => setTerms((prev) => ({ ...prev, [key]: v }))}
+                    rows={5}
+                    placeholder="Add terms…"
+                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs dark:border-slate-600 dark:bg-slate-900"
+                  />
                 </div>
-                <button onClick={() => addTermPoint(key)} className="mt-1.5 text-xs font-medium text-brand hover:underline">
-                  + Add point
-                </button>
               </div>
             ))}
           </div>

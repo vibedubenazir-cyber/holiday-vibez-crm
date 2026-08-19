@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { absoluteUploadUrl } from '@/lib/upload';
 import { ContactFooter } from './ContactFooter';
 
@@ -117,6 +118,28 @@ function roomSummary(details?: ItineraryReportDetails | null): string | null {
   return parts.length ? parts.join(', ') : null;
 }
 
+// The Build tab's description/terms fields are a single textarea with a
+// markdown-lite toolbar (FormattedTextArea: **bold**, "• " line prefixes)
+// rather than a rich-text editor, so no schema change was needed for
+// formatting — it's parsed back out here at render time instead.
+function renderFormatted(text: string, keyPrefix: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**') && part.length > 4 ? (
+      <strong key={`${keyPrefix}-${i}`}>{part.slice(2, -2)}</strong>
+    ) : (
+      <span key={`${keyPrefix}-${i}`}>{part}</span>
+    ),
+  );
+}
+
+// A line typed via the toolbar's "• List" button already carries a leading
+// "• "/"-"/"*" glyph — strip it before wrapping in <li>, whose own list-disc
+// marker would otherwise double it up. Left alone in the plain-paragraph
+// branch below, where that glyph is the only bullet marker there is.
+function stripBulletGlyph(line: string): string {
+  return line.replace(/^[•\-*]\s+/, '');
+}
+
 // Renders a bulleted <ul> only when the consultant explicitly opted in
 // (details.descriptionBullets, set from the Build tab's "Show as bullet
 // points in report" checkbox) — never automatically just because the text
@@ -128,12 +151,12 @@ function DescriptionBlock({ text, bullets, className }: { text: string; bullets?
     return (
       <ul className={`list-disc space-y-0.5 pl-4 ${className ?? ''}`}>
         {lines.map((line, i) => (
-          <li key={i}>{line}</li>
+          <li key={i}>{renderFormatted(stripBulletGlyph(line), `d${i}`)}</li>
         ))}
       </ul>
     );
   }
-  return <p className={`whitespace-pre-line ${className ?? ''}`}>{text}</p>;
+  return <p className={`whitespace-pre-line ${className ?? ''}`}>{renderFormatted(text, 'd')}</p>;
 }
 
 // Package terms are free text a consultant types or an AI draft generates —
@@ -153,12 +176,12 @@ function splitTermsClauses(text: string): string[] {
 function TermsBlock({ text }: { text: string }) {
   const clauses = splitTermsClauses(text);
   if (clauses.length <= 1) {
-    return <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{text}</p>;
+    return <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{renderFormatted(text, 't')}</p>;
   }
   return (
     <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-slate-600">
       {clauses.map((clause, i) => (
-        <li key={i}>{clause}</li>
+        <li key={i}>{renderFormatted(stripBulletGlyph(clause), `t${i}`)}</li>
       ))}
     </ul>
   );

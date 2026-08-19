@@ -167,6 +167,16 @@ function splitTermsClauses(text: string): string[] {
   return text.split(/(?<=[.!?])\s+(?=[A-Z(])/).map((c) => c.trim()).filter(Boolean);
 }
 
+// The Build tab's description/terms fields carry markdown-lite formatting
+// from FormattedTextArea (**bold**, "• " line prefixes — see ItineraryReport.tsx's
+// matching renderFormatted/stripBulletGlyph). pdfkit can't easily mix bold
+// runs into a single wrapped text() call, so bold markers are dropped rather
+// than rendered; the leading bullet glyph is dropped too since clause lines
+// already get their own drawn "•" a few lines below.
+function stripFormatting(text: string): string {
+  return text.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/^[•\-*]\s+/, '');
+}
+
 function formatDate(value?: string | Date | null): string {
   if (!value) return '';
   return new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -300,7 +310,7 @@ export async function streamItineraryPdf(res: Response, plan: ItineraryPdfInput)
         ty += 12;
       }
       if (hotel.description) {
-        doc.fontSize(9).font('Helvetica').fillColor(SLATE).text(winAnsi(hotel.description), textX, ty, { width: textWidth });
+        doc.fontSize(9).font('Helvetica').fillColor(SLATE).text(winAnsi(stripFormatting(hotel.description)), textX, ty, { width: textWidth });
       }
       y += blockHeight + 10;
     }
@@ -345,7 +355,7 @@ export async function streamItineraryPdf(res: Response, plan: ItineraryPdfInput)
         ty += 12;
       }
       if (event.description) {
-        doc.fontSize(9).font('Helvetica').fillColor(SLATE).text(winAnsi(event.description), textX, ty, { width: textWidth });
+        doc.fontSize(9).font('Helvetica').fillColor(SLATE).text(winAnsi(stripFormatting(event.description)), textX, ty, { width: textWidth });
       }
       y += blockHeight + 10;
     }
@@ -369,14 +379,16 @@ export async function streamItineraryPdf(res: Response, plan: ItineraryPdfInput)
       const clauses = splitTermsClauses(body);
       doc.fontSize(9).font('Helvetica').fillColor(SLATE);
       if (clauses.length <= 1) {
-        const textHeight = doc.heightOfString(winAnsi(body), { width: contentWidth });
+        const cleanBody = stripFormatting(body);
+        const textHeight = doc.heightOfString(winAnsi(cleanBody), { width: contentWidth });
         y = ensureSpace(y, textHeight + 12);
-        doc.text(winAnsi(body), MARGIN_X, y, { width: contentWidth });
+        doc.text(winAnsi(cleanBody), MARGIN_X, y, { width: contentWidth });
         y += textHeight + 16;
       } else {
         const bulletIndent = 12;
         const bulletWidth = contentWidth - bulletIndent;
-        for (const clause of clauses) {
+        for (const rawClause of clauses) {
+          const clause = stripFormatting(rawClause);
           const clauseHeight = doc.heightOfString(winAnsi(clause), { width: bulletWidth });
           y = ensureSpace(y, clauseHeight + 6);
           doc.text('•', MARGIN_X, y, { width: bulletIndent });

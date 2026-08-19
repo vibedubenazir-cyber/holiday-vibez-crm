@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Modal } from '@/components/Modal';
+import { FormattedTextArea } from '@/components/FormattedTextArea';
 import { api, ApiError } from '@/lib/api';
 import { uploadFile } from '@/lib/upload';
 import {
@@ -128,72 +129,6 @@ function formFromEvent(event: ItineraryPlanEventDTO): FormState {
 }
 
 const numOrUndef = (v: string) => (v === '' ? undefined : Number(v));
-
-// Turns the plain-text description into a list of points a consultant can
-// add/edit/remove one at a time — still stored as a single newline-joined
-// string (no schema change). Whether the report actually renders these as a
-// bulleted <ul> is a separate, explicit opt-in (bulletPoints) rather than
-// automatic from having more than one line — see DescriptionBlock in
-// ItineraryReport.
-function BulletListEditor({
-  value,
-  onChange,
-  bulletPoints,
-  onBulletPointsChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  bulletPoints: boolean;
-  onBulletPointsChange: (v: boolean) => void;
-}) {
-  const lines = value ? value.split('\n') : [''];
-  function setLine(idx: number, text: string) {
-    const next = [...lines];
-    next[idx] = text;
-    onChange(next.join('\n'));
-  }
-  function addLine() {
-    onChange([...lines, ''].join('\n'));
-  }
-  function removeLine(idx: number) {
-    const next = lines.filter((_, i) => i !== idx);
-    onChange((next.length ? next : ['']).join('\n'));
-  }
-  return (
-    <div className="col-span-2">
-      <div className="mb-1 flex items-center justify-between">
-        <label className="text-xs text-slate-500">Description</label>
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-1.5 text-xs text-slate-500">
-            <input type="checkbox" checked={bulletPoints} onChange={(e) => onBulletPointsChange(e.target.checked)} />
-            Show as bullet points in report
-          </label>
-          <button type="button" onClick={addLine} className="text-xs text-brand hover:underline">
-            + Add point
-          </button>
-        </div>
-      </div>
-      <div className="space-y-1.5">
-        {lines.map((line, idx) => (
-          <div key={idx} className="flex items-center gap-2">
-            <span className="text-slate-400">•</span>
-            <input
-              value={line}
-              onChange={(e) => setLine(idx, e.target.value)}
-              placeholder="e.g. Museum of the Future (Photo Stop)"
-              className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-            />
-            {lines.length > 1 && (
-              <button type="button" onClick={() => removeLine(idx)} className="text-slate-400 hover:text-red-500">
-                ✕
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function EventModal({
   planId,
@@ -497,12 +432,25 @@ export function EventModal({
           </>
         )}
 
-        <BulletListEditor
-          value={form.description}
-          onChange={(v) => setForm({ ...form, description: v })}
-          bulletPoints={form.bulletPoints}
-          onBulletPointsChange={(v) => setForm({ ...form, bulletPoints: v })}
-        />
+        <div className="col-span-2">
+          <div className="mb-1 flex items-center justify-between">
+            <label className="text-xs text-slate-500">Description</label>
+            <label className="flex items-center gap-1.5 text-xs text-slate-500">
+              <input
+                type="checkbox"
+                checked={form.bulletPoints}
+                onChange={(e) => setForm({ ...form, bulletPoints: e.target.checked })}
+              />
+              Show as bullet points in report
+            </label>
+          </div>
+          <FormattedTextArea
+            value={form.description}
+            onChange={(v) => setForm({ ...form, description: v })}
+            rows={5}
+            placeholder="e.g. Museum of the Future (Photo Stop)"
+          />
+        </div>
 
         <div className="col-span-2">
           <label className="text-xs text-slate-500">Photo</label>
