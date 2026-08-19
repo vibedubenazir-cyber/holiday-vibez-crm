@@ -74,18 +74,16 @@ export function TripTabBar({ tab, onChange }: { tab: TabId; onChange: (id: TabId
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
     >
       <nav
-        className="relative flex w-full max-w-lg gap-0.5 rounded-2xl border border-slate-100 bg-white/95 p-1.5 shadow-[0_12px_32px_-8px_rgba(15,23,42,0.18)] backdrop-blur"
+        className="relative flex w-full max-w-lg gap-0.5 rounded-2xl border border-slate-100 bg-white p-1.5 shadow-[0_12px_32px_-8px_rgba(15,23,42,0.18)]"
         aria-label="Trip sections"
       >
-        {/* One pill that slides between slots, instead of each tab drawing
-            its own — the motion is what sells "native app", not the pill
-            itself. */}
+        {/* The capsule wraps icon *and* label as one solid piece and slides
+            between slots — a highlight that only ever tinted the icon left
+            the label looking like a separate, disconnected element. */}
         <div
-          className="pointer-events-none absolute top-1.5 h-8 transition-[left] duration-300 ease-out"
+          className="pointer-events-none absolute inset-y-1.5 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-lg shadow-brand-500/35 transition-[left] duration-300 ease-out"
           style={{ left: `calc(${activeIndex} * (100% / 6))`, width: `calc(100% / 6)` }}
-        >
-          <div className="mx-auto h-8 w-11 rounded-full bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/30" />
-        </div>
+        />
 
         {TABS.map((t) => {
           const active = tab === t.id;
@@ -97,15 +95,15 @@ export function TripTabBar({ tab, onChange }: { tab: TabId; onChange: (id: TabId
               className="relative z-10 flex flex-1 flex-col items-center gap-1 rounded-xl py-2.5 transition-transform active:scale-95"
             >
               <span
-                className={`flex h-8 w-11 items-center justify-center transition-colors duration-200 ${
-                  active ? 'text-white' : 'text-slate-400'
+                className={`flex h-6 w-6 items-center justify-center transition-colors duration-200 ${
+                  active ? 'text-white' : 'text-slate-600'
                 }`}
               >
                 <Icon path={t.path} active={active} />
               </span>
               <span
                 className={`text-[10px] leading-tight transition-colors duration-200 ${
-                  active ? 'font-semibold text-brand-700' : 'font-medium text-slate-400'
+                  active ? 'font-semibold text-white' : 'font-semibold text-slate-600'
                 }`}
               >
                 {t.label}
