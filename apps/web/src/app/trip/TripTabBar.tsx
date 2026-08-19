@@ -64,37 +64,47 @@ const TABS: { id: TabId; label: string; path: string }[] = [
 
 export function TripTabBar({ tab, onChange }: { tab: TabId; onChange: (id: TabId) => void }) {
   return (
-    <nav
-      // The padding rides on env(safe-area-inset-bottom) so the labels clear
-      // the iPhone home indicator instead of sitting under it.
-      className="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-lg rounded-t-2xl border-t border-slate-200/80 bg-white/95 shadow-[0_-8px_24px_-8px_rgba(15,23,42,0.12)] backdrop-blur"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      aria-label="Trip sections"
+    // Floats clear of the screen edge like a native tab bar card, rather than
+    // sitting flush — the shadow reads as "above" the content instead of
+    // "stuck to the glass". The safe-area inset rides in the wrapper's own
+    // bottom offset so the card itself stays a clean floating rectangle.
+    <div
+      className="fixed inset-x-0 bottom-0 z-20 flex justify-center px-3"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
     >
-      {TABS.map((t) => {
-        const active = tab === t.id;
-        return (
-          <button
-            key={t.id}
-            onClick={() => onChange(t.id)}
-            aria-current={active ? 'page' : undefined}
-            className={`group relative flex flex-1 flex-col items-center gap-1 py-2 transition-colors ${
-              active ? 'text-brand-700' : 'text-slate-400 active:text-slate-500'
-            }`}
-          >
-            <span
-              className={`flex h-8 w-11 items-center justify-center rounded-full transition-all duration-200 ${
-                active ? 'scale-100 bg-brand-50' : 'scale-90 bg-transparent group-active:scale-100 group-active:bg-slate-100'
-              }`}
+      <nav
+        className="flex w-full max-w-lg gap-0.5 rounded-2xl border border-slate-100 bg-white/95 p-1.5 shadow-[0_12px_32px_-8px_rgba(15,23,42,0.18)] backdrop-blur"
+        aria-label="Trip sections"
+      >
+        {TABS.map((t) => {
+          const active = tab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => onChange(t.id)}
+              aria-current={active ? 'page' : undefined}
+              className="group relative flex flex-1 flex-col items-center gap-1 rounded-xl py-2 transition-colors"
             >
-              <Icon path={t.path} active={active} />
-            </span>
-            <span className={`text-[10px] leading-tight ${active ? 'font-semibold' : 'font-medium'}`}>
-              {t.label}
-            </span>
-          </button>
-        );
-      })}
-    </nav>
+              <span
+                className={`flex h-8 w-11 items-center justify-center rounded-full transition-all duration-200 ${
+                  active
+                    ? 'scale-100 bg-gradient-to-br from-brand-600 to-brand-500 text-white shadow-md shadow-brand-500/30'
+                    : 'scale-90 bg-transparent text-slate-400 group-active:scale-100 group-active:bg-slate-100'
+                }`}
+              >
+                <Icon path={t.path} active={active} />
+              </span>
+              <span
+                className={`text-[10px] leading-tight ${
+                  active ? 'font-semibold text-brand-700' : 'font-medium text-slate-400'
+                }`}
+              >
+                {t.label}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+    </div>
   );
 }
