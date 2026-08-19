@@ -861,9 +861,8 @@ model ItineraryNote {
 }
 
 // --- Standalone Itinerary module ("ItineraryPlan*") ---------------------
-// Distinct from `Itinerary` above (which is nested 1:1 under a Quotation)
-// and from `DayItinerary` (a flat content-library master). This is a
-// standalone, optionally lead-linked itinerary with 8 event types,
+// Distinct from `Itinerary` above (which is nested 1:1 under a Quotation).
+// This is a standalone, optionally lead-linked itinerary with 8 event types,
 // multiple priced accommodation options, package terms, an image
 // gallery, and a public shareable client report.
 
@@ -1585,15 +1584,6 @@ model RoomType {
 model MealPlan {
   id        String   @id @default(uuid())
   name      String
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model DayItinerary {
-  id        String   @id @default(uuid())
-  title     String
-  detail    String
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

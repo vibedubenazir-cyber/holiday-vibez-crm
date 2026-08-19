@@ -223,13 +223,6 @@ export interface MealPlanDTO {
   active: boolean;
 }
 
-export interface DayItineraryDTO {
-  id: string;
-  title: string;
-  detail: string;
-  active: boolean;
-}
-
 export interface PackageItemDTO {
   id: string;
   rateCardId: string;
@@ -1117,10 +1110,10 @@ export interface ItineraryDTO {
 }
 
 // --- Standalone Itinerary module (ItineraryPlan*) ---------------------
-// Distinct from ItineraryDTO above (quotation-nested) and DayItineraryDTO
-// (flat content-library master). A standalone, optionally lead-linked
-// itinerary with 8 event types, multiple priced accommodation options,
-// package terms, an image gallery, and a public shareable client report.
+// Distinct from ItineraryDTO above (quotation-nested). A standalone,
+// optionally lead-linked itinerary with 8 event types, multiple priced
+// accommodation options, package terms, an image gallery, and a public
+// shareable client report.
 
 export interface ItineraryAddOnDTO {
   name: string;

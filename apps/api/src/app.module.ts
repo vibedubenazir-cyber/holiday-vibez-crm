@@ -41,7 +41,6 @@ import { ClientsModule } from './clients/clients.module';
 import { HotelsModule } from './hotels/hotels.module';
 import { RoomTypesModule } from './room-types/room-types.module';
 import { MealPlansModule } from './meal-plans/meal-plans.module';
-import { DayItinerariesModule } from './day-itineraries/day-itineraries.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { InsuranceModule } from './insurance/insurance.module';
@@ -115,7 +114,6 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     HotelsModule,
     RoomTypesModule,
     MealPlansModule,
-    DayItinerariesModule,
     ReviewsModule,
     FeedbackModule,
     InsuranceModule,

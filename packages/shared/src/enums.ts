@@ -332,7 +332,7 @@ export enum ItineraryNoteType {
 }
 
 // Standalone "Itinerary" module (ItineraryPlan*) — distinct from the
-// quotation-nested Itinerary/ItineraryNoteType above and from DayItinerary.
+// quotation-nested Itinerary/ItineraryNoteType above.
 export enum ItineraryPlanStatus {
   DRAFT = 'DRAFT',
   READY_TO_SHARE = 'READY_TO_SHARE',

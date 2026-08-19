@@ -48,7 +48,6 @@ export const MODULES: ModuleDef[] = [
           { href: '/packages', label: 'Packages', roles: ALL_ROLES },
           { href: '/calendar', label: 'Departure Calendar', roles: ALL_ROLES },
           { href: '/hotel-masters', label: 'Hotel Masters', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT] },
-          { href: '/day-itineraries', label: 'Day Itinerary', roles: [Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER] },
           { href: '/itineraries', label: 'Itineraries', roles: ALL_ROLES },
           { href: '/support', label: 'Support Tickets', roles: ALL_ROLES },
           { href: '/team-chat', label: 'Team Chat', roles: ALL_ROLES },
