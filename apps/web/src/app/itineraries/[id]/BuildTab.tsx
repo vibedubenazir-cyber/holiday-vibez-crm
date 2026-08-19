@@ -253,20 +253,22 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
             <div key={day.id} id={`day-${day.id}`} className="rounded-xl border border-slate-200 bg-white dark:bg-slate-800 p-4">
               <div className="mb-3 flex items-center justify-between">
                 {editingDayId === day.id ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-4 py-1">
                     <h3 className="font-semibold text-slate-800 dark:text-slate-100">Day {day.dayNumber}</h3>
                     <input
                       type="date"
                       value={editDayDate}
                       onChange={(e) => setEditDayDate(e.target.value)}
-                      className="rounded-lg border border-slate-300 px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-900"
+                      className="min-w-[9.5rem] rounded-lg border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-900"
                     />
-                    <button onClick={() => handleSaveDayDate(day.id)} className="text-xs font-medium text-brand hover:underline">
-                      Save
-                    </button>
-                    <button onClick={() => setEditingDayId(null)} className="text-xs text-slate-400 hover:text-slate-600">
-                      Cancel
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button onClick={() => handleSaveDayDate(day.id)} className="text-xs font-medium text-brand hover:underline">
+                        Save
+                      </button>
+                      <button onClick={() => setEditingDayId(null)} className="text-xs text-slate-400 hover:text-slate-600">
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <h3 className="font-semibold text-slate-800 dark:text-slate-100">
