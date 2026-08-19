@@ -27,6 +27,17 @@ export function isFlightApiConfigured(): boolean {
   return Boolean(process.env.FLIGHT_API_KEY);
 }
 
+function localDateInTimezone(date: Date, timezone: string): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
 interface AviationstackFlight {
   flight_status?: string;
   departure?: {
@@ -64,6 +75,12 @@ function mapStatus(raw: string | undefined, delayMinutes: number | null | undefi
 export async function fetchLiveFlightStatus(
   flightNumber: string,
   scheduledDeparture: Date | null,
+  // Departure-airport IANA timezone, when known (from the linked itinerary
+  // event's plan). aviationstack keys flight_date to the local departure
+  // day — for a flight near midnight local time, the UTC calendar date can
+  // be the wrong day, so prefer the local date whenever we have a timezone
+  // to compute it from, falling back to the UTC date otherwise.
+  timezone?: string | null,
 ): Promise<LiveFlightStatus | null> {
   if (!isFlightApiConfigured()) return null;
 
@@ -73,7 +90,9 @@ export async function fetchLiveFlightStatus(
     // aviationstack wants the IATA designator without spaces: "TG 318" → "TG318".
     flight_iata: flightNumber.replace(/\s+/g, ''),
   });
-  if (scheduledDeparture) params.set('flight_date', scheduledDeparture.toISOString().slice(0, 10));
+  if (scheduledDeparture) {
+    params.set('flight_date', timezone ? localDateInTimezone(scheduledDeparture, timezone) : scheduledDeparture.toISOString().slice(0, 10));
+  }
 
   try {
     const res = await fetch(`${base}/flights?${params}`);

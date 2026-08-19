@@ -83,14 +83,17 @@ export function FlightsSection({ bookingId }: { bookingId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId]);
 
-  async function run(action: () => Promise<unknown>, fallback: string) {
+  /** Returns whether `action` succeeded, so callers only clear form state on success. */
+  async function run(action: () => Promise<unknown>, fallback: string): Promise<boolean> {
     setBusy(true);
     setError(null);
     try {
       await action();
       await load();
+      return true;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : fallback);
+      return false;
     } finally {
       setBusy(false);
     }
@@ -218,7 +221,12 @@ export function FlightsSection({ bookingId }: { bookingId: string }) {
                             notifyTraveller: edit.notifyTraveller || undefined,
                           }),
                         'Update failed',
-                      ).then(() => setEditingId(null))
+                      ).then((ok) => {
+                        // Only close on success, and only if this flight's panel is still
+                        // the one open — a slow save for flight A must not close flight B's
+                        // in-progress edit if staff switched to it while A was saving.
+                        if (ok) setEditingId((current) => (current === f.id ? null : current));
+                      })
                     }
                     disabled={busy}
                     className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-4 py-2 text-sm font-medium text-white shadow-md shadow-brand-500/25 hover:opacity-90 disabled:opacity-50"
@@ -270,7 +278,9 @@ export function FlightsSection({ bookingId }: { bookingId: string }) {
                   gate: addForm.gate || undefined,
                 }),
               'Could not add flight',
-            ).then(() => setAddForm(EMPTY_ADD))
+            ).then((ok) => {
+              if (ok) setAddForm(EMPTY_ADD);
+            })
           }
           disabled={busy || !addForm.flightNumber.trim()}
           className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-4 py-2 text-sm font-medium text-white shadow-md shadow-brand-500/25 hover:opacity-90 disabled:opacity-50"

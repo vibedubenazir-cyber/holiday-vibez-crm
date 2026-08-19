@@ -110,6 +110,18 @@ function mapsDirectionsUrl(query: string): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
 }
 
+/**
+ * Staff enter "No <consulate/embassy>... — see Tourist Police" as freeform
+ * text for destinations without one. A bare `includes('no ')` also matches
+ * real addresses like "No 5, Sathorn Road" (a common building-number
+ * prefix), hiding the directions link for a perfectly usable address.
+ * Requiring the word after "No" to not start with a digit distinguishes the
+ * placeholder sentence from a numbered street address.
+ */
+function looksLikeUnavailableAddress(address: string): boolean {
+  return /^no\.?\s+(?!\d)/i.test(address.trim());
+}
+
 function MapPinGlyph({ className }: { className?: string }) {
   return (
     <svg
@@ -855,7 +867,7 @@ export function EssentialsTab({ trip }: { trip: Trip }) {
               {g.embassyAddress && (
                 <p className="text-xs text-slate-500">
                   {g.embassyAddress}
-                  {!g.embassyAddress.toLowerCase().includes('no ') && (
+                  {!looksLikeUnavailableAddress(g.embassyAddress) && (
                     <> · <DirectionsLink query={[g.embassyName ?? 'Embassy', g.embassyAddress].join(', ')} /></>
                   )}
                 </p>

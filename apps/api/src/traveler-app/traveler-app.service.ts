@@ -91,7 +91,7 @@ export class TravelerAppService {
     // relatedEntity ends with that recipient. Keep one row per milestone,
     // preferring the copy addressed to whoever is signed in — falling back to
     // the newest row when none matches (lead-contact fallback sends).
-    const countdownByMilestone = new Map<string, (typeof rawUpdates)[number]>();
+    const countdownByMilestone = new Map<string, (typeof rawUpdates)[number] & { addressedToMe?: boolean }>();
     const otherRows: typeof rawUpdates = [];
     for (const row of rawUpdates) {
       const entity = row.relatedEntity ?? '';
@@ -102,8 +102,13 @@ export class TravelerAppService {
       const milestone = entity.slice(0, entity.lastIndexOf(':'));
       const to = entity.slice(entity.lastIndexOf(':') + 1);
       const addressedToMe = traveler != null && (to === traveler.phone || to === traveler.email);
-      if (!countdownByMilestone.has(milestone) || addressedToMe) {
-        countdownByMilestone.set(milestone, row);
+      const existing = countdownByMilestone.get(milestone);
+      if (!existing || addressedToMe) {
+        // No row is addressed to a traveller with neither phone nor email on
+        // file (e.g. a companion added without contact details) — the best
+        // available fallback is still another traveller's row, so genericise
+        // its "Hi, <name>!" greeting rather than showing someone else's name.
+        countdownByMilestone.set(milestone, { ...row, addressedToMe });
       }
     }
     const feedRows = [...countdownByMilestone.values(), ...otherRows].sort(
@@ -113,7 +118,7 @@ export class TravelerAppService {
     const appLink = /https?:\/\/\S*\/trip\b/;
     const seenUpdates = new Set<string>();
     const updates: { id: string; triggerType: string; body: string; createdAt: Date }[] = [];
-    for (const row of feedRows) {
+    for (const row of feedRows as ((typeof rawUpdates)[number] & { addressedToMe?: boolean })[]) {
       let body = (row.body ?? '')
         .split('\n')
         .filter((line) => !appLink.test(line))
@@ -126,6 +131,12 @@ export class TravelerAppService {
           .trim();
       }
       if (!body) continue;
+      // Fallback countdown row addressed to a different traveller on the same
+      // booking (see countdownByMilestone above) — strip their name so it
+      // never appears on a companion's screen.
+      if (row.addressedToMe === false) {
+        body = body.replace(/^Hi,\s*[^!\n]+!/, 'Hi!');
+      }
       const key = `${row.triggerType}|${body}`;
       if (seenUpdates.has(key)) continue;
       seenUpdates.add(key);

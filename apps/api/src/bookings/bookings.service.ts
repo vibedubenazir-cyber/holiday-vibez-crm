@@ -6,6 +6,25 @@ import { CreateBookingDto } from './dto/booking.dto';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+/**
+ * Renders an instant as "YYYY-MM-DD HH:mm <tz>" in the given IANA timezone —
+ * the destination's wall-clock time, matching what the traveller sees on
+ * FlightStatusCard and their boarding pass, not the raw UTC instant.
+ */
+function stampInTimezone(date: Date, timezone: string): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')} ${timezone}`;
+}
+
 // PENDING -> CONFIRMED -> COMPLETED is the normal lifecycle; either open state
 // can be CANCELLED. CANCELLED and COMPLETED are terminal — moving a booking
 // backward out of either (e.g. CANCELLED -> CONFIRMED) previously had no
@@ -190,16 +209,25 @@ export class BookingsService {
       const destination = lead.destination || 'your destination';
       const url = `${process.env.WEB_ORIGIN}/trip`;
 
-      // The day-before message names their flight when we know it.
+      // The day-before message names their flight when we know it, in the
+      // destination's wall-clock time — the same time the traveller sees on
+      // FlightStatusCard, not the raw UTC instant the flight is stored in.
       const firstFlight = booking.flights.find((f) => f.status !== 'CANCELLED');
-      const flightLine =
-        daysUntil === 1 && firstFlight
-          ? `\n\nFlight ${firstFlight.flightNumber}${
-              firstFlight.scheduledDeparture
-                ? ` departs ${new Date(firstFlight.scheduledDeparture).toISOString().replace('T', ' ').slice(0, 16)} UTC`
-                : ''
-            } — we'll message you if anything changes.`
-          : '';
+      let flightLine = '';
+      if (daysUntil === 1 && firstFlight) {
+        let when = '';
+        if (firstFlight.scheduledDeparture) {
+          const plan = await this.prisma.itineraryPlan.findFirst({
+            where: { leadId: lead.id, timezone: { not: null } },
+            orderBy: { updatedAt: 'desc' },
+            select: { timezone: true },
+          });
+          when = plan?.timezone
+            ? ` departs ${stampInTimezone(new Date(firstFlight.scheduledDeparture), plan.timezone)}`
+            : ` departs ${new Date(firstFlight.scheduledDeparture).toISOString().replace('T', ' ').slice(0, 16)} UTC`;
+        }
+        flightLine = `\n\nFlight ${firstFlight.flightNumber}${when} — we'll message you if anything changes.`;
+      }
 
       // Every traveller, both channels — same recipient logic as the app
       // invite, falling back to the lead contact only when no traveller has

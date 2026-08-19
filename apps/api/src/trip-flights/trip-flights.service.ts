@@ -80,9 +80,20 @@ export class TripFlightsService {
     if (!before) throw new NotFoundException('Flight not found');
     await this.loadBooking(before.bookingId, actor);
 
-    const live = await fetchLiveFlightStatus(before.flightNumber, before.scheduledDeparture);
+    const timezone = await this.resolveTimezone(before.eventId);
+    const live = await fetchLiveFlightStatus(before.flightNumber, before.scheduledDeparture, timezone);
     if (!live) return before;
     return this.persist(before, this.livePatch(live));
+  }
+
+  /** The departure airport's IANA timezone, via the linked itinerary event's plan — null if unlinked. */
+  private async resolveTimezone(eventId: string | null): Promise<string | null> {
+    if (!eventId) return null;
+    const event = await this.prisma.itineraryPlanEvent.findUnique({
+      where: { id: eventId },
+      select: { day: { select: { itineraryPlan: { select: { timezone: true } } } } },
+    });
+    return event?.day.itineraryPlan.timezone ?? null;
   }
 
   /**
@@ -106,9 +117,19 @@ export class TripFlightsService {
       orderBy: { scheduledDeparture: 'asc' },
     });
 
+    const eventIds = [...new Set(candidates.map((f) => f.eventId).filter((id): id is string => id != null))];
+    const events = eventIds.length
+      ? await this.prisma.itineraryPlanEvent.findMany({
+          where: { id: { in: eventIds } },
+          select: { id: true, day: { select: { itineraryPlan: { select: { timezone: true } } } } },
+        })
+      : [];
+    const timezoneByEventId = new Map(events.map((e) => [e.id, e.day.itineraryPlan.timezone]));
+
     let updated = 0;
     for (const flight of candidates) {
-      const live = await fetchLiveFlightStatus(flight.flightNumber, flight.scheduledDeparture);
+      const timezone = flight.eventId ? (timezoneByEventId.get(flight.eventId) ?? null) : null;
+      const live = await fetchLiveFlightStatus(flight.flightNumber, flight.scheduledDeparture, timezone);
       if (!live) continue;
       const after = await this.persist(flight, this.livePatch(live));
       if (this.travellerVisibleChange(flight, after)) updated++;
@@ -116,11 +137,21 @@ export class TripFlightsService {
     return { polled: candidates.length, updated };
   }
 
-  /** Only patch the fields the feed actually reported — never blank a column. */
+  /**
+   * Only patch the fields the feed actually reported — never blank a column
+   * the feed is silent on. The one exception: if the flight recovers to a
+   * non-delayed status, a `revisedDeparture` left over from an earlier delay
+   * would contradict the new status ("is on time. New departure: ..."), so
+   * clear it whenever the feed reports a status but no revised time.
+   */
   private livePatch(live: LiveFlightStatus) {
     return {
       ...(live.status ? { status: live.status } : {}),
-      ...(live.revisedDeparture ? { revisedDeparture: live.revisedDeparture } : {}),
+      ...(live.revisedDeparture
+        ? { revisedDeparture: live.revisedDeparture }
+        : live.status && live.status !== 'DELAYED'
+          ? { revisedDeparture: null }
+          : {}),
       ...(live.terminal ? { terminal: live.terminal } : {}),
       ...(live.gate ? { gate: live.gate } : {}),
       ...(live.baggageBelt ? { baggageBelt: live.baggageBelt } : {}),
