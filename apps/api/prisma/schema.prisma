@@ -541,6 +541,10 @@ model Lead {
   assignedConsultantId String?
   assignedConsultant   User?           @relation("AssignedConsultant", fields: [assignedConsultantId], references: [id])
   status               LeadStatus      @default(NEW)
+  // Short free-text reason tied to the *current* status (e.g. "Follow Up:
+  // Number Busy") — distinct from LeadNote's append-only activity log; this
+  // is a single mutable field that gets overwritten on every status change.
+  statusNote           String?
   temperature          LeadTemperature @default(WARM)
   firstContactedAt     DateTime?
   slaBreached          Boolean         @default(false)

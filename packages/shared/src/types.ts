@@ -75,10 +75,13 @@ export interface LeadSummaryDTO {
   email: string | null;
   destination: string;
   status: LeadStatus;
+  statusNote: string | null;
   temperature: LeadTemperature;
   source: LeadSource;
   branchId: string;
   assignedConsultantId: string | null;
+  assignedConsultantName: string | null;
+  packageLabel: string | null;
   slaBreached: boolean;
   createdAt: string;
   travelDate: string | null;
@@ -1542,6 +1545,12 @@ export interface AppraisalDTO {
   submittedAt: string | null;
   completedAt: string | null;
   goals: AppraisalGoalDTO[];
+}
+
+export interface ConsultantOptionDTO {
+  id: string;
+  name: string;
+  branchId: string | null;
 }
 
 export interface LeadNoteDTO {

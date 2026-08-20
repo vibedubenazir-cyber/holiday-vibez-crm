@@ -95,6 +95,12 @@ export class UpdateLeadDto extends TravelRequirementFields {
   @IsOptional()
   @IsString()
   destination?: string;
+
+  // Short reason tied to the current status (e.g. "Follow Up: Number
+  // Busy"). null clears it back to no reason.
+  @IsOptional()
+  @IsString()
+  statusNote?: string | null;
 }
 
 // Used by the public website lead-capture endpoint (Section 10) — branch is

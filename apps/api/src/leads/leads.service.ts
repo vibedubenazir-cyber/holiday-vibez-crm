@@ -40,13 +40,41 @@ export class LeadsService {
     private readonly notifications: NotificationsService,
   ) {}
 
-  findAll(filter: { branchId?: string; consultantId?: string }) {
-    return this.prisma.lead.findMany({
+  async findAll(filter: { branchId?: string; consultantId?: string }) {
+    const leads = await this.prisma.lead.findMany({
       where: {
         branchId: filter.branchId,
         assignedConsultantId: filter.consultantId,
       },
       orderBy: { createdAt: 'desc' },
+      include: {
+        assignedConsultant: { select: { name: true } },
+        itineraryPlans: { select: { title: true }, take: 1, orderBy: { createdAt: 'desc' } },
+      },
+    });
+    return leads.map((l) => this.mapLeadSummary(l));
+  }
+
+  // Flattens the assignedConsultant/itineraryPlans relations the leads list
+  // page needs (consultant name for the Assign column, the most recent
+  // itinerary's title as a "Package" label) onto the lead row itself.
+  private mapLeadSummary<T extends { assignedConsultant: { name: string } | null; itineraryPlans: { title: string }[] }>(lead: T) {
+    const { assignedConsultant, itineraryPlans, ...rest } = lead;
+    return { ...rest, assignedConsultantName: assignedConsultant?.name ?? null, packageLabel: itineraryPlans[0]?.title ?? null };
+  }
+
+  // --- Consultants (for the leads list's inline Assign dropdown) -----------
+  // Scoped to exactly who can call assign()/reassign(): Admin sees every
+  // active consultant, Branch Manager only their own branch's.
+  listConsultants(actor: Actor) {
+    return this.prisma.user.findMany({
+      where: {
+        role: Role.TRAVEL_CONSULTANT,
+        status: 'ACTIVE',
+        branchId: actor.role === Role.BRANCH_MANAGER ? (actor.branchId ?? '__none__') : undefined,
+      },
+      select: { id: true, name: true, branchId: true },
+      orderBy: { name: 'asc' },
     });
   }
 

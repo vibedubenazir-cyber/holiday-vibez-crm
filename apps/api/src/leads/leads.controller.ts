@@ -37,6 +37,15 @@ export class LeadsController {
     return this.leadsService.findUnassigned();
   }
 
+  // Active consultants available for the leads list's inline Assign dropdown
+  // — scoped the same way assign()/reassign() are, so a name shown here is
+  // always a valid target.
+  @Roles(Role.ADMIN, Role.BRANCH_MANAGER)
+  @Get('consultants')
+  listConsultants(@CurrentUser() user: { id: string; role: Role; branchId: string | null }) {
+    return this.leadsService.listConsultants(user);
+  }
+
   @Roles(Role.ADMIN, Role.BRANCH_MANAGER)
   @Post()
   create(@Body() dto: CreateLeadDto, @CurrentUser() user: { id: string; role: Role; branchId: string | null }) {
