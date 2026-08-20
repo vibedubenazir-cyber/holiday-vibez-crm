@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Copy, Pencil } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
 import { Modal } from '@/components/Modal';
 import { api, ApiError } from '@/lib/api';
@@ -286,16 +287,19 @@ export default function ItinerariesPage() {
                   <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                     <button
                       onClick={() => handleDuplicate(item.id)}
-                      title="Duplicate this itinerary"
-                      className="rounded-lg border border-brand-200 bg-white px-2.5 py-1 text-xs font-semibold text-brand transition hover:bg-brand-50"
+                      title="Copy"
+                      aria-label="Copy this itinerary"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                     >
-                      Copy
+                      <Copy className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => router.push(`/itineraries/${item.id}`)}
-                      className="rounded-lg bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand transition hover:bg-brand-100"
+                      title="Edit"
+                      aria-label="Edit this itinerary"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 transition hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:hover:bg-emerald-900/70"
                     >
-                      Edit
+                      <Pencil className="h-4 w-4" />
                     </button>
                   </div>
                 </td>
