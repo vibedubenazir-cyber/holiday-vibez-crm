@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { PencilLine } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { uploadFile } from '@/lib/upload';
 import { FormattedTextArea } from '@/components/FormattedTextArea';
@@ -346,28 +347,32 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
         </div>
 
         <div id="package-terms" className="mt-8 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 p-4">
-          <h3 className="mb-3 font-semibold text-slate-800 dark:text-slate-100">Package Terms</h3>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100">Package Terms</h3>
+          <p className="mb-4 mt-0.5 text-xs text-slate-400">
+            Shown at the end of the client report and PDF. Click a heading to rename it.
+          </p>
+          <div className="space-y-6">
             {TERMS_FIELDS.map(([key, label]) => (
               <div key={key}>
-                <input
-                  value={termsTitles[key]}
-                  onChange={(e) => setTermsTitles((prev) => ({ ...prev, [key]: e.target.value }))}
-                  placeholder={label}
-                  title="Section heading — shown to the client on the report and PDF"
-                  className="w-full rounded-lg border border-transparent bg-transparent px-1 py-0.5 text-xs font-semibold text-slate-500 hover:border-slate-200 focus:border-brand-300 focus:bg-white focus:outline-none dark:hover:border-slate-600 dark:focus:bg-slate-900"
-                />
-                <div className="mt-1">
-                  <RichTextEditor
-                    value={terms[key]}
-                    onChange={(v) => setTerms((prev) => ({ ...prev, [key]: v }))}
-                    placeholder="Add terms…"
+                <div className="group mb-1.5 flex items-center gap-1.5">
+                  <input
+                    value={termsTitles[key]}
+                    onChange={(e) => setTermsTitles((prev) => ({ ...prev, [key]: e.target.value }))}
+                    placeholder={label}
+                    title="Section heading — shown to the client on the report and PDF"
+                    className="w-full max-w-sm rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-slate-700 transition group-hover:border-slate-200 focus:border-brand-300 focus:bg-white focus:outline-none dark:text-slate-200 dark:group-hover:border-slate-600 dark:focus:bg-slate-900"
                   />
+                  <PencilLine className="h-3.5 w-3.5 shrink-0 text-slate-300 transition group-hover:text-slate-400 dark:text-slate-600" />
                 </div>
+                <RichTextEditor
+                  value={terms[key]}
+                  onChange={(v) => setTerms((prev) => ({ ...prev, [key]: v }))}
+                  placeholder="Add terms…"
+                />
               </div>
             ))}
           </div>
-          <button onClick={handleSaveTerms} disabled={savingTerms} className="mt-3 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60">
+          <button onClick={handleSaveTerms} disabled={savingTerms} className="mt-4 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60">
             {savingTerms ? 'Saving…' : 'Save Package Terms'}
           </button>
         </div>

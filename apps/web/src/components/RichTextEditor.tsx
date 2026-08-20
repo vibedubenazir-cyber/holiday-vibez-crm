@@ -8,6 +8,20 @@ import TextAlign from '@tiptap/extension-text-align';
 import Link from '@tiptap/extension-link';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
+import {
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Undo2,
+  Redo2,
+  ListOrdered,
+  List,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Link2,
+  Code,
+} from 'lucide-react';
 
 const COLORS = ['#0f172a', '#005aaa', '#dc2626', '#16a34a', '#ca8a04'];
 
@@ -28,13 +42,17 @@ function ToolbarButton({
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       title={title}
-      className={`rounded px-2 py-1 text-xs hover:bg-slate-100 dark:hover:bg-slate-700 ${
-        active ? 'bg-slate-200 dark:bg-slate-600' : ''
+      className={`flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700 ${
+        active ? 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-white' : ''
       }`}
     >
       {children}
     </button>
   );
+}
+
+function ToolbarDivider() {
+  return <span className="mx-1 h-4 w-px bg-slate-300 dark:bg-slate-600" />;
 }
 
 /**
@@ -72,7 +90,7 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          'prose prose-sm max-w-none min-h-[140px] rounded-b-lg border border-t-0 border-slate-300 px-3 py-2 text-sm focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:prose-invert',
+          'prose prose-sm max-w-none min-h-[120px] rounded-b-lg border border-t-0 border-slate-300 px-3 py-2 text-sm focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:prose-invert',
       },
     },
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -100,88 +118,92 @@ export function RichTextEditor({
     editor!.chain().focus().setLink({ href: url }).run();
   }
 
+  const iconClass = 'h-3.5 w-3.5';
+
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-0.5 rounded-t-lg border border-slate-300 bg-slate-50 p-1 dark:border-slate-600 dark:bg-slate-800">
+      <div className="flex flex-wrap items-center gap-0.5 rounded-t-lg border border-slate-300 bg-slate-50 px-1.5 py-1 dark:border-slate-600 dark:bg-slate-800">
         <ToolbarButton title="Bold" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>
-          <span className="font-bold">B</span>
+          <Bold className={iconClass} />
         </ToolbarButton>
         <ToolbarButton title="Italic" active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}>
-          <span className="italic">I</span>
+          <Italic className={iconClass} />
         </ToolbarButton>
         <ToolbarButton title="Underline" active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}>
-          <span className="underline">U</span>
+          <UnderlineIcon className={iconClass} />
         </ToolbarButton>
-        <span className="mx-1 h-4 w-px bg-slate-300 dark:bg-slate-600" />
-        <ToolbarButton title="Undo" onClick={() => editor.chain().focus().undo().run()}>
-          ↺
-        </ToolbarButton>
-        <ToolbarButton title="Redo" onClick={() => editor.chain().focus().redo().run()}>
-          ↻
-        </ToolbarButton>
-        <span className="mx-1 h-4 w-px bg-slate-300 dark:bg-slate-600" />
+        <ToolbarDivider />
         <ToolbarButton
           title="Numbered list"
           active={editor.isActive('orderedList')}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
         >
-          1.
+          <ListOrdered className={iconClass} />
         </ToolbarButton>
         <ToolbarButton
           title="Bullet list"
           active={editor.isActive('bulletList')}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
         >
-          •
+          <List className={iconClass} />
         </ToolbarButton>
-        <span className="mx-1 h-4 w-px bg-slate-300 dark:bg-slate-600" />
+        <ToolbarDivider />
         <ToolbarButton
           title="Align left"
           active={editor.isActive({ textAlign: 'left' })}
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
         >
-          ≡
+          <AlignLeft className={iconClass} />
         </ToolbarButton>
         <ToolbarButton
           title="Align center"
           active={editor.isActive({ textAlign: 'center' })}
           onClick={() => editor.chain().focus().setTextAlign('center').run()}
         >
-          ☰
+          <AlignCenter className={iconClass} />
         </ToolbarButton>
         <ToolbarButton
           title="Align right"
           active={editor.isActive({ textAlign: 'right' })}
           onClick={() => editor.chain().focus().setTextAlign('right').run()}
         >
-          ≡
+          <AlignRight className={iconClass} />
         </ToolbarButton>
-        <span className="mx-1 h-4 w-px bg-slate-300 dark:bg-slate-600" />
+        <ToolbarDivider />
         <ToolbarButton title="Link" active={editor.isActive('link')} onClick={setLink}>
-          🔗
+          <Link2 className={iconClass} />
         </ToolbarButton>
-        {COLORS.map((c) => (
-          <button
-            key={c}
-            type="button"
-            title={c}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => editor.chain().focus().setColor(c).run()}
-            className="h-4 w-4 rounded-full border border-slate-300"
-            style={{ backgroundColor: c }}
-          />
-        ))}
+        <ToolbarDivider />
+        <div className="flex items-center gap-1 px-1">
+          {COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              title={`Text colour ${c}`}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => editor.chain().focus().setColor(c).run()}
+              className="h-3.5 w-3.5 rounded-full ring-1 ring-inset ring-black/10 transition hover:scale-125"
+              style={{ backgroundColor: c }}
+            />
+          ))}
+        </div>
+        <ToolbarButton title="Undo" onClick={() => editor.chain().focus().undo().run()}>
+          <Undo2 className={iconClass} />
+        </ToolbarButton>
+        <ToolbarButton title="Redo" onClick={() => editor.chain().focus().redo().run()}>
+          <Redo2 className={iconClass} />
+        </ToolbarButton>
         <span className="ml-auto" />
         <ToolbarButton title="View/edit raw HTML" active={showSource} onClick={toggleSource}>
-          {'</>'}
+          <Code className={iconClass} />
         </ToolbarButton>
       </div>
       {showSource ? (
         <textarea
           value={sourceDraft}
           onChange={(e) => setSourceDraft(e.target.value)}
-          rows={7}
-          className="min-h-[140px] w-full rounded-b-lg border border-t-0 border-slate-300 px-3 py-2 font-mono text-xs dark:border-slate-600 dark:bg-slate-900"
+          rows={6}
+          className="min-h-[120px] w-full rounded-b-lg border border-t-0 border-slate-300 px-3 py-2 font-mono text-xs dark:border-slate-600 dark:bg-slate-900"
         />
       ) : (
         <EditorContent editor={editor} placeholder={placeholder} />
