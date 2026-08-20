@@ -59,6 +59,10 @@ interface PdfPackageTerms {
   pricingAndInclusions?: string | null;
   cancellationsAndRefunds?: string | null;
   liability?: string | null;
+  bookingAndPaymentTitle?: string | null;
+  pricingAndInclusionsTitle?: string | null;
+  cancellationsAndRefundsTitle?: string | null;
+  liabilityTitle?: string | null;
 }
 
 export interface ItineraryPdfInput {
@@ -396,10 +400,10 @@ export async function streamItineraryPdf(res: Response, plan: ItineraryPdfInput)
   // Package terms
   if (plan.packageTerms) {
     const sections: [string, string | null | undefined][] = [
-      ['Booking and Payment', plan.packageTerms.bookingAndPayment],
-      ['Pricing and Inclusions', plan.packageTerms.pricingAndInclusions],
-      ['Cancellations and Refunds', plan.packageTerms.cancellationsAndRefunds],
-      ['Liability', plan.packageTerms.liability],
+      [plan.packageTerms.bookingAndPaymentTitle ?? 'Booking and Payment', plan.packageTerms.bookingAndPayment],
+      [plan.packageTerms.pricingAndInclusionsTitle ?? 'Pricing and Inclusions', plan.packageTerms.pricingAndInclusions],
+      [plan.packageTerms.cancellationsAndRefundsTitle ?? 'Cancellations and Refunds', plan.packageTerms.cancellationsAndRefunds],
+      [plan.packageTerms.liabilityTitle ?? 'Liability', plan.packageTerms.liability],
     ];
     for (const [heading, body] of sections) {
       if (!body) continue;

@@ -354,6 +354,10 @@ export class ItinerariesService {
                   pricingAndInclusions: original.packageTerms.pricingAndInclusions,
                   cancellationsAndRefunds: original.packageTerms.cancellationsAndRefunds,
                   liability: original.packageTerms.liability,
+                  bookingAndPaymentTitle: original.packageTerms.bookingAndPaymentTitle,
+                  pricingAndInclusionsTitle: original.packageTerms.pricingAndInclusionsTitle,
+                  cancellationsAndRefundsTitle: original.packageTerms.cancellationsAndRefundsTitle,
+                  liabilityTitle: original.packageTerms.liabilityTitle,
                 },
               }
             : undefined,

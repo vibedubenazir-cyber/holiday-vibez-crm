@@ -1209,6 +1209,11 @@ export interface ItineraryPackageTermsDTO {
   pricingAndInclusions: string | null;
   cancellationsAndRefunds: string | null;
   liability: string | null;
+  /** Custom section headings; null falls back to the default label. */
+  bookingAndPaymentTitle: string | null;
+  pricingAndInclusionsTitle: string | null;
+  cancellationsAndRefundsTitle: string | null;
+  liabilityTitle: string | null;
 }
 
 export interface ItineraryImageDTO {

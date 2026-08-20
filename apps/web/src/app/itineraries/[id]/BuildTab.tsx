@@ -22,6 +22,7 @@ const TERMS_FIELDS = [
   ['liability', 'Liability'],
 ] as const;
 type TermsKey = (typeof TERMS_FIELDS)[number][0];
+type TermsTitleKey = `${TermsKey}Title`;
 
 const EVENT_TYPE_ICONS: Record<ItineraryEventType, string> = {
   [ItineraryEventType.ACCOMMODATION]: '🏨',
@@ -69,6 +70,14 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
     pricingAndInclusions: plan.packageTerms?.pricingAndInclusions ?? '',
     cancellationsAndRefunds: plan.packageTerms?.cancellationsAndRefunds ?? '',
     liability: plan.packageTerms?.liability ?? '',
+  });
+  // Headings are editable per itinerary; the default label is shown until
+  // renamed, and clearing the input falls back to the default again.
+  const [termsTitles, setTermsTitles] = useState<Record<TermsKey, string>>({
+    bookingAndPayment: plan.packageTerms?.bookingAndPaymentTitle ?? 'Booking and Payment',
+    pricingAndInclusions: plan.packageTerms?.pricingAndInclusionsTitle ?? 'Pricing and Inclusions',
+    cancellationsAndRefunds: plan.packageTerms?.cancellationsAndRefundsTitle ?? 'Cancellations and Refunds',
+    liability: plan.packageTerms?.liabilityTitle ?? 'Liability',
   });
   const [uploadingGallery, setUploadingGallery] = useState(false);
 
@@ -142,7 +151,13 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
   async function handleSaveTerms() {
     setSavingTerms(true);
     try {
-      const payload = Object.fromEntries(TERMS_FIELDS.map(([key]) => [key, terms[key].trim()]));
+      const payload: Record<string, string | null> = Object.fromEntries(
+        TERMS_FIELDS.map(([key]) => [key, terms[key].trim()]),
+      );
+      for (const [key, defaultLabel] of TERMS_FIELDS) {
+        const title = termsTitles[key].trim();
+        payload[`${key}Title` satisfies TermsTitleKey] = title && title !== defaultLabel ? title : null;
+      }
       await api.put(`/itineraries/${plan.id}/package-terms`, payload);
       onReload();
     } catch (err) {
@@ -335,7 +350,13 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {TERMS_FIELDS.map(([key, label]) => (
               <div key={key}>
-                <label className="text-xs font-semibold text-slate-500">{label}</label>
+                <input
+                  value={termsTitles[key]}
+                  onChange={(e) => setTermsTitles((prev) => ({ ...prev, [key]: e.target.value }))}
+                  placeholder={label}
+                  title="Section heading — shown to the client on the report and PDF"
+                  className="w-full rounded-lg border border-transparent bg-transparent px-1 py-0.5 text-xs font-semibold text-slate-500 hover:border-slate-200 focus:border-brand-300 focus:bg-white focus:outline-none dark:hover:border-slate-600 dark:focus:bg-slate-900"
+                />
                 <div className="mt-1">
                   <RichTextEditor
                     value={terms[key]}

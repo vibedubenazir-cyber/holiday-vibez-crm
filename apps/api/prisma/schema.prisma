@@ -991,6 +991,12 @@ model ItineraryPackageTerms {
   pricingAndInclusions    String?
   cancellationsAndRefunds String?
   liability               String?
+  // Optional per-itinerary overrides for the four section headings; null
+  // means the UI/report/PDF fall back to the default label.
+  bookingAndPaymentTitle       String?
+  pricingAndInclusionsTitle    String?
+  cancellationsAndRefundsTitle String?
+  liabilityTitle               String?
   updatedAt               DateTime      @updatedAt
 
   @@map("itinerary_package_terms")

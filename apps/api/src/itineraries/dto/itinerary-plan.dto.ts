@@ -346,6 +346,23 @@ export class UpsertItineraryPackageTermsDto {
   @IsOptional()
   @IsString()
   liability?: string;
+
+  // Custom section headings; null clears back to the default label.
+  @IsOptional()
+  @IsString()
+  bookingAndPaymentTitle?: string | null;
+
+  @IsOptional()
+  @IsString()
+  pricingAndInclusionsTitle?: string | null;
+
+  @IsOptional()
+  @IsString()
+  cancellationsAndRefundsTitle?: string | null;
+
+  @IsOptional()
+  @IsString()
+  liabilityTitle?: string | null;
 }
 
 export class CreateItineraryImageDto {

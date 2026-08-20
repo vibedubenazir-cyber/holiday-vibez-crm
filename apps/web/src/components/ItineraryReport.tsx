@@ -75,6 +75,10 @@ export interface ItineraryReportData {
     pricingAndInclusions: string | null;
     cancellationsAndRefunds: string | null;
     liability: string | null;
+    bookingAndPaymentTitle?: string | null;
+    pricingAndInclusionsTitle?: string | null;
+    cancellationsAndRefundsTitle?: string | null;
+    liabilityTitle?: string | null;
   } | null;
   pricingOptions: ItineraryReportOption[];
   consultant?: ItineraryReportConsultant | null;
@@ -388,10 +392,10 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
         <div className="mt-8 space-y-6">
           {(
             [
-              ['Booking and Payment', data.packageTerms.bookingAndPayment],
-              ['Pricing and Inclusions', data.packageTerms.pricingAndInclusions],
-              ['Cancellations and Refunds', data.packageTerms.cancellationsAndRefunds],
-              ['Liability', data.packageTerms.liability],
+              [data.packageTerms.bookingAndPaymentTitle ?? 'Booking and Payment', data.packageTerms.bookingAndPayment],
+              [data.packageTerms.pricingAndInclusionsTitle ?? 'Pricing and Inclusions', data.packageTerms.pricingAndInclusions],
+              [data.packageTerms.cancellationsAndRefundsTitle ?? 'Cancellations and Refunds', data.packageTerms.cancellationsAndRefunds],
+              [data.packageTerms.liabilityTitle ?? 'Liability', data.packageTerms.liability],
             ] as const
           ).map(([heading, body]) =>
             body ? (
