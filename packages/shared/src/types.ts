@@ -1543,3 +1543,108 @@ export interface AppraisalDTO {
   completedAt: string | null;
   goals: AppraisalGoalDTO[];
 }
+
+export interface LeadNoteDTO {
+  id: string;
+  leadId: string;
+  clientName?: string;
+  body: string;
+  authorName: string;
+  createdAt: string;
+}
+
+export interface LeadReminderDTO {
+  id: string;
+  leadId: string;
+  clientName?: string;
+  note: string;
+  dueAt: string;
+  assignedToName: string;
+  overdue?: boolean;
+  completedAt?: string | null;
+}
+
+export interface DashboardStatusCardDTO {
+  status: LeadStatus;
+  total: number;
+  today: number;
+}
+
+export interface DashboardQueryStageDTO {
+  bucket: 'pending' | 'progress' | 'booked' | 'lost';
+  count: number;
+  pct: number;
+}
+
+export interface DashboardMonthlyQueryRowDTO {
+  month: string;
+  total: number;
+  confirmed: number;
+}
+
+export interface DashboardFinancialRowDTO {
+  month: string;
+  revenue: number;
+}
+
+export interface DashboardWhatsAppRowDTO {
+  id: string;
+  clientName: string;
+  phone: string;
+  body: string;
+  status: LeadStatus;
+  temperature: LeadTemperature;
+  createdAt: string;
+}
+
+export interface DashboardPendingPaymentDTO {
+  id: string;
+  bookingId: string;
+  clientName: string;
+  amount: number;
+  dueDate: string | null;
+  overdue: boolean;
+}
+
+export interface DashboardUpcomingTourDTO {
+  id: string;
+  clientName: string;
+  destination: string;
+  departureDate: string;
+}
+
+export interface DashboardTopDestinationDTO {
+  destination: string;
+  count: number;
+}
+
+export interface DashboardLeadSourceRowDTO {
+  source: LeadSource;
+  total: number;
+  confirmed: number;
+  lost: number;
+}
+
+export interface DashboardSalesRepRowDTO {
+  consultantId: string;
+  name: string;
+  assigned: number;
+  confirmed: number;
+}
+
+export interface DashboardOverviewDTO {
+  todaysQueries: number;
+  totalQueries: number;
+  statusCards: DashboardStatusCardDTO[];
+  queryStages: DashboardQueryStageDTO[];
+  monthlyQueries: DashboardMonthlyQueryRowDTO[];
+  financialSummary: DashboardFinancialRowDTO[];
+  whatsappRecent: DashboardWhatsAppRowDTO[];
+  reminders: LeadReminderDTO[];
+  notes: LeadNoteDTO[];
+  paymentCollection: DashboardPendingPaymentDTO[];
+  upcomingTours: DashboardUpcomingTourDTO[];
+  topDestinations: DashboardTopDestinationDTO[];
+  topLeadSource: DashboardLeadSourceRowDTO[];
+  salesRepresentative: DashboardSalesRepRowDTO[];
+}

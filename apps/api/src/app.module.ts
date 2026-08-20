@@ -10,6 +10,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { TargetsModule } from './targets/targets.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { ReportsModule } from './reports/reports.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { PackagesModule } from './packages/packages.module';
@@ -83,6 +84,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     TargetsModule,
     CalendarModule,
     ReportsModule,
+    DashboardModule,
     NotificationsModule,
     SuppliersModule,
     PackagesModule,

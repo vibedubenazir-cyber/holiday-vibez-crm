@@ -371,4 +371,87 @@ export class LeadsService {
     if (!lead) throw new NotFoundException('Lead not found');
     return lead;
   }
+
+  // --- Notes ---------------------------------------------------------------
+  // Flattened to authorName (not the raw Prisma `author: {name}` relation
+  // shape) to match the shared LeadNoteDTO the frontend and the dashboard
+  // overview endpoint both consume.
+
+  private mapNote(note: { id: string; leadId: string; body: string; createdAt: Date; author: { name: string } }) {
+    return { id: note.id, leadId: note.leadId, body: note.body, authorName: note.author.name, createdAt: note.createdAt };
+  }
+
+  private mapReminder(reminder: { id: string; leadId: string; note: string; dueAt: Date; completedAt: Date | null; assignedTo: { name: string } }) {
+    return {
+      id: reminder.id,
+      leadId: reminder.leadId,
+      note: reminder.note,
+      dueAt: reminder.dueAt,
+      completedAt: reminder.completedAt,
+      assignedToName: reminder.assignedTo.name,
+      overdue: !reminder.completedAt && reminder.dueAt < new Date(),
+    };
+  }
+
+  async listNotes(leadId: string, actor: Actor) {
+    const lead = await this.ensureExists(leadId);
+    this.assertScope(actor, lead.assignedConsultantId, lead.branchId);
+    const notes = await this.prisma.leadNote.findMany({
+      where: { leadId },
+      orderBy: { createdAt: 'desc' },
+      include: { author: { select: { name: true } } },
+    });
+    return notes.map((n) => this.mapNote(n));
+  }
+
+  async addNote(leadId: string, body: string, actor: Actor) {
+    const lead = await this.ensureExists(leadId);
+    this.assertScope(actor, lead.assignedConsultantId, lead.branchId);
+    const note = await this.prisma.leadNote.create({
+      data: { leadId, authorId: actor.id, body },
+      include: { author: { select: { name: true } } },
+    });
+    return this.mapNote(note);
+  }
+
+  // --- Reminders -------------------------------------------------------------
+
+  async listReminders(leadId: string, actor: Actor) {
+    const lead = await this.ensureExists(leadId);
+    this.assertScope(actor, lead.assignedConsultantId, lead.branchId);
+    const reminders = await this.prisma.leadReminder.findMany({
+      where: { leadId },
+      orderBy: { dueAt: 'asc' },
+      include: { assignedTo: { select: { name: true } } },
+    });
+    return reminders.map((r) => this.mapReminder(r));
+  }
+
+  async addReminder(leadId: string, dto: { dueAt: string; note: string; assignedToId?: string }, actor: Actor) {
+    const lead = await this.ensureExists(leadId);
+    this.assertScope(actor, lead.assignedConsultantId, lead.branchId);
+    const reminder = await this.prisma.leadReminder.create({
+      data: {
+        leadId,
+        dueAt: new Date(dto.dueAt),
+        note: dto.note,
+        assignedToId: dto.assignedToId ?? actor.id,
+      },
+      include: { assignedTo: { select: { name: true } } },
+    });
+    return this.mapReminder(reminder);
+  }
+
+  async completeReminder(leadId: string, reminderId: string, actor: Actor) {
+    const lead = await this.ensureExists(leadId);
+    this.assertScope(actor, lead.assignedConsultantId, lead.branchId);
+    const reminder = await this.prisma.leadReminder.findUnique({ where: { id: reminderId } });
+    if (!reminder || reminder.leadId !== leadId) throw new NotFoundException('Reminder not found');
+    const updated = await this.prisma.leadReminder.update({
+      where: { id: reminderId },
+      data: { completedAt: new Date() },
+      include: { assignedTo: { select: { name: true } } },
+    });
+    return this.mapReminder(updated);
+  }
 }

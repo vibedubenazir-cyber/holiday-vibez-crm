@@ -328,6 +328,8 @@ model User {
   assetsAssigned             Asset[]                    @relation("AssetsAssigned")
   appraisals                 Appraisal[]                @relation("Appraisals")
   appraisalsAsManager        Appraisal[]                @relation("AppraisalsAsManager")
+  leadNotes                  LeadNote[]
+  leadReminders              LeadReminder[]              @relation("LeadReminderAssignee")
 
   @@map("users")
 }
@@ -569,8 +571,41 @@ model Lead {
   automationLogs AutomationLog[]
   supportTickets SupportTicket[]
   itineraryPlans ItineraryPlan[]
+  notes          LeadNote[]
+  reminders      LeadReminder[]
 
   @@map("leads")
+}
+
+// Free-text activity notes on a lead — the "Notes" feed on the dashboard and
+// lead detail page. Deliberately separate from LeadReminder: a note is a
+// record of what happened, a reminder is a scheduled thing still to do.
+model LeadNote {
+  id        String   @id @default(uuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+
+  @@map("lead_notes")
+}
+
+// A scheduled follow-up task on a lead, shown on the dashboard Reminders
+// panel with an Overdue badge once dueAt has passed and it's still open.
+model LeadReminder {
+  id           String    @id @default(uuid())
+  leadId       String
+  lead         Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  assignedToId String
+  assignedTo   User      @relation("LeadReminderAssignee", fields: [assignedToId], references: [id])
+  dueAt        DateTime
+  note         String
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@map("lead_reminders")
 }
 
 model Client {

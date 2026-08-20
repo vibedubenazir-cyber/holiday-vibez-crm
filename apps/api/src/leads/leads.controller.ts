@@ -72,4 +72,44 @@ export class LeadsController {
   assign(@Param('id') id: string, @CurrentUser() user: { id: string; role: Role; branchId: string | null }, @Body('consultantId') consultantId?: string) {
     return consultantId ? this.leadsService.reassign(id, consultantId, user) : this.leadsService.autoAssign(id);
   }
+
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Get(':id/notes')
+  listNotes(@Param('id') id: string, @CurrentUser() user: { id: string; role: Role; branchId: string | null }) {
+    return this.leadsService.listNotes(id, user);
+  }
+
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Post(':id/notes')
+  addNote(@Param('id') id: string, @Body('body') body: string, @CurrentUser() user: { id: string; role: Role; branchId: string | null }) {
+    if (!body?.trim()) throw new BadRequestException('Note body is required');
+    return this.leadsService.addNote(id, body.trim(), user);
+  }
+
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Get(':id/reminders')
+  listReminders(@Param('id') id: string, @CurrentUser() user: { id: string; role: Role; branchId: string | null }) {
+    return this.leadsService.listReminders(id, user);
+  }
+
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Post(':id/reminders')
+  addReminder(
+    @Param('id') id: string,
+    @Body() dto: { dueAt: string; note: string; assignedToId?: string },
+    @CurrentUser() user: { id: string; role: Role; branchId: string | null },
+  ) {
+    if (!dto?.dueAt || !dto?.note?.trim()) throw new BadRequestException('dueAt and note are required');
+    return this.leadsService.addReminder(id, dto, user);
+  }
+
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Patch(':id/reminders/:reminderId/complete')
+  completeReminder(
+    @Param('id') id: string,
+    @Param('reminderId') reminderId: string,
+    @CurrentUser() user: { id: string; role: Role; branchId: string | null },
+  ) {
+    return this.leadsService.completeReminder(id, reminderId, user);
+  }
 }

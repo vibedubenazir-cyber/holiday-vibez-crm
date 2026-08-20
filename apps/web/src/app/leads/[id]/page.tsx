@@ -5,7 +5,16 @@ import { useParams, useRouter } from 'next/navigation';
 import { AppShell } from '@/components/AppShell';
 import { BadgeDropdown, type BadgeDropdownOption } from '@/components/BadgeDropdown';
 import { api, ApiError } from '@/lib/api';
-import { CustomFieldType, LeadTemperature, type CustomFieldDefinitionDTO, type CustomFieldValueDTO, type LeadSummaryDTO, type QuotationSummaryDTO } from '@holiday-vibez/shared';
+import {
+  CustomFieldType,
+  LeadTemperature,
+  type CustomFieldDefinitionDTO,
+  type CustomFieldValueDTO,
+  type LeadNoteDTO,
+  type LeadReminderDTO,
+  type LeadSummaryDTO,
+  type QuotationSummaryDTO,
+} from '@holiday-vibez/shared';
 
 const TEMPERATURE_OPTIONS = [LeadTemperature.HOT, LeadTemperature.WARM, LeadTemperature.COLD];
 const TEMPERATURE_COLORS: Record<string, string> = {
@@ -58,15 +67,23 @@ export default function LeadDetailPage() {
     insuranceRequired: false,
   });
   const [savingTravel, setSavingTravel] = useState(false);
+  const [notes, setNotes] = useState<LeadNoteDTO[]>([]);
+  const [reminders, setReminders] = useState<LeadReminderDTO[]>([]);
+  const [noteDraft, setNoteDraft] = useState('');
+  const [reminderDraft, setReminderDraft] = useState({ dueAt: '', note: '' });
+  const [savingNote, setSavingNote] = useState(false);
+  const [savingReminder, setSavingReminder] = useState(false);
 
   async function load() {
     try {
-      const [leads, t, q, defs, values] = await Promise.all([
+      const [leads, t, q, defs, values, leadNotes, leadReminders] = await Promise.all([
         api.get<LeadSummaryDTO[]>('/leads'),
         api.get<TravelerRow[]>(`/leads/${id}/travelers`),
         api.get<QuotationSummaryDTO[]>('/quotations'),
         api.get<CustomFieldDefinitionDTO[]>('/custom-fields/definitions?entityType=LEAD'),
         api.get<CustomFieldValueDTO[]>(`/custom-fields/values?entityType=LEAD&entityId=${id}`),
+        api.get<LeadNoteDTO[]>(`/leads/${id}/notes`),
+        api.get<LeadReminderDTO[]>(`/leads/${id}/reminders`),
       ]);
       const found = leads.find((l) => l.id === id) ?? null;
       setLead(found);
@@ -74,6 +91,8 @@ export default function LeadDetailPage() {
       setQuotations(q.filter((qq) => qq.leadId === id));
       setCustomFieldDefs(defs.filter((d) => d.active));
       setCustomFieldValues(Object.fromEntries(values.map((v) => [v.definitionId, v.value])));
+      setNotes(leadNotes);
+      setReminders(leadReminders);
       if (found) {
         setTravelForm({
           travelDate: found.travelDate ? found.travelDate.slice(0, 10) : '',
@@ -163,6 +182,47 @@ export default function LeadDetailPage() {
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to update lead');
+    }
+  }
+
+  async function handleAddNote(e: FormEvent) {
+    e.preventDefault();
+    if (!noteDraft.trim()) return;
+    setSavingNote(true);
+    setError(null);
+    try {
+      await api.post(`/leads/${id}/notes`, { body: noteDraft.trim() });
+      setNoteDraft('');
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to add note');
+    } finally {
+      setSavingNote(false);
+    }
+  }
+
+  async function handleAddReminder(e: FormEvent) {
+    e.preventDefault();
+    if (!reminderDraft.dueAt || !reminderDraft.note.trim()) return;
+    setSavingReminder(true);
+    setError(null);
+    try {
+      await api.post(`/leads/${id}/reminders`, { dueAt: new Date(reminderDraft.dueAt).toISOString(), note: reminderDraft.note.trim() });
+      setReminderDraft({ dueAt: '', note: '' });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to add reminder');
+    } finally {
+      setSavingReminder(false);
+    }
+  }
+
+  async function handleCompleteReminder(reminderId: string) {
+    try {
+      await api.patch(`/leads/${id}/reminders/${reminderId}/complete`, {});
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to complete reminder');
     }
   }
 
@@ -258,6 +318,84 @@ export default function LeadDetailPage() {
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-700">Reminders</h2>
+          <form onSubmit={handleAddReminder} className="mt-2 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card p-3">
+            <div className="flex-1 min-w-[140px]">
+              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Due</label>
+              <input
+                type="datetime-local"
+                value={reminderDraft.dueAt}
+                onChange={(e) => setReminderDraft({ ...reminderDraft, dueAt: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100"
+              />
+            </div>
+            <div className="flex-[2] min-w-[160px]">
+              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Follow up on…</label>
+              <input
+                placeholder="Follow up on quote, check documents…"
+                value={reminderDraft.note}
+                onChange={(e) => setReminderDraft({ ...reminderDraft, note: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100"
+              />
+            </div>
+            <button type="submit" disabled={savingReminder} className="rounded-lg bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-md shadow-brand-500/25 hover:opacity-90 disabled:opacity-50">
+              {savingReminder ? 'Adding…' : 'Add'}
+            </button>
+          </form>
+          <ul className="mt-2 space-y-2">
+            {reminders.map((r) => {
+              const overdue = !r.completedAt && new Date(r.dueAt) < new Date();
+              return (
+                <li key={r.id} className={`flex items-start justify-between gap-2 rounded-xl border p-3 shadow-card ${r.completedAt ? 'border-slate-100 bg-slate-50 dark:bg-slate-800/50' : overdue ? 'border-rose-200 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/30' : 'border-slate-200 bg-white dark:bg-slate-800'}`}>
+                  <div>
+                    <p className={`text-sm ${r.completedAt ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200'}`}>{r.note}</p>
+                    <p className="mt-0.5 text-xs text-slate-400">
+                      {new Date(r.dueAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })} · {r.assignedToName}
+                      {overdue && !r.completedAt && <span className="ml-2 rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-rose-700 dark:bg-rose-900 dark:text-rose-300">Overdue</span>}
+                    </p>
+                  </div>
+                  {!r.completedAt && (
+                    <button onClick={() => handleCompleteReminder(r.id)} className="shrink-0 text-xs font-medium text-brand hover:underline">
+                      Done
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+            {reminders.length === 0 && <li className="text-xs text-slate-400">No reminders yet.</li>}
+          </ul>
+        </div>
+
+        <div>
+          <h2 className="text-sm font-semibold text-slate-700">Notes</h2>
+          <form onSubmit={handleAddNote} className="mt-2 flex items-end gap-2 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card p-3">
+            <textarea
+              rows={2}
+              placeholder="Log a call, message, or update…"
+              value={noteDraft}
+              onChange={(e) => setNoteDraft(e.target.value)}
+              className="flex-1 resize-none rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100"
+            />
+            <button type="submit" disabled={savingNote} className="rounded-lg bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-1.5 text-sm font-medium text-white shadow-md shadow-brand-500/25 hover:opacity-90 disabled:opacity-50">
+              {savingNote ? 'Adding…' : 'Add'}
+            </button>
+          </form>
+          <ul className="mt-2 space-y-2">
+            {notes.map((n) => (
+              <li key={n.id} className="rounded-xl border border-slate-200 bg-white dark:bg-slate-800 p-3 shadow-card">
+                <p className="text-sm text-slate-700 dark:text-slate-200">{n.body}</p>
+                <p className="mt-0.5 text-xs text-slate-400">
+                  {n.authorName} · {new Date(n.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </li>
+            ))}
+            {notes.length === 0 && <li className="text-xs text-slate-400">No notes yet.</li>}
+          </ul>
         </div>
       </div>
 
