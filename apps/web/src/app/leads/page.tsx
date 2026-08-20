@@ -34,6 +34,7 @@ import { PhoneInput } from '@/components/PhoneInput';
 import { useAuth } from '@/lib/auth-context';
 import { api, ApiError, getAccessToken } from '@/lib/api';
 import {
+  LeadService,
   LeadSource,
   LeadStatus,
   LeadTemperature,
@@ -66,6 +67,9 @@ const SOURCE_OPTIONS = [
   LeadSource.PHONE_CALL,
 ];
 const MEAL_PREFERENCE_OPTIONS = ['Veg', 'Non-veg', 'Jain', 'Any'];
+const CONTACT_TYPE_OPTIONS = ['INDIVIDUAL', 'AGENT', 'CORPORATE', 'GROUP'];
+const TITLE_OPTIONS = ['Mr.', 'Mrs.', 'Ms.', 'Dr.'];
+const SERVICE_OPTIONS = [LeadService.FLIGHT, LeadService.HOTEL, LeadService.PACKAGE];
 const STATUS_OPTIONS = Object.values(LeadStatus);
 
 const STATUS_META: Record<LeadStatus, { label: string; icon: LucideIcon; tile: string }> = {
@@ -191,6 +195,8 @@ export default function LeadsPage() {
   const [noteDraft, setNoteDraft] = useState('');
 
   const emptyForm = {
+    contactType: 'INDIVIDUAL' as string,
+    title: 'Mr.',
     source: LeadSource.WEBSITE as string,
     clientName: '',
     clientId: '',
@@ -199,8 +205,10 @@ export default function LeadsPage() {
     destination: '',
     branchId: '',
     travelDate: '',
-    adultsCount: '',
-    childrenCount: '',
+    travelEndDate: '',
+    adultsCount: '1',
+    childrenCount: '0',
+    infantsCount: '0',
     childrenAges: '',
     hotelCategory: '',
     mealPreference: '',
@@ -208,6 +216,10 @@ export default function LeadsPage() {
     visaRequired: false,
     flightRequired: false,
     insuranceRequired: false,
+    temperature: LeadTemperature.WARM as string,
+    assignedConsultantId: '',
+    service: '',
+    remark: '',
   };
   const [form, setForm] = useState(emptyForm);
 
@@ -251,17 +263,24 @@ export default function LeadsPage() {
     e.preventDefault();
     setError(null);
     try {
-      await api.post('/leads', {
+      const lead = await api.post<LeadSummaryDTO>('/leads', {
         ...form,
         clientId: form.clientId || undefined,
         email: form.email || undefined,
         travelDate: form.travelDate || undefined,
+        travelEndDate: form.travelEndDate || undefined,
         adultsCount: form.adultsCount ? Number(form.adultsCount) : undefined,
         childrenCount: form.childrenCount ? Number(form.childrenCount) : undefined,
+        infantsCount: form.infantsCount ? Number(form.infantsCount) : undefined,
         childrenAges: form.childrenAges || undefined,
         hotelCategory: form.hotelCategory ? Number(form.hotelCategory) : undefined,
         mealPreference: form.mealPreference || undefined,
+        assignedConsultantId: form.assignedConsultantId || undefined,
+        service: form.service || undefined,
       });
+      if (form.remark.trim()) {
+        await api.post(`/leads/${lead.id}/notes`, { body: form.remark.trim() });
+      }
       setForm({ ...emptyForm, branchId: branches[0]?.id ?? '' });
       setShowForm(false);
       await load();
@@ -504,54 +523,146 @@ export default function LeadsPage() {
       )}
 
       {canCreate && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4 sm:grid-cols-2 lg:grid-cols-3">
-          <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
-            {SOURCE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <select value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
-            {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-          </select>
-          <select value={form.clientId} onChange={(e) => handleClientSelect(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
-            <option value="">Link to existing client (optional)</option>
-            {clients.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.type})</option>)}
-          </select>
-          <input required placeholder="Client name" value={form.clientName} onChange={(e) => setForm({ ...form, clientName: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-          <PhoneInput required value={form.phone} onChange={(phone) => setForm({ ...form, phone })} />
-          <input type="email" placeholder="Email (optional)" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-          <input required placeholder="Destination" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+        <div className="fixed inset-0 z-40 flex justify-end bg-black/40" onClick={() => setShowForm(false)}>
+          <form
+            onSubmit={handleCreate}
+            onClick={(e) => e.stopPropagation()}
+            className="flex h-full w-full max-w-2xl flex-col bg-white shadow-2xl dark:bg-slate-800"
+          >
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-700">
+              <h2 className="text-xl font-extrabold tracking-tight text-slate-800 dark:text-slate-100">Add Lead</h2>
+              <button type="button" onClick={() => setShowForm(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
-          <p className="sm:col-span-2 lg:col-span-3 mt-1 text-xs font-medium uppercase tracking-wide text-slate-400">Travel Requirement</p>
-          <input type="date" placeholder="Travel date" value={form.travelDate} onChange={(e) => setForm({ ...form, travelDate: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-          <input type="number" min={0} placeholder="No. of adults" value={form.adultsCount} onChange={(e) => setForm({ ...form, adultsCount: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-          <input type="number" min={0} placeholder="No. of children" value={form.childrenCount} onChange={(e) => setForm({ ...form, childrenCount: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-          <input placeholder="Children ages (e.g. 5, 8)" value={form.childrenAges} onChange={(e) => setForm({ ...form, childrenAges: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-          <select value={form.hotelCategory} onChange={(e) => setForm({ ...form, hotelCategory: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
-            <option value="">Hotel category</option>
-            {[3, 4, 5].map((n) => <option key={n} value={n}>{n}-star</option>)}
-          </select>
-          <select value={form.mealPreference} onChange={(e) => setForm({ ...form, mealPreference: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
-            <option value="">Meal preference</option>
-            {MEAL_PREFERENCE_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
-          </select>
-          <div className="flex flex-wrap items-center gap-4 sm:col-span-2 lg:col-span-3 text-sm text-slate-600 dark:text-slate-300">
-            <label className="flex items-center gap-1.5">
-              <input type="checkbox" checked={form.transportRequired} onChange={(e) => setForm({ ...form, transportRequired: e.target.checked })} /> Transport
-            </label>
-            <label className="flex items-center gap-1.5">
-              <input type="checkbox" checked={form.visaRequired} onChange={(e) => setForm({ ...form, visaRequired: e.target.checked })} /> Visa
-            </label>
-            <label className="flex items-center gap-1.5">
-              <input type="checkbox" checked={form.flightRequired} onChange={(e) => setForm({ ...form, flightRequired: e.target.checked })} /> Flight
-            </label>
-            <label className="flex items-center gap-1.5">
-              <input type="checkbox" checked={form.insuranceRequired} onChange={(e) => setForm({ ...form, insuranceRequired: e.target.checked })} /> Insurance
-            </label>
-          </div>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Type">
+                  <select value={form.contactType} onChange={(e) => setForm({ ...form, contactType: e.target.value })} className={FIELD_CLASS}>
+                    {CONTACT_TYPE_OPTIONS.map((t) => <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>)}
+                  </select>
+                </Field>
+                <Field label="Branch">
+                  <select value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })} className={FIELD_CLASS}>
+                    {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                </Field>
 
-          <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 sm:col-span-2 lg:col-span-3">
-            Create lead (auto-assigns via round-robin)
-          </button>
-        </form>
+                <Field label="Link to existing client" className="sm:col-span-2">
+                  <select value={form.clientId} onChange={(e) => handleClientSelect(e.target.value)} className={FIELD_CLASS}>
+                    <option value="">None (optional)</option>
+                    {clients.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.type})</option>)}
+                  </select>
+                </Field>
+
+                <Field label="Mobile" required className="sm:col-span-2">
+                  <PhoneInput required value={form.phone} onChange={(phone) => setForm({ ...form, phone })} />
+                </Field>
+                <Field label="Email">
+                  <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={FIELD_CLASS} />
+                </Field>
+                <Field label="Title">
+                  <select value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={FIELD_CLASS}>
+                    {TITLE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </Field>
+
+                <Field label="Client Name" required className="sm:col-span-2">
+                  <input required value={form.clientName} onChange={(e) => setForm({ ...form, clientName: e.target.value })} className={FIELD_CLASS} />
+                </Field>
+
+                <Field label="Destination" required>
+                  <input required value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })} className={FIELD_CLASS} />
+                </Field>
+                <Field label="Service">
+                  <select value={form.service} onChange={(e) => setForm({ ...form, service: e.target.value })} className={FIELD_CLASS}>
+                    <option value="">Select Service</option>
+                    {SERVICE_OPTIONS.map((s) => <option key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()} only</option>)}
+                  </select>
+                </Field>
+
+                <Field label="From Date">
+                  <input type="date" value={form.travelDate} onChange={(e) => setForm({ ...form, travelDate: e.target.value })} className={FIELD_CLASS} />
+                </Field>
+                <Field label="To Date">
+                  <input type="date" min={form.travelDate || undefined} value={form.travelEndDate} onChange={(e) => setForm({ ...form, travelEndDate: e.target.value })} className={FIELD_CLASS} />
+                </Field>
+
+                <Field label="Adult">
+                  <input type="number" min={0} value={form.adultsCount} onChange={(e) => setForm({ ...form, adultsCount: e.target.value })} className={FIELD_CLASS} />
+                </Field>
+                <Field label="Child">
+                  <input type="number" min={0} value={form.childrenCount} onChange={(e) => setForm({ ...form, childrenCount: e.target.value })} className={FIELD_CLASS} />
+                </Field>
+                <Field label="Infant">
+                  <input type="number" min={0} value={form.infantsCount} onChange={(e) => setForm({ ...form, infantsCount: e.target.value })} className={FIELD_CLASS} />
+                </Field>
+                <Field label="Children ages" className="sm:col-span-2">
+                  <input placeholder="e.g. 5, 8" value={form.childrenAges} onChange={(e) => setForm({ ...form, childrenAges: e.target.value })} className={FIELD_CLASS} />
+                </Field>
+
+                <Field label="Lead Source">
+                  <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className={FIELD_CLASS}>
+                    {SOURCE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </Field>
+                <Field label="Priority">
+                  <select value={form.temperature} onChange={(e) => setForm({ ...form, temperature: e.target.value })} className={FIELD_CLASS}>
+                    {TEMPERATURE_OPTIONS.map((t) => <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>)}
+                  </select>
+                </Field>
+                <Field label="Assign To">
+                  <select value={form.assignedConsultantId} onChange={(e) => setForm({ ...form, assignedConsultantId: e.target.value })} className={FIELD_CLASS}>
+                    <option value="">Auto-assign (round robin)</option>
+                    {consultants.filter((c) => c.branchId === form.branchId).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </Field>
+
+                <Field label="Hotel category">
+                  <select value={form.hotelCategory} onChange={(e) => setForm({ ...form, hotelCategory: e.target.value })} className={FIELD_CLASS}>
+                    <option value="">Not set</option>
+                    {[3, 4, 5].map((n) => <option key={n} value={n}>{n}-star</option>)}
+                  </select>
+                </Field>
+                <Field label="Meal preference">
+                  <select value={form.mealPreference} onChange={(e) => setForm({ ...form, mealPreference: e.target.value })} className={FIELD_CLASS}>
+                    <option value="">Not set</option>
+                    {MEAL_PREFERENCE_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </Field>
+
+                <div className="flex flex-wrap items-center gap-4 sm:col-span-2 text-sm text-slate-600 dark:text-slate-300">
+                  <label className="flex items-center gap-1.5">
+                    <input type="checkbox" checked={form.transportRequired} onChange={(e) => setForm({ ...form, transportRequired: e.target.checked })} /> Transport
+                  </label>
+                  <label className="flex items-center gap-1.5">
+                    <input type="checkbox" checked={form.visaRequired} onChange={(e) => setForm({ ...form, visaRequired: e.target.checked })} /> Visa
+                  </label>
+                  <label className="flex items-center gap-1.5">
+                    <input type="checkbox" checked={form.flightRequired} onChange={(e) => setForm({ ...form, flightRequired: e.target.checked })} /> Flight
+                  </label>
+                  <label className="flex items-center gap-1.5">
+                    <input type="checkbox" checked={form.insuranceRequired} onChange={(e) => setForm({ ...form, insuranceRequired: e.target.checked })} /> Insurance
+                  </label>
+                </div>
+
+                <Field label="Remark" className="sm:col-span-2">
+                  <textarea rows={3} value={form.remark} onChange={(e) => setForm({ ...form, remark: e.target.value })} className={`${FIELD_CLASS} resize-none`} />
+                </Field>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 border-t border-slate-200 px-6 py-4 dark:border-slate-700">
+              <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">
+                Cancel
+              </button>
+              <button type="submit" className="rounded-lg bg-gradient-to-br from-brand-600 to-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-brand-500/25 hover:opacity-90">
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
       {/* Status stat cards — click to filter the table below */}
@@ -724,6 +835,20 @@ export default function LeadsPage() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+const FIELD_CLASS = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors dark:border-slate-600 dark:bg-slate-900';
+
+function Field({ label, required, className, children }: { label: string; required?: boolean; className?: string; children: React.ReactNode }) {
+  return (
+    <div className={className}>
+      <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {label}
+        {required && ' *'}
+      </label>
+      {children}
+    </div>
   );
 }
 

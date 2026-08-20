@@ -1,4 +1,4 @@
-import { LeadSource, LeadStatus, LeadTemperature } from '@prisma/client';
+import { ClientType, LeadService, LeadSource, LeadStatus, LeadTemperature } from '@prisma/client';
 import { IsBoolean, IsDateString, IsEmail, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { IsPhoneWithCountryCode } from '../../common/validators/phone.validator';
 
@@ -12,6 +12,10 @@ class TravelRequirementFields {
   travelDate?: string | null;
 
   @IsOptional()
+  @IsDateString()
+  travelEndDate?: string | null;
+
+  @IsOptional()
   @IsInt()
   @Min(0)
   adultsCount?: number | null;
@@ -20,6 +24,11 @@ class TravelRequirementFields {
   @IsInt()
   @Min(0)
   childrenCount?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  infantsCount?: number | null;
 
   @IsOptional()
   @IsString()
@@ -50,6 +59,10 @@ class TravelRequirementFields {
   @IsOptional()
   @IsBoolean()
   insuranceRequired?: boolean;
+
+  @IsOptional()
+  @IsEnum(LeadService)
+  service?: LeadService | null;
 }
 
 export class CreateLeadDto extends TravelRequirementFields {
@@ -59,6 +72,25 @@ export class CreateLeadDto extends TravelRequirementFields {
   @IsOptional()
   @IsString()
   utmCampaign?: string;
+
+  @IsOptional()
+  @IsEnum(ClientType)
+  contactType?: ClientType;
+
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsEnum(LeadTemperature)
+  temperature?: LeadTemperature;
+
+  // Optional explicit consultant to assign at creation, overriding the
+  // default round-robin — must belong to the target branch (validated in
+  // the service, same rule reassign() already enforces).
+  @IsOptional()
+  @IsString()
+  assignedConsultantId?: string;
 
   @IsString()
   clientName!: string;

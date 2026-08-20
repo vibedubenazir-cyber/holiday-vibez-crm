@@ -40,6 +40,12 @@ export enum LeadStatus {
   JUNK_NOT_INTERESTED = 'JUNK_NOT_INTERESTED',
 }
 
+export enum LeadService {
+  FLIGHT = 'FLIGHT',
+  HOTEL = 'HOTEL',
+  PACKAGE = 'PACKAGE',
+}
+
 export enum LeadTemperature {
   HOT = 'HOT',
   WARM = 'WARM',

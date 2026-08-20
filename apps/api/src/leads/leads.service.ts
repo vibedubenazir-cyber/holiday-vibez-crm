@@ -105,15 +105,20 @@ export class LeadsService {
         data: {
           source: dto.source,
           utmCampaign: dto.utmCampaign,
+          contactType: dto.contactType,
+          title: dto.title,
           clientName: dto.clientName,
           clientId: dto.clientId,
           phone: dto.phone,
           email: dto.email,
           destination: dto.destination,
           branchId: dto.branchId,
+          temperature: dto.temperature,
           travelDate: dto.travelDate ? new Date(dto.travelDate) : undefined,
+          travelEndDate: dto.travelEndDate ? new Date(dto.travelEndDate) : undefined,
           adultsCount: dto.adultsCount,
           childrenCount: dto.childrenCount,
+          infantsCount: dto.infantsCount,
           childrenAges: dto.childrenAges,
           hotelCategory: dto.hotelCategory,
           mealPreference: dto.mealPreference,
@@ -121,10 +126,14 @@ export class LeadsService {
           visaRequired: dto.visaRequired,
           flightRequired: dto.flightRequired,
           insuranceRequired: dto.insuranceRequired,
+          service: dto.service,
         },
       });
     });
-    return this.autoAssign(lead.id);
+    // An explicit consultant picked at creation time overrides round-robin —
+    // reassign() enforces the same branch/active-status rules a post-creation
+    // reassign would, so a bad pick here can't silently bypass them.
+    return dto.assignedConsultantId ? this.reassign(lead.id, dto.assignedConsultantId, actor) : this.autoAssign(lead.id);
   }
 
   // The duplicate-phone check and the insert used to run as two unguarded

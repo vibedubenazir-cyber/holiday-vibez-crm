@@ -62,6 +62,12 @@ enum LeadStatus {
   JUNK_NOT_INTERESTED
 }
 
+enum LeadService {
+  FLIGHT
+  HOTEL
+  PACKAGE
+}
+
 enum CouponDiscountType {
   PERCENTAGE
   FIXED
@@ -532,6 +538,11 @@ model Lead {
   id                   String          @id @default(uuid())
   source               LeadSource
   utmCampaign          String?
+  // Standalone categorization for a new inquiry — independent of, and set
+  // before, any optional link to an existing Client business-entity record
+  // below (clientId/client).
+  contactType          ClientType      @default(INDIVIDUAL)
+  title                String? // salutation — Mr./Mrs./Ms., free text so it isn't tied to a fixed list
   clientName           String
   phone                String
   email                String?
@@ -553,8 +564,10 @@ model Lead {
 
   // Travel requirement intake fields — captured at lead creation, editable later.
   travelDate        DateTime? @db.Date
+  travelEndDate     DateTime? @db.Date
   adultsCount       Int?
   childrenCount     Int?
+  infantsCount      Int?
   childrenAges      String? // comma-separated ages, e.g. "5,8" — avoids a child sub-table for a display-only detail
   hotelCategory     Int? // star rating 1-5, matches Hotel.category
   mealPreference    String?
@@ -562,6 +575,11 @@ model Lead {
   visaRequired      Boolean   @default(false)
   flightRequired    Boolean   @default(false)
   insuranceRequired Boolean   @default(false)
+  // What the client is actually asking for — a full package or an
+  // à-la-carte flight/hotel-only booking. Independent of the
+  // transportRequired/flightRequired checkboxes above, which describe
+  // *inclusions within a package*, not the inquiry type itself.
+  service           LeadService?
 
   // Optional link to a Client business-entity record (agent/corporate/group
   // account). clientName stays the free-text field it always was — this is

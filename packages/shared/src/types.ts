@@ -7,6 +7,7 @@ import {
   GrievanceCategory,
   GrievanceStatus,
   HrTicketCategory,
+  LeadService,
   LeadSource,
   LeadStatus,
   LeadTemperature,
@@ -69,6 +70,8 @@ export interface RateCardDTO {
 
 export interface LeadSummaryDTO {
   id: string;
+  contactType: 'INDIVIDUAL' | 'AGENT' | 'CORPORATE' | 'GROUP';
+  title: string | null;
   clientName: string;
   clientId: string | null;
   phone: string;
@@ -78,6 +81,7 @@ export interface LeadSummaryDTO {
   statusNote: string | null;
   temperature: LeadTemperature;
   source: LeadSource;
+  service: LeadService | null;
   branchId: string;
   assignedConsultantId: string | null;
   assignedConsultantName: string | null;
@@ -85,8 +89,10 @@ export interface LeadSummaryDTO {
   slaBreached: boolean;
   createdAt: string;
   travelDate: string | null;
+  travelEndDate: string | null;
   adultsCount: number | null;
   childrenCount: number | null;
+  infantsCount: number | null;
   childrenAges: string | null;
   hotelCategory: number | null;
   mealPreference: string | null;
