@@ -68,6 +68,16 @@ enum LeadService {
   PACKAGE
 }
 
+// Which channel a LeadNote came through — GENERAL notes are the append-only
+// activity log shown on the dashboard and lead-detail "Notes" panel; CALL and
+// OTHER are logged from the lead detail page's "Supp. Comm." tab, a record of
+// contact that happened outside the WhatsApp/Email conversation threads.
+enum LeadNoteChannel {
+  GENERAL
+  CALL
+  OTHER
+}
+
 enum CouponDiscountType {
   PERCENTAGE
   FIXED
@@ -603,13 +613,14 @@ model Lead {
 // lead detail page. Deliberately separate from LeadReminder: a note is a
 // record of what happened, a reminder is a scheduled thing still to do.
 model LeadNote {
-  id        String   @id @default(uuid())
+  id        String          @id @default(uuid())
   leadId    String
-  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead      Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
   authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
+  author    User            @relation(fields: [authorId], references: [id])
   body      String
-  createdAt DateTime @default(now())
+  channel   LeadNoteChannel @default(GENERAL)
+  createdAt DateTime        @default(now())
 
   @@map("lead_notes")
 }

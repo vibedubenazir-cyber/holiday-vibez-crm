@@ -2,7 +2,7 @@ import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query, 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { parse } from 'csv-parse/sync';
-import { Role } from '@prisma/client';
+import { LeadNoteChannel, Role } from '@prisma/client';
 import { LeadsService } from './leads.service';
 import { CreateLeadDto, UpdateLeadDto } from './dto/lead.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -90,9 +90,14 @@ export class LeadsController {
 
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
   @Post(':id/notes')
-  addNote(@Param('id') id: string, @Body('body') body: string, @CurrentUser() user: { id: string; role: Role; branchId: string | null }) {
+  addNote(
+    @Param('id') id: string,
+    @Body('body') body: string,
+    @Body('channel') channel: LeadNoteChannel | undefined,
+    @CurrentUser() user: { id: string; role: Role; branchId: string | null },
+  ) {
     if (!body?.trim()) throw new BadRequestException('Note body is required');
-    return this.leadsService.addNote(id, body.trim(), user);
+    return this.leadsService.addNote(id, body.trim(), user, channel);
   }
 
   @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)

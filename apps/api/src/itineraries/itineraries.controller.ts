@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { Role } from '@prisma/client';
 import { ItinerariesService } from './itineraries.service';
@@ -36,8 +36,8 @@ export class ItinerariesController {
 
   @Roles(...ROLES)
   @Get()
-  list(@CurrentUser() user: AuthUser) {
-    return this.itinerariesService.list(user);
+  list(@CurrentUser() user: AuthUser, @Query('leadId') leadId?: string) {
+    return this.itinerariesService.list(user, leadId);
   }
 
   @Roles(...ROLES)

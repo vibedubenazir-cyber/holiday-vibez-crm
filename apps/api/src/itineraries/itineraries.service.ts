@@ -179,6 +179,7 @@ export class ItinerariesService {
       id: plan.id,
       refNo: plan.refNo,
       title: plan.title,
+      leadId: plan.leadId,
       coverPhotoUrl: plan.coverPhotoUrl,
       destinations: plan.destinations,
       startDate: plan.startDate,
@@ -192,9 +193,11 @@ export class ItinerariesService {
     };
   }
 
-  async list(actor: Actor) {
+  async list(actor: Actor, leadId?: string) {
+    const scopeWhere = this.buildScopeWhere(actor);
+    const where = leadId ? { AND: [scopeWhere, { leadId }] } : scopeWhere;
     const plans = await this.prisma.itineraryPlan.findMany({
-      where: this.buildScopeWhere(actor),
+      where,
       include: FULL_INCLUDE,
       orderBy: { updatedAt: 'desc' },
     });

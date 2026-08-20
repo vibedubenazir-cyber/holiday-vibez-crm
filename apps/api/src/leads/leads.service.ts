@@ -1,5 +1,5 @@
 import { ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { LeadSource, LeadStatus, Prisma, Role } from '@prisma/client';
+import { LeadNoteChannel, LeadSource, LeadStatus, Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateLeadDto, PublicCreateLeadDto, UpdateLeadDto } from './dto/lead.dto';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -414,8 +414,8 @@ export class LeadsService {
   // shape) to match the shared LeadNoteDTO the frontend and the dashboard
   // overview endpoint both consume.
 
-  private mapNote(note: { id: string; leadId: string; body: string; createdAt: Date; author: { name: string } }) {
-    return { id: note.id, leadId: note.leadId, body: note.body, authorName: note.author.name, createdAt: note.createdAt };
+  private mapNote(note: { id: string; leadId: string; body: string; channel: string; createdAt: Date; author: { name: string } }) {
+    return { id: note.id, leadId: note.leadId, body: note.body, channel: note.channel, authorName: note.author.name, createdAt: note.createdAt };
   }
 
   private mapReminder(reminder: { id: string; leadId: string; note: string; dueAt: Date; completedAt: Date | null; assignedTo: { name: string } }) {
@@ -441,11 +441,11 @@ export class LeadsService {
     return notes.map((n) => this.mapNote(n));
   }
 
-  async addNote(leadId: string, body: string, actor: Actor) {
+  async addNote(leadId: string, body: string, actor: Actor, channel: LeadNoteChannel = LeadNoteChannel.GENERAL) {
     const lead = await this.ensureExists(leadId);
     this.assertScope(actor, lead.assignedConsultantId, lead.branchId);
     const note = await this.prisma.leadNote.create({
-      data: { leadId, authorId: actor.id, body },
+      data: { leadId, authorId: actor.id, body, channel },
       include: { author: { select: { name: true } } },
     });
     return this.mapNote(note);

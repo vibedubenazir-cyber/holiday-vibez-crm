@@ -1269,6 +1269,7 @@ export interface ItineraryPlanSummaryDTO {
   id: string;
   refNo: string;
   title: string;
+  leadId: string | null;
   coverPhotoUrl: string | null;
   destinations: string[];
   startDate: string | null;
@@ -1564,6 +1565,7 @@ export interface LeadNoteDTO {
   leadId: string;
   clientName?: string;
   body: string;
+  channel: 'GENERAL' | 'CALL' | 'OTHER';
   authorName: string;
   createdAt: string;
 }
