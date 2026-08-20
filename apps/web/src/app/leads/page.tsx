@@ -498,15 +498,6 @@ export default function LeadsPage() {
         </div>
       )}
 
-      {canCreate && (
-        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-          CSV columns: source,clientName,phone,email,destination,branch — source must be one of {SOURCE_OPTIONS.join(', ')}; branch must match an existing branch name.
-        </p>
-      )}
-      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-        SLA: whether this lead was contacted within the required response-time window. &quot;Breached&quot; means it wasn&apos;t — follow up as soon as possible.
-      </p>
-
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       {importError && <p className="mt-3 text-sm text-red-600">{importError}</p>}
       {importResults && (
