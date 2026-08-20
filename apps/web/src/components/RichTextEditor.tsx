@@ -75,6 +75,8 @@ export function RichTextEditor({
 }) {
   const [showSource, setShowSource] = useState(false);
   const [sourceDraft, setSourceDraft] = useState(value);
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [linkDraft, setLinkDraft] = useState('');
 
   const editor = useEditor({
     extensions: [
@@ -108,14 +110,32 @@ export function RichTextEditor({
     setShowSource(!showSource);
   }
 
-  function setLink() {
-    const url = window.prompt('Link URL');
-    if (url === null) return;
-    if (url === '') {
-      editor!.chain().focus().unsetLink().run();
+  // window.prompt is blocked in several browsers/embedded contexts, so the
+  // link UI is an inline bar instead. With no text selected, the URL is
+  // inserted as its own linked text rather than silently doing nothing.
+  function toggleLinkBar() {
+    if (!linkOpen) setLinkDraft((editor!.getAttributes('link').href as string) ?? '');
+    setLinkOpen(!linkOpen);
+  }
+
+  function applyLink() {
+    const raw = linkDraft.trim();
+    if (!raw) {
+      editor!.chain().focus().extendMarkRange('link').unsetLink().run();
+      setLinkOpen(false);
       return;
     }
-    editor!.chain().focus().setLink({ href: url }).run();
+    const href = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    if (editor!.state.selection.empty && !editor!.isActive('link')) {
+      editor!
+        .chain()
+        .focus()
+        .insertContent({ type: 'text', text: href, marks: [{ type: 'link', attrs: { href } }] })
+        .run();
+    } else {
+      editor!.chain().focus().extendMarkRange('link').setLink({ href }).run();
+    }
+    setLinkOpen(false);
   }
 
   const iconClass = 'h-3.5 w-3.5';
@@ -170,7 +190,7 @@ export function RichTextEditor({
           <AlignRight className={iconClass} />
         </ToolbarButton>
         <ToolbarDivider />
-        <ToolbarButton title="Link" active={editor.isActive('link')} onClick={setLink}>
+        <ToolbarButton title="Insert link" active={editor.isActive('link') || linkOpen} onClick={toggleLinkBar}>
           <Link2 className={iconClass} />
         </ToolbarButton>
         <ToolbarDivider />
@@ -198,6 +218,43 @@ export function RichTextEditor({
           <Code className={iconClass} />
         </ToolbarButton>
       </div>
+      {linkOpen && !showSource && (
+        <div className="flex items-center gap-2 border-x border-slate-300 bg-slate-50 px-2 py-1.5 dark:border-slate-600 dark:bg-slate-800">
+          <input
+            value={linkDraft}
+            onChange={(e) => setLinkDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                applyLink();
+              }
+              if (e.key === 'Escape') setLinkOpen(false);
+            }}
+            placeholder="https://example.com"
+            autoFocus
+            className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs focus:border-brand-300 focus:outline-none dark:border-slate-600 dark:bg-slate-900"
+          />
+          <button
+            type="button"
+            onClick={applyLink}
+            className="shrink-0 rounded-md bg-brand px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90"
+          >
+            Apply
+          </button>
+          {editor.isActive('link') && (
+            <button
+              type="button"
+              onClick={() => {
+                editor.chain().focus().extendMarkRange('link').unsetLink().run();
+                setLinkOpen(false);
+              }}
+              className="shrink-0 rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+      )}
       {showSource ? (
         <textarea
           value={sourceDraft}

@@ -1,7 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { PencilLine } from 'lucide-react';
+import {
+  PencilLine,
+  BedDouble,
+  Footprints,
+  Bus,
+  FileText,
+  Utensils,
+  Plane,
+  TreePalm,
+  Ship,
+  type LucideIcon,
+} from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { uploadFile } from '@/lib/upload';
 import { FormattedTextArea } from '@/components/FormattedTextArea';
@@ -25,15 +36,15 @@ const TERMS_FIELDS = [
 type TermsKey = (typeof TERMS_FIELDS)[number][0];
 type TermsTitleKey = `${TermsKey}Title`;
 
-const EVENT_TYPE_ICONS: Record<ItineraryEventType, string> = {
-  [ItineraryEventType.ACCOMMODATION]: '🏨',
-  [ItineraryEventType.ACTIVITY]: '🚶',
-  [ItineraryEventType.TRANSPORTATION]: '🚐',
-  [ItineraryEventType.VISA]: '📄',
-  [ItineraryEventType.MEAL]: '🍽️',
-  [ItineraryEventType.FLIGHT]: '✈️',
-  [ItineraryEventType.LEISURE]: '🌴',
-  [ItineraryEventType.CRUISE]: '🚢',
+const EVENT_TYPE_ICONS: Record<ItineraryEventType, { icon: LucideIcon; tile: string }> = {
+  [ItineraryEventType.ACCOMMODATION]: { icon: BedDouble, tile: 'from-sky-500 to-sky-600' },
+  [ItineraryEventType.ACTIVITY]: { icon: Footprints, tile: 'from-teal-500 to-teal-600' },
+  [ItineraryEventType.TRANSPORTATION]: { icon: Bus, tile: 'from-violet-500 to-violet-600' },
+  [ItineraryEventType.VISA]: { icon: FileText, tile: 'from-indigo-500 to-indigo-600' },
+  [ItineraryEventType.MEAL]: { icon: Utensils, tile: 'from-orange-500 to-orange-600' },
+  [ItineraryEventType.FLIGHT]: { icon: Plane, tile: 'from-brand-500 to-brand-600' },
+  [ItineraryEventType.LEISURE]: { icon: TreePalm, tile: 'from-emerald-500 to-emerald-600' },
+  [ItineraryEventType.CRUISE]: { icon: Ship, tile: 'from-cyan-500 to-cyan-600' },
 };
 
 // A single line of the key facts a consultant scans for — different per type,
@@ -288,7 +299,14 @@ export function BuildTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
                         {event.photoUrl ? (
                           <img src={event.photoUrl} alt="" className="h-10 w-10 shrink-0 rounded object-cover" />
                         ) : (
-                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-slate-50 text-lg dark:bg-slate-700">{EVENT_TYPE_ICONS[event.type]}</span>
+                          (() => {
+                            const { icon: EventIcon, tile } = EVENT_TYPE_ICONS[event.type];
+                            return (
+                              <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${tile} text-white`}>
+                                <EventIcon className="h-5 w-5" />
+                              </span>
+                            );
+                          })()
                         )}
                         <div>
                           <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
