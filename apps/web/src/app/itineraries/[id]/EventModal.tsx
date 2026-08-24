@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Modal } from '@/components/Modal';
 import { FormattedTextArea } from '@/components/FormattedTextArea';
 import { api, ApiError } from '@/lib/api';
@@ -149,6 +149,11 @@ export function EventModal({
 }) {
   const [form, setForm] = useState<FormState>(existing ? formFromEvent(existing) : emptyForm(type));
   const [saving, setSaving] = useState(false);
+  // Same ref guard as the quotation/itinerary send buttons: state updates are
+  // batched, so a fast double-click on Save could fire two creates before the
+  // `saving` state disables the button — worst case, two duplicate accommodation
+  // events for the same hotel.
+  const savingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [library, setLibrary] = useState<ItineraryEventTemplateDTO[]>([]);
@@ -222,6 +227,8 @@ export function EventModal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     setError(null);
 
@@ -294,6 +301,7 @@ export function EventModal({
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to save event');
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
