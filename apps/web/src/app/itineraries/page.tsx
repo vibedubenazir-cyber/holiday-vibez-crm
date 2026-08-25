@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Copy, Pencil } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
@@ -238,7 +239,72 @@ export default function ItinerariesPage() {
         )}
       </div>
 
-      <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
+      {/* Phones get cards, not the table. Eight columns can only be reached by
+          horizontal scrolling on a 390px screen, which means scrubbing back and
+          forth to tie a title to its price — the table stays for md and up. */}
+      <div className="mt-4 space-y-2 md:hidden">
+        {visible.map((item) => (
+          <div key={item.id} className="rounded-xl bg-white p-3 shadow-card dark:bg-slate-800">
+            <div className="flex items-start gap-3">
+              {item.coverPhotoUrl ? (
+                <img src={item.coverPhotoUrl} alt="" className="h-12 w-16 shrink-0 rounded-lg object-cover" />
+              ) : (
+                <div className="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:bg-slate-700">
+                  No Photo
+                </div>
+              )}
+              <Link href={`/itineraries/${item.id}`} className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-slate-800 dark:text-slate-100">{item.title}</p>
+              </Link>
+              <Link href={`/itineraries/${item.id}`} className="shrink-0 font-mono text-[11px] font-semibold text-brand hover:underline">
+                #{item.refNo}
+              </Link>
+            </div>
+
+            <Link href={`/itineraries/${item.id}`} className="mt-2 block truncate text-sm text-slate-600 dark:text-slate-300">
+              {item.destinations.join(', ')} · {item.duration ?? '—'}
+            </Link>
+
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="truncate text-sm font-medium text-slate-600 dark:text-slate-300">
+                  {item.price !== null ? `INR ${Number(item.price).toLocaleString('en-IN')}` : '—'}
+                </span>
+                <span
+                  className={`shrink-0 rounded-lg px-2 py-0.5 text-xs font-medium ${item.showOnWebsite ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}
+                >
+                  {item.showOnWebsite ? 'Yes' : 'No'}
+                </span>
+              </div>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <button
+                  onClick={() => handleDuplicate(item.id)}
+                  title="Copy"
+                  aria-label="Copy this itinerary"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                >
+                  <Copy className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => router.push(`/itineraries/${item.id}`)}
+                  title="Edit"
+                  aria-label="Edit this itinerary"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 transition hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:hover:bg-emerald-900/70"
+                >
+                  <Pencil className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {visible.length === 0 && (
+          <p className="rounded-xl bg-white px-4 py-6 text-center text-slate-400 shadow-card dark:bg-slate-800">
+            {items.length === 0 ? 'No itineraries yet.' : `No itineraries match “${search}”.`}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4 hidden overflow-x-auto bg-white dark:bg-slate-800 md:block">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>

@@ -690,7 +690,74 @@ export default function LeadsPage() {
         })}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-xl bg-white shadow-card dark:bg-slate-800">
+      {/* Phones get cards, not the table. Ten columns can only be reached by
+          horizontal scrolling on a 390px screen, which means scrubbing back and
+          forth to tie a name to its status — the table stays for md and up. */}
+      <div className="mt-4 space-y-2 md:hidden">
+        {filteredLeads.map((l) => (
+          <div key={l.id} className="rounded-xl bg-white p-3 shadow-card dark:bg-slate-800">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-300">
+                {initials(l.clientName)}
+              </div>
+              <Link href={`/leads/${l.id}`} className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-slate-800 dark:text-slate-100">{l.clientName}</p>
+                <p className="truncate text-xs text-slate-400">{l.phone}</p>
+              </Link>
+              <Link href={`/leads/${l.id}`} className="shrink-0 font-mono text-[11px] font-semibold text-brand hover:underline">
+                #{shortId(l.id)}
+              </Link>
+            </div>
+
+            <Link href={`/leads/${l.id}`} className="mt-2 block truncate text-sm text-slate-600 dark:text-slate-300">
+              {l.destination}
+            </Link>
+
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <BadgeDropdown
+                value={l.status}
+                options={STATUS_DROPDOWN_OPTIONS}
+                onChange={(v) => handleStatusChange(l.id, v)}
+                triggerClassName="max-w-[170px]"
+              />
+              <div className="flex shrink-0 items-center gap-1">
+                <a
+                  href={`https://wa.me/${l.phone.replace(/[^0-9]/g, '')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="WhatsApp"
+                  className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-emerald-600 dark:hover:bg-slate-700"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                </a>
+                {l.email && (
+                  <a
+                    href={`mailto:${l.email}`}
+                    title="Email"
+                    className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-brand dark:hover:bg-slate-700"
+                  >
+                    <Mail className="h-5 w-5" />
+                  </a>
+                )}
+                <Link
+                  href={`/leads/${l.id}`}
+                  title="View"
+                  className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-brand dark:hover:bg-slate-700"
+                >
+                  <Eye className="h-5 w-5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
+        {filteredLeads.length === 0 && (
+          <p className="rounded-xl bg-white px-4 py-6 text-center text-slate-400 shadow-card dark:bg-slate-800">
+            {leads.length === 0 ? 'No leads yet.' : 'No leads match your filters.'}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4 hidden overflow-hidden rounded-xl bg-white shadow-card dark:bg-slate-800 md:block">
         <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">

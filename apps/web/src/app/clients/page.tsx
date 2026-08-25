@@ -163,7 +163,82 @@ export default function ClientsPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
+      {/* Phones get cards, not the table. Six columns can only be reached by
+          horizontal scrolling on a 390px screen, which means scrubbing back and
+          forth to tie a client to their status — the table stays for md and up. */}
+      <div className="mt-4 space-y-2 md:hidden">
+        {clients.map((c) => {
+          const account = loyalty[c.id];
+          return (
+            <div key={c.id} className="rounded-xl bg-white p-3 shadow-card dark:bg-slate-800">
+              <div className="flex items-start gap-3">
+                <p className="min-w-0 flex-1 truncate font-semibold text-slate-800 dark:text-slate-100">{c.name}</p>
+                {c.phone && <p className="shrink-0 text-xs text-slate-400">{c.phone}</p>}
+              </div>
+
+              <p className="mt-2 truncate text-sm text-slate-600 dark:text-slate-300">
+                {c.email ?? '—'} · {c.type}
+              </p>
+
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${c.active ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'}`}>
+                  {c.active ? 'Active' : 'Inactive'}
+                </span>
+                <div className="flex shrink-0 items-center gap-1">
+                  <button onClick={() => toggleLoyalty(c.id)} className="rounded-lg p-2 text-sm font-medium text-brand hover:underline">
+                    {expandedLoyalty === c.id ? 'Hide loyalty' : 'Loyalty'}
+                  </button>
+                  {canManage && (
+                    <button onClick={() => handleToggleActive(c)} className="rounded-lg p-2 text-sm font-medium text-brand hover:underline">
+                      {c.active ? 'Deactivate' : 'Activate'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {expandedLoyalty === c.id && (
+                <div className="mt-2 border-t border-slate-100 pt-2 dark:border-slate-700">
+                  {!account ? (
+                    <p className="text-xs text-slate-400">Loading…</p>
+                  ) : (
+                    <div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${TIER_COLORS[account.tier]}`}>{account.tier}</span>
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{account.points} points available</p>
+                        <p className="text-xs text-slate-400">{account.lifetimePoints} lifetime</p>
+                      </div>
+                      {canManageLoyalty && (
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <input type="number" min="0" placeholder="Points" value={pointsForm.points} onChange={(e) => setPointsForm({ ...pointsForm, points: e.target.value })} className="w-24 rounded-lg border border-slate-300 px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-900" />
+                          <input placeholder="Reason (optional)" value={pointsForm.description} onChange={(e) => setPointsForm({ ...pointsForm, description: e.target.value })} className="max-w-[170px] rounded-lg border border-slate-300 px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-900" />
+                          <button onClick={() => handleEarn(c.id)} className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-1 text-xs font-medium text-white hover:opacity-90">Award</button>
+                          <button onClick={() => handleRedeem(c.id)} className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">Redeem</button>
+                          <button onClick={() => handleReferralBonus(c.id)} className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">Referral bonus</button>
+                        </div>
+                      )}
+                      <div className="mt-3 space-y-1">
+                        {account.transactions.map((t) => (
+                          <p key={t.id} className="text-xs text-slate-500 dark:text-slate-400">
+                            {new Date(t.createdAt).toLocaleDateString()} · {t.type.replaceAll('_', ' ')} · {t.points > 0 ? '+' : ''}{t.points} pts {t.description ? `· ${t.description}` : ''}
+                          </p>
+                        ))}
+                        {account.transactions.length === 0 && <p className="text-xs text-slate-400">No transactions yet.</p>}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {clients.length === 0 && (
+          <p className="rounded-xl bg-white px-4 py-6 text-center text-slate-400 shadow-card dark:bg-slate-800">
+            No clients yet.
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4 hidden overflow-x-auto bg-white dark:bg-slate-800 md:block">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
