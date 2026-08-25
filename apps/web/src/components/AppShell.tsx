@@ -179,6 +179,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [moduleId, setModuleId] = useState<ModuleId | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -294,7 +295,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-brand-200/60 bg-gradient-to-r from-brand-50 to-brand-100 px-3 py-2.5 sm:px-6">
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
             <button
               onClick={() => setMobileNavOpen(true)}
               className="rounded-lg p-1.5 text-brand-700 hover:bg-white lg:hidden"
@@ -310,7 +311,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <p className="truncate text-[11px] font-medium text-slate-400">{ROLE_LABELS[user.role] ?? user.role}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
+            {/* The floating chat bubble is desktop-only — on a phone it covers
+                the actions of whichever list card scrolls under it. */}
+            <button
+              onClick={() => setChatOpen((o) => !o)}
+              className="rounded-lg p-1.5 text-brand-700 hover:bg-white md:hidden"
+              aria-label="Toggle team chat"
+            >
+              <MessageSquare className="h-5 w-5" />
+            </button>
             <Link
               href="/modules"
               className="rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand sm:px-3 sm:text-sm"
@@ -327,7 +337,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="flex-1 overflow-x-auto overflow-y-auto bg-brand-100 p-3 dark:bg-slate-950 sm:p-6">{children}</main>
       </div>
-      <FloatingChatWidget />
+      <FloatingChatWidget open={chatOpen} onOpenChange={setChatOpen} />
     </div>
   );
 }
