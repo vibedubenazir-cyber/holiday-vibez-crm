@@ -24,7 +24,7 @@ export function FloatingChatWidget() {
   return (
     <>
       {open && (
-        <div className="fixed bottom-20 right-5 z-50 flex h-[500px] w-[440px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-slate-800">
+        <div className="fixed inset-x-3 bottom-20 z-50 flex h-[70vh] max-h-[500px] flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-slate-800 sm:inset-x-auto sm:right-5 sm:h-[500px] sm:w-[440px]">
           <div className="flex items-center justify-between bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2.5">
             <span className="text-sm font-semibold text-white">Team Chat</span>
             <div className="flex items-center gap-2">
@@ -40,7 +40,7 @@ export function FloatingChatWidget() {
 
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-2xl transition-transform hover:scale-105"
+        className="fixed bottom-5 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-brand text-white shadow-2xl transition-transform hover:scale-105 sm:h-14 sm:w-14"
         aria-label="Toggle team chat"
       >
         {open ? (
