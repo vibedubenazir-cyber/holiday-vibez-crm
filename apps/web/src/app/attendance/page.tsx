@@ -209,7 +209,7 @@ export default function AttendancePage() {
       )}
 
       {canSeeTeam && (
-        <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
+        <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
           <div className="border-b border-slate-100 px-4 py-2 text-sm font-medium text-slate-800">Team attendance — this month</div>
           <table className="w-full text-sm">
             <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">

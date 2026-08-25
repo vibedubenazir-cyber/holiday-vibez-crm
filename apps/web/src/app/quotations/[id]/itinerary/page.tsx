@@ -322,7 +322,7 @@ function DayCard(props: DayCardProps) {
         onRemove={(itemId) => props.onRemove('accommodations', day.id, itemId)}
       />
       {activeForm?.dayId === day.id && activeForm.kind === 'accommodation' && (
-        <form onSubmit={(e) => props.onAddAccommodation(e, day.id)} className="mt-2 grid grid-cols-2 gap-2 rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/30 p-3 sm:grid-cols-3">
+        <form onSubmit={(e) => props.onAddAccommodation(e, day.id)} className="mt-2 grid grid-cols-1 gap-2 rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/30 p-3 sm:grid-cols-3">
           <input required placeholder="Hotel name" value={props.accommodationForm.hotelName} onChange={(e) => props.setAccommodationForm({ ...props.accommodationForm, hotelName: e.target.value })} className={inputClass} />
           <input required placeholder="City" value={props.accommodationForm.city} onChange={(e) => props.setAccommodationForm({ ...props.accommodationForm, city: e.target.value })} className={inputClass} />
           <select value={props.accommodationForm.roomCategory} onChange={(e) => props.setAccommodationForm({ ...props.accommodationForm, roomCategory: e.target.value })} className={inputClass}>

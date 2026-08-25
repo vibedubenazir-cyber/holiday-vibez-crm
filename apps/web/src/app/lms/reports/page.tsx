@@ -105,8 +105,8 @@ export default function LmsCompletionReportPage() {
         </div>
       </div>
 
-      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
-        <table className="w-full text-sm">
+      <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
+        <table className="w-full min-w-[760px] text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40">
             <tr>
               <th className="px-4 py-2">Consultant</th>

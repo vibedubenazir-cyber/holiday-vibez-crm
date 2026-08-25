@@ -43,7 +43,7 @@ export default function ModulesPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-brand-700 via-brand to-brand-600">
-      <header className="flex items-center justify-between px-8 py-5">
+      <header className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-8 sm:py-5">
         <Image src="/logo-white.png" alt="Holiday Vibez" width={160} height={40} className="h-auto w-32" priority />
         <div className="flex items-center gap-3">
           <p className="text-sm font-medium text-white/80">{user.name}</p>

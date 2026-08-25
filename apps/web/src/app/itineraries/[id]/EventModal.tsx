@@ -310,9 +310,9 @@ export function EventModal({
 
   return (
     <Modal title={`${existing ? 'Edit' : 'New'} ${EVENT_TYPE_LABELS[type]}`} onClose={onClose} wide>
-      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {filteredLibrary.length > 0 && !existing && (
-          <div className="col-span-2 rounded-lg border border-dashed border-brand-200 bg-brand-50/50 p-3">
+          <div className="sm:col-span-2 rounded-lg border border-dashed border-brand-200 bg-brand-50/50 p-3">
             <input
               placeholder="Search library to fill from an existing template…"
               value={librarySearch}
@@ -335,7 +335,7 @@ export function EventModal({
           list={type === ItineraryEventType.ACCOMMODATION && hotels.length > 0 ? 'hotel-masters' : undefined}
           value={form.name}
           onChange={(e) => handleNameChange(e.target.value)}
-          className={`col-span-2 ${inputCls}`}
+          className={`sm:col-span-2 ${inputCls}`}
         />
         {type === ItineraryEventType.ACCOMMODATION && hotels.length > 0 && (
           <datalist id="hotel-masters">
@@ -407,7 +407,7 @@ export function EventModal({
             {type !== ItineraryEventType.CRUISE && (
               <input type="time" placeholder="End time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} className={inputCls} />
             )}
-            <label className="col-span-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+            <label className="sm:col-span-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
               <input type="checkbox" checked={form.showTime} onChange={(e) => setForm({ ...form, showTime: e.target.checked })} />
               Show Time on report
             </label>
@@ -440,7 +440,7 @@ export function EventModal({
           </>
         )}
 
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <div className="mb-1 flex items-center justify-between">
             <label className="text-xs text-slate-500">Description</label>
             <label className="flex items-center gap-1.5 text-xs text-slate-500">
@@ -460,7 +460,7 @@ export function EventModal({
           />
         </div>
 
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <label className="text-xs text-slate-500">Photo</label>
           <div className="mt-1 flex items-center gap-3">
             <input
@@ -474,7 +474,7 @@ export function EventModal({
           </div>
         </div>
 
-        <div className="col-span-2 border-t border-slate-100 pt-3">
+        <div className="sm:col-span-2 border-t border-slate-100 pt-3">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Add-ons</span>
             <button type="button" onClick={addAddOn} className="text-xs text-brand hover:underline">
@@ -492,17 +492,17 @@ export function EventModal({
           ))}
         </div>
 
-        <div className="col-span-2 border-t border-slate-100 pt-3">
+        <div className="sm:col-span-2 border-t border-slate-100 pt-3">
           <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">Pricing (optional — feeds the Pricing tab)</span>
-          <div className="mt-2 grid grid-cols-2 gap-3">
+          <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input type="number" min={0} placeholder="Net Amount (INR)" value={form.netAmount} onChange={(e) => setForm({ ...form, netAmount: e.target.value })} className={inputCls} />
             <input type="number" min={0} placeholder="Markup %" value={form.markupPct} onChange={(e) => setForm({ ...form, markupPct: e.target.value })} className={inputCls} />
           </div>
         </div>
 
-        {error && <p className="col-span-2 text-sm text-red-600">{error}</p>}
+        {error && <p className="sm:col-span-2 text-sm text-red-600">{error}</p>}
 
-        <button type="submit" disabled={saving} className="col-span-2 mt-2 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60">
+        <button type="submit" disabled={saving} className="sm:col-span-2 mt-2 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60">
           {saving ? 'Saving…' : existing ? 'Save Changes' : 'Add Event'}
         </button>
       </form>

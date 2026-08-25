@@ -115,8 +115,8 @@ export default function ReportsPage() {
           </div>
 
           <h2 className="mt-6 text-sm font-semibold text-slate-700">Branch target vs. achieved</h2>
-          <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
-            <table className="w-full text-sm">
+          <div className="mt-2 overflow-x-auto bg-white dark:bg-slate-800">
+            <table className="w-full min-w-[420px] text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
                 <tr><th className="px-4 py-2">Branch</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Achieved</th></tr>
               </thead>
@@ -164,8 +164,8 @@ export default function ReportsPage() {
             Revenue and payment costs bucket by when client/DMC payments were actually recorded; expenses bucket by their own date. Net margin = revenue − payment costs − expenses.
           </p>
           {pnlError && <p className="mt-2 text-sm text-red-600">{pnlError}</p>}
-          <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
-            <table className="w-full text-sm">
+          <div className="mt-2 overflow-x-auto bg-white dark:bg-slate-800">
+            <table className="w-full min-w-[620px] text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
                 <tr>
                   <th className="px-4 py-2">Month</th>
@@ -212,8 +212,8 @@ export default function ReportsPage() {
 
       <h2 className="mt-6 text-sm font-semibold text-slate-700">Passport/visa expiry compliance</h2>
       <p className="text-xs text-slate-500">Travelers on an upcoming booking with a passport expiring within 6 months of departure, or no visa status on file.</p>
-      <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
-        <table className="w-full text-sm">
+      <div className="mt-2 overflow-x-auto bg-white dark:bg-slate-800">
+        <table className="w-full min-w-[560px] text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr><th className="px-4 py-2">Traveler</th><th className="px-4 py-2">Departure</th><th className="px-4 py-2">Passport expiry</th><th className="px-4 py-2">Reason</th></tr>
           </thead>

@@ -116,23 +116,25 @@ export default function AccountsDashboardPage() {
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
               In ₹{ledger.totalIn.toLocaleString('en-IN')} · Out ₹{ledger.totalOut.toLocaleString('en-IN')} · Net ₹{ledger.net.toLocaleString('en-IN')}
             </p>
-            <table className="mt-2 w-full text-sm">
-              <thead className="text-left text-xs font-semibold uppercase tracking-wide text-brand">
-                <tr><th className="py-1">Source</th><th className="py-1">Description</th><th className="py-1 text-right">Amount</th></tr>
-              </thead>
-              <tbody>
-                {ledger.rows.map((r, i) => (
-                  <tr key={i} className="border-t border-slate-100 dark:border-slate-700">
-                    <td className="py-1.5 text-slate-500">{r.source.replaceAll('_', ' ')}</td>
-                    <td className="py-1.5 text-slate-700 dark:text-slate-200">{r.description}</td>
-                    <td className={`py-1.5 text-right ${r.direction === 'IN' ? 'text-blue-700' : 'text-amber-700'}`}>
-                      {r.direction === 'IN' ? '+' : '-'}₹{r.amount.toLocaleString('en-IN')}
-                    </td>
-                  </tr>
-                ))}
-                {ledger.rows.length === 0 && <tr><td colSpan={3} className="py-4 text-center text-slate-400">No transactions this day.</td></tr>}
-              </tbody>
-            </table>
+            <div className="mt-2 overflow-x-auto">
+              <table className="w-full min-w-[440px] text-sm">
+                <thead className="text-left text-xs font-semibold uppercase tracking-wide text-brand">
+                  <tr><th className="py-1">Source</th><th className="py-1">Description</th><th className="py-1 text-right">Amount</th></tr>
+                </thead>
+                <tbody>
+                  {ledger.rows.map((r, i) => (
+                    <tr key={i} className="border-t border-slate-100 dark:border-slate-700">
+                      <td className="py-1.5 text-slate-500">{r.source.replaceAll('_', ' ')}</td>
+                      <td className="py-1.5 text-slate-700 dark:text-slate-200">{r.description}</td>
+                      <td className={`py-1.5 text-right ${r.direction === 'IN' ? 'text-blue-700' : 'text-amber-700'}`}>
+                        {r.direction === 'IN' ? '+' : '-'}₹{r.amount.toLocaleString('en-IN')}
+                      </td>
+                    </tr>
+                  ))}
+                  {ledger.rows.length === 0 && <tr><td colSpan={3} className="py-4 text-center text-slate-400">No transactions this day.</td></tr>}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </div>
@@ -156,22 +158,24 @@ export default function AccountsDashboardPage() {
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
               {gst.invoiceCount} invoice{gst.invoiceCount === 1 ? '' : 's'} · Taxable value ₹{gst.taxableValue.toLocaleString('en-IN')} · GST collected ₹{gst.gstCollected.toLocaleString('en-IN')} · Total ₹{gst.totalInvoiced.toLocaleString('en-IN')}
             </p>
-            <table className="mt-2 w-full text-sm">
-              <thead className="text-left text-xs font-semibold uppercase tracking-wide text-brand">
-                <tr><th className="py-1">Invoice</th><th className="py-1">GSTIN</th><th className="py-1 text-right">Taxable</th><th className="py-1 text-right">GST</th></tr>
-              </thead>
-              <tbody>
-                {gst.rows.map((r) => (
-                  <tr key={r.invoiceNo} className="border-t border-slate-100 dark:border-slate-700">
-                    <td className="py-1.5 text-slate-700 dark:text-slate-200">{r.invoiceNo}</td>
-                    <td className="py-1.5 text-slate-500">{r.customerGstin ?? '—'}</td>
-                    <td className="py-1.5 text-right">₹{r.amount.toLocaleString('en-IN')}</td>
-                    <td className="py-1.5 text-right">₹{r.taxAmount.toLocaleString('en-IN')} ({r.gstRate}%)</td>
-                  </tr>
-                ))}
-                {gst.rows.length === 0 && <tr><td colSpan={4} className="py-4 text-center text-slate-400">No GST invoices this period.</td></tr>}
-              </tbody>
-            </table>
+            <div className="mt-2 overflow-x-auto">
+              <table className="w-full min-w-[520px] text-sm">
+                <thead className="text-left text-xs font-semibold uppercase tracking-wide text-brand">
+                  <tr><th className="py-1">Invoice</th><th className="py-1">GSTIN</th><th className="py-1 text-right">Taxable</th><th className="py-1 text-right">GST</th></tr>
+                </thead>
+                <tbody>
+                  {gst.rows.map((r) => (
+                    <tr key={r.invoiceNo} className="border-t border-slate-100 dark:border-slate-700">
+                      <td className="py-1.5 text-slate-700 dark:text-slate-200">{r.invoiceNo}</td>
+                      <td className="py-1.5 text-slate-500">{r.customerGstin ?? '—'}</td>
+                      <td className="py-1.5 text-right">₹{r.amount.toLocaleString('en-IN')}</td>
+                      <td className="py-1.5 text-right">₹{r.taxAmount.toLocaleString('en-IN')} ({r.gstRate}%)</td>
+                    </tr>
+                  ))}
+                  {gst.rows.length === 0 && <tr><td colSpan={4} className="py-4 text-center text-slate-400">No GST invoices this period.</td></tr>}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </div>

@@ -161,8 +161,8 @@ export function PricingTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReloa
     <div className="mt-4">
       {error && <p className="mb-2 text-sm text-red-600">{error}</p>}
 
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-2">
           {plan.pricingOptions.map((o, idx) => (
             <button
               key={o.id}
@@ -289,7 +289,7 @@ export function PricingTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReloa
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="rounded-xl border border-slate-200 bg-white dark:bg-slate-800 p-4">
               <p className="mb-2 text-xs font-semibold uppercase text-slate-400">Markup & Tax</p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {(
                   [
                     ['baseMarkupPct', 'Base Markup %'],

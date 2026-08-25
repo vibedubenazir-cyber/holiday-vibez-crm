@@ -318,13 +318,13 @@ export default function ItinerariesPage() {
 
       {showCreate && (
         <Modal title="Create Itinerary" onClose={() => setShowCreate(false)} wide>
-          <form onSubmit={handleCreate} className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleCreate} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input
               required
               placeholder="Itinerary Name"
               value={createForm.title}
               onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
-              className="col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="sm:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
             <label className="text-xs text-slate-500">
               Start Date
@@ -350,9 +350,9 @@ export default function ItinerariesPage() {
               placeholder="Destinations (comma separated)"
               value={createForm.destinations}
               onChange={(e) => setCreateForm({ ...createForm, destinations: e.target.value })}
-              className="col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="sm:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
-            <label className="col-span-2 text-xs text-slate-500">
+            <label className="sm:col-span-2 text-xs text-slate-500">
               Link to Lead (optional — enables one-click send to the client)
               <select
                 value={createForm.leadId}
@@ -372,10 +372,10 @@ export default function ItinerariesPage() {
               rows={2}
               value={createForm.notes}
               onChange={(e) => setCreateForm({ ...createForm, notes: e.target.value })}
-              className="col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="sm:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
 
-            <div className="col-span-2 mt-2 border-t border-slate-100 pt-3 text-sm font-semibold text-slate-700 dark:text-slate-200">Website Setting</div>
+            <div className="sm:col-span-2 mt-2 border-t border-slate-100 pt-3 text-sm font-semibold text-slate-700 dark:text-slate-200">Website Setting</div>
             <input
               placeholder="Theme"
               value={createForm.theme}
@@ -407,10 +407,10 @@ export default function ItinerariesPage() {
               rows={2}
               value={createForm.aboutPackage}
               onChange={(e) => setCreateForm({ ...createForm, aboutPackage: e.target.value })}
-              className="col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="sm:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
 
-            <button type="submit" disabled={saving} className="col-span-2 mt-2 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60">
+            <button type="submit" disabled={saving} className="sm:col-span-2 mt-2 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60">
               {saving ? 'Creating…' : 'Create'}
             </button>
           </form>
@@ -419,13 +419,13 @@ export default function ItinerariesPage() {
 
       {showAiCreate && (
         <Modal title="Create Itinerary via AI" onClose={() => setShowAiCreate(false)} wide>
-          <form onSubmit={handleGenerateAi} className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleGenerateAi} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input
               required
               placeholder="Destinations (comma separated)"
               value={aiForm.destinations}
               onChange={(e) => setAiForm({ ...aiForm, destinations: e.target.value })}
-              className="col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="sm:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
             <label className="text-xs text-slate-500">
               Start Date
@@ -455,25 +455,25 @@ export default function ItinerariesPage() {
             </select>
             <input placeholder="Meal Plan" value={aiForm.mealPlan} onChange={(e) => setAiForm({ ...aiForm, mealPlan: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <input placeholder="Pickup City" value={aiForm.pickupCity} onChange={(e) => setAiForm({ ...aiForm, pickupCity: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            <input placeholder="Budget" value={aiForm.budget} onChange={(e) => setAiForm({ ...aiForm, budget: e.target.value })} className="col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input placeholder="Budget" value={aiForm.budget} onChange={(e) => setAiForm({ ...aiForm, budget: e.target.value })} className="sm:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <textarea
               placeholder="Describe Your Trip Plan"
               rows={3}
               value={aiForm.freeText}
               onChange={(e) => setAiForm({ ...aiForm, freeText: e.target.value })}
-              className="col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="sm:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
             <textarea
               placeholder="Notes"
               rows={2}
               value={aiForm.notes}
               onChange={(e) => setAiForm({ ...aiForm, notes: e.target.value })}
-              className="col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="sm:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
 
-            {aiError && <p className="col-span-2 text-sm text-red-600">{aiError}</p>}
+            {aiError && <p className="sm:col-span-2 text-sm text-red-600">{aiError}</p>}
 
-            <button type="submit" disabled={saving} className="col-span-2 mt-2 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60">
+            <button type="submit" disabled={saving} className="sm:col-span-2 mt-2 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60">
               {saving ? 'Generating…' : 'Generate Itinerary'}
             </button>
           </form>

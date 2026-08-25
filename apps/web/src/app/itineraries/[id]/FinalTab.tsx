@@ -133,8 +133,8 @@ export function FinalTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
         <div className="text-sm text-slate-600 dark:text-slate-300">
           Status: <span className="font-semibold">{plan.status}</span>
           {publicUrl && (
-            <div className="mt-1 flex items-center gap-2">
-              <input readOnly value={publicUrl} className="w-72 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs" />
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <input readOnly value={publicUrl} className="w-full sm:w-72 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs" />
               <button onClick={() => handleCopy(publicUrl)} className="rounded-lg border border-slate-200 px-2 py-1 text-xs hover:bg-brand-50 hover:text-brand">
                 {copied ? 'Copied!' : 'Copy Link'}
               </button>

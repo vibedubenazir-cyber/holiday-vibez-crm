@@ -84,15 +84,15 @@ export default function CurrencyPage() {
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {canManage && showForm && (
-        <form onSubmit={handleCreate} className="mt-4 flex gap-2 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
+        <form onSubmit={handleCreate} className="mt-4 flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white dark:bg-slate-800 shadow-card transition-shadow hover:shadow-card-hover p-4">
           <input required placeholder="Code (e.g. CAD)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" maxLength={3} />
-          <input required type="number" step="0.0001" placeholder="Rate to INR" value={form.rateToInr} onChange={(e) => setForm({ ...form, rateToInr: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+          <input required type="number" step="0.0001" placeholder="Rate to INR" value={form.rateToInr} onChange={(e) => setForm({ ...form, rateToInr: e.target.value })} className="w-32 sm:w-auto rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
           <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Add</button>
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
-        <table className="w-full text-sm">
+      <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
+        <table className="w-full min-w-[720px] text-sm lg:min-w-0">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
               <th className="px-4 py-2">Currency</th>

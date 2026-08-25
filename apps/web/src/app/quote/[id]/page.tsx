@@ -67,7 +67,7 @@ export default function PublicQuotationPage() {
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm print:border-none print:shadow-none">
-        <div className="flex items-start justify-between border-b border-slate-200 pb-6">
+        <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-start sm:justify-between sm:gap-0">
           <div className="flex items-start gap-4">
             {quotation.company.logoUrl && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -82,7 +82,7 @@ export default function PublicQuotationPage() {
               </p>
             </div>
           </div>
-          <div className="text-right">
+          <div className="sm:text-right">
             <h2 className="text-lg font-semibold uppercase tracking-wide text-slate-700">Quotation</h2>
             <p className="mt-1 text-sm text-slate-500">No. {quotation.refNo}</p>
             <p className="text-sm text-slate-500">{new Date(quotation.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
@@ -96,32 +96,34 @@ export default function PublicQuotationPage() {
           <p className="text-sm text-slate-500">Destination: {quotation.client.destination}</p>
         </div>
 
-        <table className="mt-8 w-full text-sm">
-          <thead className="border-b border-slate-200 text-left text-xs font-semibold uppercase tracking-wide text-brand">
-            <tr>
-              <th className="py-2">Description</th>
-              <th className="py-2 text-right">Qty</th>
-              <th className="py-2 text-right">Unit amount</th>
-              <th className="py-2 text-right">Line total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {quotation.items.map((item, i) => (
-              <tr key={i} className="border-b border-slate-100">
-                <td className="py-2 pr-4">{item.description}</td>
-                <td className="py-2 text-right">{item.quantity}</td>
-                <td className="py-2 text-right">{quotation.currency} {item.unitAmount.toLocaleString('en-IN')}</td>
-                <td className="py-2 text-right">{quotation.currency} {item.lineTotal.toLocaleString('en-IN')}</td>
+        <div className="mt-8 overflow-x-auto">
+          <table className="w-full min-w-[480px] text-sm">
+            <thead className="border-b border-slate-200 text-left text-xs font-semibold uppercase tracking-wide text-brand">
+              <tr>
+                <th className="py-2">Description</th>
+                <th className="py-2 text-right">Qty</th>
+                <th className="py-2 text-right">Unit amount</th>
+                <th className="py-2 text-right">Line total</th>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="font-semibold">
-              <td colSpan={3} className="py-3 text-right">Total</td>
-              <td className="py-3 text-right">{quotation.currency} {quotation.totalAmount.toLocaleString('en-IN')}</td>
-            </tr>
-          </tfoot>
-        </table>
+            </thead>
+            <tbody>
+              {quotation.items.map((item, i) => (
+                <tr key={i} className="border-b border-slate-100">
+                  <td className="py-2 pr-4">{item.description}</td>
+                  <td className="py-2 text-right">{item.quantity}</td>
+                  <td className="py-2 text-right">{quotation.currency} {item.unitAmount.toLocaleString('en-IN')}</td>
+                  <td className="py-2 text-right">{quotation.currency} {item.lineTotal.toLocaleString('en-IN')}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="font-semibold">
+                <td colSpan={3} className="py-3 text-right">Total</td>
+                <td className="py-3 text-right">{quotation.currency} {quotation.totalAmount.toLocaleString('en-IN')}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
 
         <p className="mt-8 border-t border-slate-200 pt-4 text-xs text-slate-400">
           This quotation is valid for 7 days from the date above. Prices are subject to availability at the time of booking.

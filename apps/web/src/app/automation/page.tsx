@@ -115,9 +115,9 @@ export default function AutomationPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
+      <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
         <div className="border-b border-slate-100 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500">Rules</div>
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
               <th className="px-4 py-2">Name</th>
@@ -152,9 +152,9 @@ export default function AutomationPage() {
         </table>
       </div>
 
-      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
+      <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
         <div className="border-b border-slate-100 px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500">Recent fires</div>
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[520px] text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
               <th className="px-4 py-2">Rule</th>

@@ -255,12 +255,12 @@ export default function QuotationDetailPage() {
 
   return (
     <AppShell>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">{quotation.refNo}</h1>
           <p className="text-sm text-slate-500">{quotation.lead.clientName} · {quotation.lead.destination} · {quotation.status}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <a
             href={`/quotations/${id}/itinerary`}
             className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-brand-200 hover:bg-white dark:hover:bg-slate-800 hover:text-brand"
@@ -356,7 +356,7 @@ export default function QuotationDetailPage() {
                     <div key={hi} className="rounded-lg border border-slate-100 p-3">
                       <p className="text-sm font-medium text-slate-800">{hotel.hotelName} · {'★'.repeat(hotel.starRating)}</p>
                       <p className="text-xs text-slate-500">{hotel.address} · {hotel.nights} night(s)</p>
-                      <table className="mt-2 w-full text-xs">
+                      <div className="mt-2 overflow-x-auto"><table className="w-full text-xs">
                         <thead className="text-left text-slate-500"><tr><th className="py-1">Room</th><th>Meal</th><th>Nightly</th><th>Total (marked up)</th><th></th></tr></thead>
                         <tbody>
                           {hotel.rooms.map((room, ri) => (
@@ -369,7 +369,7 @@ export default function QuotationDetailPage() {
                             </tr>
                           ))}
                         </tbody>
-                      </table>
+                      </table></div>
                     </div>
                   ))}
                 </div>
@@ -406,7 +406,7 @@ export default function QuotationDetailPage() {
                   </div>
                   <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Search</button>
                 </form>
-                <table className="mt-3 w-full text-xs">
+                <div className="mt-3 overflow-x-auto"><table className="w-full text-xs">
                   <thead className="text-left text-slate-500"><tr><th className="py-1">Airline</th><th>Flight</th><th>Depart</th><th>Arrive</th><th>Class</th><th>Fare (marked up, x{flightForm.pax} pax)</th><th></th></tr></thead>
                   <tbody>
                     {flightResults.map((flight, fi) => (
@@ -421,7 +421,7 @@ export default function QuotationDetailPage() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               </>
             )}
           </div>
@@ -455,7 +455,7 @@ export default function QuotationDetailPage() {
                   </div>
                   <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Search</button>
                 </form>
-                <table className="mt-3 w-full text-xs">
+                <div className="mt-3 overflow-x-auto"><table className="w-full text-xs">
                   <thead className="text-left text-slate-500"><tr><th className="py-1">Vehicle</th><th>Capacity</th><th>Distance</th><th>Fare (marked up)</th><th></th></tr></thead>
                   <tbody>
                     {transferResults.map((transfer, ti) => (
@@ -468,7 +468,7 @@ export default function QuotationDetailPage() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               </>
             )}
           </div>
@@ -495,7 +495,7 @@ export default function QuotationDetailPage() {
         </form>
       )}
 
-      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
+      <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>

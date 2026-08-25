@@ -112,7 +112,7 @@ export default function SecurityPage() {
 
         {twoFactorEnabled ? (
           confirmingDisable ? (
-            <div className="mt-4 flex items-center gap-2">
+            <div className="mt-4 flex flex-wrap items-center gap-2">
               <input
                 type="text"
                 inputMode="numeric"
@@ -159,7 +159,7 @@ export default function SecurityPage() {
               Scan with an authenticator app (Google Authenticator, Authy, etc.), or enter this secret manually:{' '}
               <code className="rounded bg-slate-100 px-1 py-0.5">{setupData.secret}</code>
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <input
                 type="text"
                 inputMode="numeric"
@@ -239,8 +239,8 @@ export default function SecurityPage() {
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Devices currently signed in to your account. Revoke any you don't recognize.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
-        <table className="w-full text-sm">
+      <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr><th className="px-4 py-2">Device</th><th className="px-4 py-2">IP</th><th className="px-4 py-2">Since</th><th className="px-4 py-2"></th></tr>
           </thead>

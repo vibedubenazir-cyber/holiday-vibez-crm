@@ -163,7 +163,7 @@ export default function RosterPage() {
       {/* My own week */}
       <section className="mt-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
         <h2 className="text-sm font-semibold text-brand-700">My Week</h2>
-        <div className="mt-2 grid grid-cols-7 gap-2 text-center text-xs">
+        <div className="mt-2 grid grid-cols-2 gap-2 text-center text-xs sm:grid-cols-4 lg:grid-cols-7">
           {days.map((d) => {
             const entry = myRoster.find((r) => r.date.slice(0, 10) === isoDate(d));
             return (
@@ -180,7 +180,7 @@ export default function RosterPage() {
 
       {canManage && (
         <section className="mt-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setWeekStart((w) => { const n = new Date(w); n.setUTCDate(w.getUTCDate() - 7); return n; })}

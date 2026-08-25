@@ -146,8 +146,8 @@ export default function PerformancePage() {
       {isReviewer && (
         <>
           <p className="mt-6 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Reviews I&apos;ve Given</p>
-          <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
-            <table className="w-full text-sm">
+          <div className="mt-2 overflow-x-auto bg-white dark:bg-slate-800">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
                 <tr>
                   <th className="px-4 py-2">Employee</th>

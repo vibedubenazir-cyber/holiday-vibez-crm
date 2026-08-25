@@ -554,7 +554,7 @@ export default function DashboardPage() {
       {companyLeaderboard.length > 0 && (user?.role === Role.DIRECTOR || user?.role === Role.ADMIN) && (
         <>
           <h2 className="mt-8 text-sm font-semibold text-brand-700 dark:text-slate-100">Company performance by branch</h2>
-          <div className="mt-2 overflow-hidden rounded-xl bg-white shadow-card dark:bg-slate-800">
+          <div className="mt-2 overflow-x-auto rounded-xl bg-white shadow-card dark:bg-slate-800">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-700/50 dark:text-brand-200">
                 <tr><th className="px-4 py-2">Branch</th><th className="px-4 py-2 text-right">Achieved</th><th className="px-4 py-2 text-right">Target</th><th className="px-4 py-2">Progress</th></tr>

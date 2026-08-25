@@ -171,7 +171,7 @@ export default function PackagesPage() {
                 )}
 
                 {canBuildQuotation && (
-                  <div className="mt-3 flex items-end gap-2 border-t border-slate-100 pt-3">
+                  <div className="mt-3 flex flex-wrap items-end gap-2 border-t border-slate-100 pt-3">
                     <select
                       value={leadPick[p.id] ?? ''}
                       onChange={(e) => setLeadPick({ ...leadPick, [p.id]: e.target.value })}

@@ -124,7 +124,7 @@ export default function TargetsPage() {
       )}
 
       <h2 className="mt-6 text-sm font-semibold text-slate-700">Branch leaderboard</h2>
-      <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
+      <div className="mt-2 overflow-x-auto bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr><th className="px-4 py-2">Consultant</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Achieved</th><th className="px-4 py-2">%</th></tr>
@@ -150,7 +150,7 @@ export default function TargetsPage() {
       {companyLeaderboard.length > 0 && (
         <>
           <h2 className="mt-6 text-sm font-semibold text-slate-700">Company-wide (branches)</h2>
-          <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
+          <div className="mt-2 overflow-x-auto bg-white dark:bg-slate-800">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
                 <tr><th className="px-4 py-2">Branch</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Achieved</th></tr>

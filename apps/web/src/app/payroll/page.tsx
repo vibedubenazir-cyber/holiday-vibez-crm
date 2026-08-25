@@ -106,7 +106,7 @@ export default function PayrollPage() {
             </button>
           </form>
 
-          <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
+          <div className="mt-2 overflow-x-auto bg-white dark:bg-slate-800">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
                 <tr>
@@ -151,7 +151,7 @@ export default function PayrollPage() {
       )}
 
       <h2 className="mt-6 text-sm font-semibold text-brand-700 dark:text-slate-100">My payslips</h2>
-      <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
+      <div className="mt-2 overflow-x-auto bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
@@ -189,7 +189,7 @@ export default function PayrollPage() {
             <h2 className="text-sm font-semibold text-brand-700 dark:text-slate-100">Team payslips</h2>
             <input type="month" value={teamMonth} onChange={(e) => setTeamMonth(e.target.value)} className="rounded-lg border border-slate-300 px-2 py-1 text-sm" />
           </div>
-          <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
+          <div className="mt-2 overflow-x-auto bg-white dark:bg-slate-800">
             <table className="w-full text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
                 <tr>

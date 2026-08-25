@@ -125,8 +125,8 @@ export default function ReimbursementsPage() {
       )}
 
       <p className="mt-6 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">My Claims</p>
-      <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
-        <table className="w-full text-sm">
+      <div className="mt-2 overflow-x-auto bg-white dark:bg-slate-800">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
               <th className="px-4 py-2">Date</th>
@@ -158,11 +158,11 @@ export default function ReimbursementsPage() {
 
       {canSeeTeam && (
         <>
-          <div className="mt-6 flex items-center justify-between">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
               {me?.role === Role.BRANCH_MANAGER ? "Your Branch's Claims" : 'All Claims'}
             </p>
-            <div className="flex gap-1.5">
+            <div className="flex flex-wrap gap-1.5">
               {STATUS_FILTERS.map((s) => (
                 <button
                   key={s}
@@ -175,8 +175,8 @@ export default function ReimbursementsPage() {
             </div>
           </div>
 
-          <div className="mt-2 overflow-hidden bg-white dark:bg-slate-800">
-            <table className="w-full text-sm">
+          <div className="mt-2 overflow-x-auto bg-white dark:bg-slate-800">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
                 <tr>
                   <th className="px-4 py-2">Employee</th>

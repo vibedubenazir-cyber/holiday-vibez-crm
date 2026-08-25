@@ -809,7 +809,7 @@ export default function LeadDetailPage() {
                       + New Quotation
                     </button>
                   </div>
-                  <table className="w-full text-sm">
+                  <div className="overflow-x-auto"><table className="w-full text-sm">
                     <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
                       <tr><th className="px-3 py-2">Ref</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Total</th><th></th></tr>
                     </thead>
@@ -824,7 +824,7 @@ export default function LeadDetailPage() {
                       ))}
                       {quotations.length === 0 && <tr><td colSpan={4} className="px-3 py-4 text-center text-slate-400">No quotations yet.</td></tr>}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
 
                 <div>
@@ -993,7 +993,7 @@ export default function LeadDetailPage() {
           <form onSubmit={handleSubmitAi} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl dark:bg-slate-800">
             <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Create Itinerary via AI</h2>
             <p className="mt-1 text-xs text-slate-500">Destination is taken from this lead ({lead.destination}). Fill in the trip window and any notes for the AI draft.</p>
-            <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">From Date *</label>
                 <input required type="date" value={aiForm.startDate} onChange={(e) => setAiForm({ ...aiForm, startDate: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" />
@@ -1010,11 +1010,11 @@ export default function LeadDetailPage() {
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Children</label>
                 <input type="number" min={0} value={aiForm.childrenCount} onChange={(e) => setAiForm({ ...aiForm, childrenCount: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" />
               </div>
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Theme</label>
                 <input placeholder="Honeymoon, Family, Adventure…" value={aiForm.theme} onChange={(e) => setAiForm({ ...aiForm, theme: e.target.value })} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" />
               </div>
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Notes for AI</label>
                 <textarea rows={3} value={aiForm.freeText} onChange={(e) => setAiForm({ ...aiForm, freeText: e.target.value })} className="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900" />
               </div>

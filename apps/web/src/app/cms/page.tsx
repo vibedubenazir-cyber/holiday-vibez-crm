@@ -122,7 +122,7 @@ export default function CmsPage() {
             ))}
             {settings.length === 0 && <li className="text-sm text-slate-400">No settings yet.</li>}
           </ul>
-          <form onSubmit={handleSaveSetting} className="mt-3 flex gap-2">
+          <form onSubmit={handleSaveSetting} className="mt-3 flex flex-col gap-2 sm:flex-row">
             <input required placeholder="Key (e.g. contact_email)" value={settingForm.key} onChange={(e) => setSettingForm({ ...settingForm, key: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
             <input required placeholder="Value" value={settingForm.value} onChange={(e) => setSettingForm({ ...settingForm, value: e.target.value })} className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
             <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Save</button>
@@ -130,7 +130,7 @@ export default function CmsPage() {
         </div>
       )}
 
-      <div className="mt-4 flex gap-1 rounded-lg border border-slate-200 bg-white dark:bg-slate-800 p-1 text-sm">
+      <div className="mt-4 flex flex-wrap gap-1 rounded-lg border border-slate-200 bg-white dark:bg-slate-800 p-1 text-sm">
         {TYPE_TABS.map((t) => (
           <button
             key={t}

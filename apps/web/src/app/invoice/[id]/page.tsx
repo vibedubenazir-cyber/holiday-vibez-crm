@@ -70,8 +70,8 @@ export default function PublicInvoicePage() {
         </button>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm print:border-none print:shadow-none">
-        <div className="flex items-start justify-between border-b border-slate-200 pb-6">
+      <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm print:border-none print:shadow-none sm:p-8">
+        <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-start sm:justify-between sm:gap-0">
           <div className="flex items-start gap-4">
             {invoice.company.logoUrl && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -86,7 +86,7 @@ export default function PublicInvoicePage() {
               </p>
             </div>
           </div>
-          <div className="text-right">
+          <div className="sm:text-right">
             <h2 className="text-lg font-semibold uppercase tracking-wide text-slate-700">Tax Invoice</h2>
             <p className="mt-1 text-sm text-slate-500">No. {invoice.invoiceNo}</p>
             <p className="text-sm text-slate-500">{new Date(invoice.issuedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>

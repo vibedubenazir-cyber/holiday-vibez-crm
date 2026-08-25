@@ -197,7 +197,7 @@ export default function AssetsPage() {
 
       {canManage && (
         <>
-          <div className="mt-6 flex items-center gap-2">
+          <div className="mt-6 flex flex-wrap items-center gap-2">
             <span className="text-xs uppercase text-slate-400">Filter</span>
             {['', ...Object.values(AssetStatus)].map((s) => (
               <button

@@ -440,7 +440,7 @@ export default function BookingsPage() {
                     {(!reviews[b.id] || reviews[b.id].length === 0) && <li className="text-sm text-slate-400">No reviews yet.</li>}
                   </ul>
                   {canAddReviewFeedbackInsurance && (
-                    <div className="mt-2 flex items-end gap-2">
+                    <div className="mt-2 flex flex-wrap items-end gap-2">
                       <select value={reviewForm.rating} onChange={(e) => setReviewForm({ ...reviewForm, rating: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors">
                         {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} ★</option>)}
                       </select>

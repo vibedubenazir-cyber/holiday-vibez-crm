@@ -34,8 +34,8 @@ export default function MyLearningPage() {
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Your enrolled courses, progress, and earned certificates.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
-        <table className="w-full text-sm">
+      <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
+        <table className="w-full min-w-[560px] text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40">
             <tr>
               <th className="px-4 py-2">Course</th>

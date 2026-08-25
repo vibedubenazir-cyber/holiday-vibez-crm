@@ -30,7 +30,7 @@ export default function QuotationsPage() {
       <h1 className="text-2xl font-extrabold tracking-tight text-brand-700">Quotations</h1>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Start a quotation from a lead's page. Drafts are built here by selecting rate cards.</p>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-      <div className="mt-4 overflow-hidden bg-white dark:bg-slate-800">
+      <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
         <table className="w-full text-sm">
           <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
             <tr>
