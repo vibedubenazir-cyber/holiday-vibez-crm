@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { NotificationChannel, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { SAFE_USER_SELECT } from '../common/safe-user.select';
 import { NotificationsService } from '../notifications/notifications.service';
 import { normalizePhone } from '../notifications/phone.util';
 import { getLlmReply, LlmMessage } from './llm.util';
@@ -60,7 +61,7 @@ export class InboxService {
     return this.prisma.message.findMany({
       where: { conversationId },
       orderBy: { createdAt: 'asc' },
-      include: { sender: true },
+      include: { sender: { select: SAFE_USER_SELECT } },
     });
   }
 

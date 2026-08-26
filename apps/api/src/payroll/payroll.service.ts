@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { SAFE_USER_SELECT } from '../common/safe-user.select';
 import { UpsertSalaryStructureDto } from './dto/salary-structure.dto';
 import { GeneratePayslipDto } from './dto/generate-payslip.dto';
 
@@ -40,7 +41,7 @@ export class PayrollService {
   listSalaryStructures(filter: { branchId?: string }) {
     return this.prisma.salaryStructure.findMany({
       where: { user: filter.branchId ? { branchId: filter.branchId } : undefined },
-      include: { user: true },
+      include: { user: { select: SAFE_USER_SELECT } },
       orderBy: { updatedAt: 'desc' },
     });
   }
@@ -105,13 +106,13 @@ export class PayrollService {
         month: filter.month,
         user: filter.branchId ? { branchId: filter.branchId } : undefined,
       },
-      include: { user: true },
+      include: { user: { select: SAFE_USER_SELECT } },
       orderBy: { month: 'desc' },
     });
   }
 
   async findOneForActor(id: string, actor: { id: string; role: Role; branchId: string | null }) {
-    const payslip = await this.prisma.payslip.findUnique({ where: { id }, include: { user: true } });
+    const payslip = await this.prisma.payslip.findUnique({ where: { id }, include: { user: { select: SAFE_USER_SELECT } } });
     if (!payslip) throw new NotFoundException('Payslip not found');
     if (actor.role === Role.TRAVEL_CONSULTANT && payslip.userId !== actor.id) {
       throw new ForbiddenException('You can only view your own payslips');

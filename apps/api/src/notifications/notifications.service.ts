@@ -147,8 +147,11 @@ export class NotificationsService {
   // Registers/updates the calling user's FCM registration token, obtained
   // client-side from Firebase's Web SDK once they opt into push notifications
   // on /security (apps/web/src/lib/push.ts).
-  registerPushToken(userId: string, token: string) {
-    return this.prisma.user.update({ where: { id: userId }, data: { fcmToken: token } });
+  async registerPushToken(userId: string, token: string) {
+    // Persist the token but return only an ack — never the full User row, which
+    // would echo passwordHash / twoFactorSecret / fcmToken back to the browser.
+    await this.prisma.user.update({ where: { id: userId }, data: { fcmToken: token } });
+    return { success: true };
   }
 
   private async sendWhatsApp(notificationId: string, input: SendNotificationInput) {

@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { LeaveStatus, LeaveType, Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { SAFE_USER_SELECT } from '../common/safe-user.select';
 import { HrSettingsService, HR_SETTING_KEYS } from '../hr-settings/hr-settings.service';
 import { CreateLeaveDto } from './dto/create-leave.dto';
 import { HrCalendarService } from '../hr-calendar/hr-calendar.service';
@@ -105,7 +106,7 @@ export class LeaveService {
   findForBranch(filter: { branchId?: string }) {
     return this.prisma.leaveRequest.findMany({
       where: { user: filter.branchId ? { branchId: filter.branchId } : undefined },
-      include: { user: true },
+      include: { user: { select: SAFE_USER_SELECT } },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -138,7 +139,7 @@ export class LeaveService {
   }
 
   async review(id: string, status: 'APPROVED' | 'REJECTED', reviewerId: string, comment: string | undefined, actor: { role: Role; branchId: string | null }) {
-    const request = await this.prisma.leaveRequest.findUnique({ where: { id }, include: { user: true } });
+    const request = await this.prisma.leaveRequest.findUnique({ where: { id }, include: { user: { select: SAFE_USER_SELECT } } });
     if (!request) throw new NotFoundException('Leave request not found');
     if (request.status !== 'PENDING') throw new BadRequestException('This request has already been reviewed');
     if (request.userId === reviewerId) {

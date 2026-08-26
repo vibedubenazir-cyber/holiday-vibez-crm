@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
@@ -73,6 +73,16 @@ export class AuthService {
   // confirmTwoFactor validates the user actually scanned it and can produce a
   // matching code, so a half-finished setup never silently locks an account out.
   async setupTwoFactor(userId: string, email: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('User not found');
+    // Refuse to re-provision an account that already has 2FA on. Otherwise a
+    // leaked/short-lived token could silently replace the live secret with an
+    // attacker-known one, then pass disableTwoFactor's "prove a current code"
+    // check using that planted secret — a full takeover. Re-provisioning must
+    // go through disableTwoFactor first, which requires the current TOTP code.
+    if (user.twoFactorEnabled) {
+      throw new BadRequestException('Two-factor authentication is already enabled. Disable it first to set it up again.');
+    }
     const secret = authenticator.generateSecret();
     await this.prisma.user.update({ where: { id: userId }, data: { twoFactorSecret: secret } });
     const otpauthUrl = authenticator.keyuri(email, TOTP_ISSUER, secret);
@@ -131,7 +141,7 @@ export class AuthService {
     }
 
     const accessToken = this.jwtService.sign(
-      { sub: session.user.id, role: session.user.role },
+      { sub: session.user.id, role: session.user.role, typ: 'access' },
       { secret: process.env.JWT_SECRET, expiresIn: ACCESS_TOKEN_TTL },
     );
 
@@ -176,8 +186,10 @@ export class AuthService {
   }
 
   private async issueSession(user: User, deviceInfo: string, ipAddress: string) {
+    // `typ: 'access'` is what JwtAuthGuard checks — see the guard for why the
+    // 2FA challenge token (which lacks it) must never satisfy the guard.
     const accessToken = this.jwtService.sign(
-      { sub: user.id, role: user.role },
+      { sub: user.id, role: user.role, typ: 'access' },
       { secret: process.env.JWT_SECRET, expiresIn: ACCESS_TOKEN_TTL },
     );
 

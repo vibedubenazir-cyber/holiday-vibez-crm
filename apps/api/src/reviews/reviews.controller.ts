@@ -5,6 +5,7 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { ReviewStatusDto } from './dto/review-status.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -42,6 +43,9 @@ export class ReviewsController {
   }
 }
 
+// Unauthenticated, so it carries the same RateLimitGuard as the other public
+// endpoints — without it, this was an open, uncapped drain of customer data.
+@UseGuards(RateLimitGuard)
 @Controller('public/reviews')
 export class PublicReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}

@@ -20,6 +20,15 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       const payload = this.jwtService.verify(token, { secret: process.env.JWT_SECRET });
+      // Only tokens minted as real access tokens carry `typ: 'access'`. This is a
+      // positive allowlist: the pre-2FA login challenge token (signed with the
+      // same secret but marked `purpose: 'login-2fa-challenge'`, and any future
+      // special-purpose JWT) is rejected here, so possessing the password alone
+      // can never satisfy this guard — 2FA cannot be bypassed by replaying the
+      // challenge token as a bearer credential.
+      if (payload.typ !== 'access') {
+        throw new UnauthorizedException('Not an access token');
+      }
       const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
       if (!user || user.status === 'INACTIVE') {
         throw new UnauthorizedException('User inactive or not found');

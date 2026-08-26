@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { RegularisationStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { SAFE_USER_SELECT } from '../common/safe-user.select';
 import { CreateRegularisationDto } from './dto/regularisation.dto';
 
 function startOfToday(): Date {
@@ -132,7 +133,7 @@ export class AttendanceService {
   ) {
     const request = await this.prisma.attendanceRegularisation.findUnique({
       where: { id },
-      include: { user: true },
+      include: { user: { select: SAFE_USER_SELECT } },
     });
     if (!request) throw new NotFoundException('Regularisation request not found');
     if (request.status !== 'PENDING') throw new BadRequestException('This request has already been reviewed');
@@ -187,7 +188,7 @@ export class AttendanceService {
         date: monthStart && monthEnd ? { gte: monthStart, lt: monthEnd } : undefined,
         user: filter.branchId ? { branchId: filter.branchId } : undefined,
       },
-      include: { user: true },
+      include: { user: { select: SAFE_USER_SELECT } },
       orderBy: { date: 'desc' },
     });
   }
