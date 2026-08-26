@@ -540,6 +540,7 @@ model Branch {
   holidays         Holiday[]
   shifts           Shift[]
   assets           Asset[]
+  occasions        MarketingOccasion[]
 
   @@map("branches")
 }
@@ -2358,4 +2359,24 @@ model TripFlight {
 
   @@index([bookingId])
   @@map("trip_flights")
+}
+
+// Recurring client-facing festive/occasion greeting (Diwali, New Year, …).
+// month+day recur every year; the occasion-check job fires the WhatsApp
+// message to past clients on the matching day, deduped per year. Movable
+// festivals (Diwali, Holi, Eid) are edited annually to the correct date.
+model MarketingOccasion {
+  id               String   @id @default(uuid())
+  name             String
+  month            Int // 1-12
+  day              Int // 1-31
+  messageBody      String // WhatsApp text, supports {{name}}
+  active           Boolean  @default(true)
+  audienceBranchId String?
+  audienceBranch   Branch?  @relation(fields: [audienceBranchId], references: [id])
+  createdBy        String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("marketing_occasions")
 }

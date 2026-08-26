@@ -33,6 +33,8 @@ export class JobsProcessor extends WorkerHost {
           return await this.leadsService.checkSlaBreaches();
         case 'birthday-check':
           return await this.marketingService.checkBirthdaysAndAnniversaries();
+        case 'occasion-check':
+          return await this.marketingService.checkOccasions();
         case 'automation-sweep':
           return await this.automationService.runSweep();
         case 'currency-refresh':

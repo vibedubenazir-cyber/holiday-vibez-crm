@@ -6,6 +6,7 @@ import { SCHEDULED_JOBS_QUEUE } from './jobs.constants';
 export type JobName =
   | 'sla-check'
   | 'birthday-check'
+  | 'occasion-check'
   | 'automation-sweep'
   | 'currency-refresh'
   | 'compliance-check'
@@ -22,6 +23,9 @@ const SCHEDULES: { id: JobName; pattern: string; comment: string }[] = [
   // A real deployment checks birthdays/anniversaries once a day; every 6
   // hours here only so it's demonstrable without waiting a day between runs.
   { id: 'birthday-check', pattern: '0 */6 * * *', comment: 'every 6 hours (shortened for demonstrability)' },
+  // Festive/occasion greetings — also a once-a-day check in reality; the
+  // per-client-per-year dedup means extra runs on the day are harmless.
+  { id: 'occasion-check', pattern: '0 */6 * * *', comment: 'every 6 hours (shortened for demonstrability)' },
   { id: 'automation-sweep', pattern: '*/5 * * * *', comment: 'rule delays are minutes/hours, not days' },
   // A real forex feed only needs checking hourly — shortened for the same
   // demonstrability reason as birthday-check above.
