@@ -123,6 +123,13 @@ export class PayrollService {
     return this.prisma.payslip.findMany({ where: { userId }, orderBy: { month: 'desc' } });
   }
 
+  async deletePayslip(id: string) {
+    const payslip = await this.prisma.payslip.findUnique({ where: { id } });
+    if (!payslip) throw new NotFoundException('Payslip not found');
+    await this.prisma.payslip.delete({ where: { id } });
+    return { success: true };
+  }
+
   findForBranch(filter: { branchId?: string; month?: string }) {
     return this.prisma.payslip.findMany({
       where: {

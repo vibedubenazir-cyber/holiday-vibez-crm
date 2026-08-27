@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { Role } from '@prisma/client';
 import { PayrollService } from './payroll.service';
@@ -47,6 +47,14 @@ export class PayrollController {
   @Get('payslips/me')
   findMine(@CurrentUser() user: AuthUser) {
     return this.payrollService.findMine(user.id);
+  }
+
+  // Remove a payslip — lets an admin regenerate it after correcting attendance
+  // (generation is otherwise blocked by the one-per-month constraint).
+  @Roles(...ADMIN_ROLES)
+  @Delete('payslips/:id')
+  deletePayslip(@Param('id') id: string) {
+    return this.payrollService.deletePayslip(id);
   }
 
   @Roles(...ADMIN_ROLES, Role.BRANCH_MANAGER)
