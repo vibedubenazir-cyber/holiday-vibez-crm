@@ -14,6 +14,17 @@ const SETTING_FIELDS: { key: string; label: string; hint: string; fallback: numb
   { key: 'probation_period_days', label: 'Probation period (days)', hint: 'Auto-calculates each employee’s probation end date from their joining date', fallback: 90 },
 ];
 
+const WEEKLY_OFF_KEY = 'weekly_off_days';
+const DAYS = [
+  { n: 0, label: 'Sun' },
+  { n: 1, label: 'Mon' },
+  { n: 2, label: 'Tue' },
+  { n: 3, label: 'Wed' },
+  { n: 4, label: 'Thu' },
+  { n: 5, label: 'Fri' },
+  { n: 6, label: 'Sat' },
+];
+
 export default function HrSettingsPage() {
   const { user: me } = useAuth();
   const canManage = me?.role === Role.ADMIN || me?.role === Role.DIRECTOR;
@@ -22,6 +33,7 @@ export default function HrSettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
+  const [weeklyOff, setWeeklyOff] = useState<Set<number>>(new Set([0]));
 
   async function load() {
     try {
@@ -32,8 +44,26 @@ export default function HrSettingsPage() {
         map[f.key] = rows.find((r) => r.key === f.key)?.value ?? String(f.fallback);
       }
       setValues(map);
+      const wo = rows.find((r) => r.key === WEEKLY_OFF_KEY)?.value ?? '0';
+      setWeeklyOff(new Set(wo.split(',').map((s) => Number(s.trim())).filter((n) => n >= 0 && n <= 6)));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to load HR settings');
+    }
+  }
+
+  async function saveWeeklyOff() {
+    setError(null);
+    setSaved(null);
+    setSaving(WEEKLY_OFF_KEY);
+    try {
+      const value = Array.from(weeklyOff).sort((a, b) => a - b).join(',');
+      await api.put('/hr-settings', { key: WEEKLY_OFF_KEY, value });
+      setSaved(WEEKLY_OFF_KEY);
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to save weekly off');
+    } finally {
+      setSaving(null);
     }
   }
 
@@ -101,6 +131,55 @@ export default function HrSettingsPage() {
             )}
           </form>
         ))}
+      </div>
+
+      <div className="mt-3 rounded-xl border border-slate-200 bg-white p-4 shadow-card transition-shadow hover:shadow-card-hover dark:border-slate-700 dark:bg-slate-800">
+        <label className="text-sm font-medium text-slate-800 dark:text-slate-100">Weekly off days</label>
+        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+          Non-working days. Auto-absent marking skips them, and payroll counts loss-of-pay on working days only.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {DAYS.map((d) => {
+            const on = weeklyOff.has(d.n);
+            return (
+              <button
+                key={d.n}
+                type="button"
+                disabled={!canManage}
+                onClick={() =>
+                  setWeeklyOff((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(d.n)) next.delete(d.n);
+                    else next.add(d.n);
+                    return next;
+                  })
+                }
+                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-60 ${
+                  on
+                    ? 'border-brand-500 bg-brand-500 text-white'
+                    : 'border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700'
+                }`}
+              >
+                {d.label}
+              </button>
+            );
+          })}
+        </div>
+        {canManage && (
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              onClick={saveWeeklyOff}
+              disabled={saving === WEEKLY_OFF_KEY}
+              className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-1.5 text-sm font-semibold text-white shadow-md shadow-brand-500/25 transition hover:opacity-90 disabled:opacity-50"
+            >
+              {saving === WEEKLY_OFF_KEY ? 'Saving…' : 'Save weekly off'}
+            </button>
+            {saved === WEEKLY_OFF_KEY && <span className="text-xs font-medium text-emerald-600">Saved</span>}
+          </div>
+        )}
+        {!settings.find((s) => s.key === WEEKLY_OFF_KEY) && (
+          <p className="mt-2 text-xs text-slate-400">Not yet configured — defaulting to Sunday.</p>
+        )}
       </div>
     </AppShell>
   );

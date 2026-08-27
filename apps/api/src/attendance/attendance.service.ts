@@ -3,6 +3,7 @@ import { RegularisationStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { SAFE_USER_SELECT } from '../common/safe-user.select';
 import { CreateRegularisationDto } from './dto/regularisation.dto';
+import { HrSettingsService } from '../hr-settings/hr-settings.service';
 
 function startOfToday(): Date {
   const now = new Date();
@@ -26,7 +27,10 @@ function daysOverlapInMonth(reqStart: Date, reqEnd: Date, monthStart: Date, mont
 
 @Injectable()
 export class AttendanceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly hrSettings: HrSettingsService,
+  ) {}
 
   async today(userId: string) {
     return this.prisma.attendance.findUnique({
@@ -239,9 +243,10 @@ export class AttendanceService {
     }
     const dateStr = target.toISOString().slice(0, 10);
 
-    // Sunday is the default weekly off for the business.
-    if (target.getUTCDay() === 0) {
-      return { date: dateStr, marked: 0, skipped: true, reason: 'Weekly off (Sunday)' };
+    // Weekly-off days are configurable in HR Settings (default: Sunday).
+    const weeklyOff = new Set(await this.hrSettings.getWeeklyOffDays());
+    if (weeklyOff.has(target.getUTCDay())) {
+      return { date: dateStr, marked: 0, skipped: true, reason: 'Weekly off' };
     }
 
     // A public holiday for the whole org means nobody is absent that day; a

@@ -38,6 +38,12 @@ export class PayrollController {
   }
 
   @Roles(...ADMIN_ROLES)
+  @Delete('salary-structure/:userId')
+  deleteSalaryStructure(@Param('userId') userId: string) {
+    return this.payrollService.deleteSalaryStructure(userId);
+  }
+
+  @Roles(...ADMIN_ROLES)
   @Post('payslips/generate')
   generate(@CurrentUser() user: AuthUser, @Body() dto: GeneratePayslipDto) {
     return this.payrollService.generatePayslip(dto, user.id);

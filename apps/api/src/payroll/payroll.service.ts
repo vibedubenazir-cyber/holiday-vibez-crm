@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { SAFE_USER_SELECT } from '../common/safe-user.select';
+import { HrSettingsService } from '../hr-settings/hr-settings.service';
 import { UpsertSalaryStructureDto } from './dto/salary-structure.dto';
 import { GeneratePayslipDto } from './dto/generate-payslip.dto';
 
@@ -15,7 +16,10 @@ function monthRange(month: string): { start: Date; end: Date; daysInMonth: numbe
 
 @Injectable()
 export class PayrollService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly hrSettings: HrSettingsService,
+  ) {}
 
   async upsertSalaryStructure(userId: string, dto: UpsertSalaryStructureDto) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
@@ -29,6 +33,13 @@ export class PayrollService {
 
   findSalaryStructure(userId: string) {
     return this.prisma.salaryStructure.findUnique({ where: { userId } });
+  }
+
+  async deleteSalaryStructure(userId: string) {
+    const existing = await this.prisma.salaryStructure.findUnique({ where: { userId } });
+    if (!existing) throw new NotFoundException('No salary structure for this employee');
+    await this.prisma.salaryStructure.delete({ where: { userId } });
+    return { success: true };
   }
 
   listSalaryStructures(filter: { branchId?: string }) {
@@ -61,10 +72,11 @@ export class PayrollService {
       select: { date: true },
     });
     const holidaySet = new Set(holidayRows.map((h) => h.date.toISOString().slice(0, 10)));
+    const weeklyOff = new Set(await this.hrSettings.getWeeklyOffDays());
     const workingDayKeys: string[] = [];
     for (let d = new Date(start); d < end; d = new Date(d.getTime() + 86400000)) {
       const key = d.toISOString().slice(0, 10);
-      if (d.getUTCDay() !== 0 && !holidaySet.has(key)) workingDayKeys.push(key);
+      if (!weeklyOff.has(d.getUTCDay()) && !holidaySet.has(key)) workingDayKeys.push(key);
     }
     const workingDays = workingDayKeys.length;
 

@@ -10,6 +10,8 @@ export const HR_SETTING_KEYS = {
   LEAVE_QUOTA_ANNUAL: 'leave_quota_annual',
   STANDARD_NOTICE_PERIOD_DAYS: 'standard_notice_period_days',
   PROBATION_PERIOD_DAYS: 'probation_period_days',
+  // Comma-separated weekday numbers that are non-working (0=Sun … 6=Sat).
+  WEEKLY_OFF_DAYS: 'weekly_off_days',
 } as const;
 
 @Injectable()
@@ -35,5 +37,18 @@ export class HrSettingsService {
     const setting = await this.prisma.hrSetting.findUnique({ where: { key } });
     const parsed = setting ? Number(setting.value) : NaN;
     return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  // Weekday numbers (0=Sun … 6=Sat) the business is closed. Defaults to
+  // Sunday only when unset or invalid, matching the historical hardcoded
+  // behaviour. Read by the auto-absent job and payroll's working-day count.
+  async getWeeklyOffDays(): Promise<number[]> {
+    const setting = await this.prisma.hrSetting.findUnique({ where: { key: HR_SETTING_KEYS.WEEKLY_OFF_DAYS } });
+    if (!setting) return [0];
+    const days = setting.value
+      .split(',')
+      .map((s) => Number(s.trim()))
+      .filter((n) => Number.isInteger(n) && n >= 0 && n <= 6);
+    return days.length ? Array.from(new Set(days)) : [0];
   }
 }
