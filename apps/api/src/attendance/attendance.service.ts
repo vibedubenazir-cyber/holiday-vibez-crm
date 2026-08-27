@@ -73,6 +73,19 @@ export class AttendanceService {
     });
   }
 
+  async deleteRecord(id: string, actor: { role: Role; branchId: string | null }) {
+    const row = await this.prisma.attendance.findUnique({
+      where: { id },
+      include: { user: { select: { branchId: true } } },
+    });
+    if (!row) throw new NotFoundException('Attendance record not found');
+    if (actor.role === Role.BRANCH_MANAGER && actor.branchId !== row.user.branchId) {
+      throw new ForbiddenException("You can only delete your own branch's records");
+    }
+    await this.prisma.attendance.delete({ where: { id } });
+    return { success: true };
+  }
+
   // --- regularisation ------------------------------------------------------
   //
   // A missed punch used to be a permanent, unfixable absence — consultants at

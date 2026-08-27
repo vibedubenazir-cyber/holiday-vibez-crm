@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { AttendanceService } from './attendance.service';
 import { PunchDto } from './dto/punch.dto';
@@ -56,6 +56,13 @@ export class AttendanceController {
   @Post('mark-absentees')
   markAbsentees(@CurrentUser() user: AuthUser, @Body() dto: MarkAbsenteesDto) {
     return this.attendanceService.markAbsentees(dto.date, { branchId: resolveBranchScope(user, undefined) });
+  }
+
+  // Remove an attendance row — a wrong punch or a mistakenly-swept absence.
+  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER)
+  @Delete(':id')
+  deleteRecord(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.attendanceService.deleteRecord(id, user);
   }
 
   // --- regularisation -------------------------------------------------------
