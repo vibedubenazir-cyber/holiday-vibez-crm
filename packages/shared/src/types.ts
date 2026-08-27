@@ -309,6 +309,20 @@ export interface AttendanceDTO {
   user?: UserDTO;
 }
 
+// Per-employee roll-up of a month's attendance, computed on read from the raw
+// Attendance rows + approved leave (never persisted). Powers the summary table.
+export interface AttendanceSummaryRowDTO {
+  userId: string;
+  name: string;
+  employeeCode: string | null;
+  branchId: string | null;
+  presentDays: number;
+  absentDays: number;
+  leaveDays: number;
+  avgHours: number; // mean of (check-out − check-in) across days with both punches
+  totalHours: number;
+}
+
 export interface ConversationDTO {
   id: string;
   leadId: string;

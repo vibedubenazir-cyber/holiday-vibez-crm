@@ -2,6 +2,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { LeadsService } from '../leads/leads.service';
 import { MarketingService } from '../marketing/marketing.service';
+import { AttendanceService } from '../attendance/attendance.service';
 import { AutomationService } from '../automation/automation.service';
 import { CurrencyService } from '../currency/currency.service';
 import { ReportsService } from '../reports/reports.service';
@@ -22,6 +23,7 @@ export class JobsProcessor extends WorkerHost {
     private readonly bookingsService: BookingsService,
     private readonly calendarService: CalendarService,
     private readonly tripFlightsService: TripFlightsService,
+    private readonly attendanceService: AttendanceService,
   ) {
     super();
   }
@@ -47,6 +49,8 @@ export class JobsProcessor extends WorkerHost {
           return await this.calendarService.notifyUpcomingDepartures();
         case 'flight-status-poll':
           return await this.tripFlightsService.pollLiveStatuses();
+        case 'absentee-check':
+          return await this.attendanceService.markAbsentees();
       }
     } catch (err) {
       console.error(`Scheduled job "${job.name}" failed`, err);

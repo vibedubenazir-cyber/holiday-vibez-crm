@@ -3,6 +3,7 @@ import { Role } from '@prisma/client';
 import { AttendanceService } from './attendance.service';
 import { PunchDto } from './dto/punch.dto';
 import { CreateRegularisationDto, ReviewRegularisationDto } from './dto/regularisation.dto';
+import { MarkAbsenteesDto } from './dto/mark-absentees.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -41,6 +42,20 @@ export class AttendanceController {
   findForBranch(@CurrentUser() user: AuthUser, @Query('branchId') branchId?: string, @Query('month') month?: string) {
     const scopedBranchId = resolveBranchScope(user, branchId);
     return this.attendanceService.findForBranch({ branchId: scopedBranchId, month });
+  }
+
+  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER)
+  @Get('summary')
+  summary(@CurrentUser() user: AuthUser, @Query('branchId') branchId?: string, @Query('month') month?: string) {
+    return this.attendanceService.monthlySummary({ branchId: resolveBranchScope(user, branchId), month });
+  }
+
+  // Manual trigger for the same sweep the daily cron runs — lets a manager
+  // close out a day on demand. Branch-scoped for branch managers.
+  @Roles(Role.ADMIN, Role.DIRECTOR, Role.BRANCH_MANAGER)
+  @Post('mark-absentees')
+  markAbsentees(@CurrentUser() user: AuthUser, @Body() dto: MarkAbsenteesDto) {
+    return this.attendanceService.markAbsentees(dto.date, { branchId: resolveBranchScope(user, undefined) });
   }
 
   // --- regularisation -------------------------------------------------------

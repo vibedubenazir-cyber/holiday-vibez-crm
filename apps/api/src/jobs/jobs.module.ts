@@ -10,6 +10,7 @@ import { ReportsModule } from '../reports/reports.module';
 import { BookingsModule } from '../bookings/bookings.module';
 import { CalendarModule } from '../calendar/calendar.module';
 import { TripFlightsModule } from '../trip-flights/trip-flights.module';
+import { AttendanceModule } from '../attendance/attendance.module';
 import { JobsProcessor } from './jobs.processor';
 import { JobsScheduler } from './jobs.scheduler';
 import { SCHEDULED_JOBS_QUEUE } from './jobs.constants';
@@ -34,6 +35,7 @@ import { SCHEDULED_JOBS_QUEUE } from './jobs.constants';
     BookingsModule,
     CalendarModule,
     TripFlightsModule,
+    AttendanceModule,
   ],
   providers: [JobsProcessor, JobsScheduler],
 })

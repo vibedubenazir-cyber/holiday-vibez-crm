@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { AppShell } from '@/components/AppShell';
 import { useAuth } from '@/lib/auth-context';
 import { api, ApiError } from '@/lib/api';
-import { Role, type AttendanceDTO, type AttendanceRegularisationDTO } from '@holiday-vibez/shared';
+import { Role, type AttendanceDTO, type AttendanceRegularisationDTO, type AttendanceSummaryRowDTO } from '@holiday-vibez/shared';
 
 const REG_STATUS_STYLES: Record<string, string> = {
   PENDING: 'bg-amber-100 text-amber-700',
@@ -12,15 +12,26 @@ const REG_STATUS_STYLES: Record<string, string> = {
   REJECTED: 'bg-red-100 text-red-700',
 };
 
+const ATT_STATUS_STYLES: Record<string, string> = {
+  PRESENT: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+  ABSENT: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+  ON_LEAVE: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  HALF_DAY: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+};
+
 export default function AttendancePage() {
   const { user: me } = useAuth();
   const [today, setToday] = useState<AttendanceDTO | null>(null);
   const [team, setTeam] = useState<AttendanceDTO[]>([]);
+  const [summary, setSummary] = useState<AttendanceSummaryRowDTO[]>([]);
   const [myRegs, setMyRegs] = useState<AttendanceRegularisationDTO[]>([]);
   const [pendingRegs, setPendingRegs] = useState<AttendanceRegularisationDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [sweepMsg, setSweepMsg] = useState<string | null>(null);
+  const [sweeping, setSweeping] = useState(false);
   const [showRegForm, setShowRegForm] = useState(false);
   const [regForm, setRegForm] = useState({ date: '', checkIn: '', checkOut: '', reason: '' });
+  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
   const canSeeTeam = me?.role === Role.ADMIN || me?.role === Role.DIRECTOR || me?.role === Role.BRANCH_MANAGER;
 
   async function load() {
@@ -28,12 +39,32 @@ export default function AttendancePage() {
       const todayRes = await api.get<AttendanceDTO | null>('/attendance/me/today');
       setToday(todayRes);
       if (canSeeTeam) {
-        setTeam(await api.get<AttendanceDTO[]>(`/attendance?month=${new Date().toISOString().slice(0, 7)}`));
+        setTeam(await api.get<AttendanceDTO[]>(`/attendance?month=${month}`));
+        setSummary(await api.get<AttendanceSummaryRowDTO[]>(`/attendance/summary?month=${month}`));
         setPendingRegs(await api.get<AttendanceRegularisationDTO[]>('/attendance/regularisations?status=PENDING'));
       }
       setMyRegs(await api.get<AttendanceRegularisationDTO[]>('/attendance/regularisations/me'));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to load attendance');
+    }
+  }
+
+  async function runAbsenteeSweep() {
+    setError(null);
+    setSweepMsg(null);
+    setSweeping(true);
+    try {
+      const res = await api.post<{ date: string; marked: number; skipped: boolean; reason?: string }>('/attendance/mark-absentees', {});
+      setSweepMsg(
+        res.skipped
+          ? `${res.date}: skipped — ${res.reason}`
+          : `${res.date}: marked ${res.marked} employee${res.marked === 1 ? '' : 's'} absent`,
+      );
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to run absentee sweep');
+    } finally {
+      setSweeping(false);
     }
   }
 
@@ -68,7 +99,7 @@ export default function AttendancePage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [month, me?.id]);
 
   function getLocation(): Promise<{ lat?: number; lng?: number }> {
     return new Promise((resolve) => {
@@ -209,8 +240,66 @@ export default function AttendancePage() {
       )}
 
       {canSeeTeam && (
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <label className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Month
+            <input
+              type="month"
+              value={month}
+              max={new Date().toISOString().slice(0, 7)}
+              onChange={(e) => setMonth(e.target.value)}
+              className="ml-2 rounded-lg border border-slate-300 px-2 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-900"
+            />
+          </label>
+          <button
+            onClick={runAbsenteeSweep}
+            disabled={sweeping}
+            className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300"
+            title="Mark every active employee who didn't punch (and isn't on leave) absent for yesterday"
+          >
+            {sweeping ? 'Marking…' : 'Mark absentees for yesterday'}
+          </button>
+          {sweepMsg && <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{sweepMsg}</span>}
+        </div>
+      )}
+
+      {canSeeTeam && (
         <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
-          <div className="border-b border-slate-100 px-4 py-2 text-sm font-medium text-slate-800">Team attendance — this month</div>
+          <div className="border-b border-slate-100 px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-100">Monthly summary</div>
+          <table className="w-full text-sm">
+            <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
+              <tr>
+                <th className="px-4 py-2">Employee</th>
+                <th className="px-4 py-2 text-center">Present</th>
+                <th className="px-4 py-2 text-center">Absent</th>
+                <th className="px-4 py-2 text-center">Leave</th>
+                <th className="px-4 py-2 text-center">Avg hrs</th>
+              </tr>
+            </thead>
+            <tbody>
+              {summary.map((s) => (
+                <tr key={s.userId} className="border-t border-slate-100 dark:border-slate-700">
+                  <td className="px-4 py-2 font-medium text-slate-700 dark:text-slate-200">
+                    {s.name}
+                    {s.employeeCode && <span className="ml-1 text-xs text-slate-400">({s.employeeCode})</span>}
+                  </td>
+                  <td className="px-4 py-2 text-center font-semibold text-emerald-600 dark:text-emerald-400">{s.presentDays}</td>
+                  <td className={`px-4 py-2 text-center font-semibold ${s.absentDays > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-300 dark:text-slate-600'}`}>{s.absentDays}</td>
+                  <td className={`px-4 py-2 text-center ${s.leaveDays > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-300 dark:text-slate-600'}`}>{s.leaveDays}</td>
+                  <td className="px-4 py-2 text-center text-slate-600 dark:text-slate-300">{s.avgHours ? `${s.avgHours}h` : '—'}</td>
+                </tr>
+              ))}
+              {summary.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-6 text-center text-slate-400">No employees in scope.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {canSeeTeam && (
+        <div className="mt-4 overflow-x-auto bg-white dark:bg-slate-800">
+          <div className="border-b border-slate-100 px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-100">Team attendance — daily log</div>
           <table className="w-full text-sm">
             <thead className="bg-brand-50/60 text-left text-xs font-semibold uppercase tracking-wide text-brand-700 dark:bg-slate-900/40 dark:text-brand-300">
               <tr>
@@ -245,7 +334,11 @@ export default function AttendancePage() {
                       '—'
                     )}
                   </td>
-                  <td className="px-4 py-2">{a.status}</td>
+                  <td className="px-4 py-2">
+                    <span className={`rounded px-2 py-0.5 text-xs font-medium ${ATT_STATUS_STYLES[a.status] ?? 'bg-slate-100 text-slate-600'}`}>
+                      {a.status.replace('_', ' ')}
+                    </span>
+                  </td>
                 </tr>
               ))}
               {team.length === 0 && (

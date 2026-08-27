@@ -12,7 +12,8 @@ export type JobName =
   | 'compliance-check'
   | 'engagement-reminders'
   | 'consultant-departure-reminders'
-  | 'flight-status-poll';
+  | 'flight-status-poll'
+  | 'absentee-check';
 
 // upsertJobScheduler is idempotent: calling it again with the same scheduler
 // id (re)sets the schedule instead of creating a duplicate, so this can run
@@ -43,6 +44,10 @@ const SCHEDULES: { id: JobName; pattern: string; comment: string }[] = [
   // one job whose real cadence IS this fast. Costs nothing until
   // FLIGHT_API_KEY is set — the handler no-ops without it.
   { id: 'flight-status-poll', pattern: '*/30 * * * *', comment: 'every 30 minutes' },
+  // Marks yesterday's no-shows ABSENT (skips weekly-off + public holidays).
+  // Runs once daily after the day has fully closed; idempotent, so a re-run
+  // only fills genuinely new gaps.
+  { id: 'absentee-check', pattern: '30 1 * * *', comment: 'daily at 01:30 — sweeps the prior day' },
 ];
 
 @Injectable()
