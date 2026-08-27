@@ -3,7 +3,17 @@ import { AssignmentScope, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { resolveBranchScope } from '../common/branch-scope.util';
-import { CreateCourseDto, CreateLessonDto, CreateQuizQuestionDto, SubmitQuizDto, UpdateCourseDto } from './dto/course.dto';
+import {
+  CheckSelfAssessmentDto,
+  CreateChapterDto,
+  CreateCourseDto,
+  CreateLessonDto,
+  CreateQuizQuestionDto,
+  CreateSelfAssessmentQuestionDto,
+  SubmitQuizDto,
+  UpdateChapterDto,
+  UpdateCourseDto,
+} from './dto/course.dto';
 import { CreateAssignmentDto } from './dto/assignment.dto';
 
 const PASS_THRESHOLD = 0.7;
@@ -48,9 +58,88 @@ export class LmsService {
     return this.prisma.course.update({ where: { id: courseId }, data: dto });
   }
 
+  // --- chapters ------------------------------------------------------------
+
+  async addChapter(courseId: string, dto: CreateChapterDto) {
+    await this.requireCourse(courseId);
+    return this.prisma.chapter.create({ data: { courseId, title: dto.title, order: dto.order ?? 0 } });
+  }
+
+  async updateChapter(chapterId: string, dto: UpdateChapterDto) {
+    await this.requireChapter(chapterId);
+    return this.prisma.chapter.update({ where: { id: chapterId }, data: { title: dto.title, order: dto.order } });
+  }
+
+  async deleteChapter(chapterId: string) {
+    await this.requireChapter(chapterId);
+    const lessonCount = await this.prisma.lesson.count({ where: { chapterId } });
+    if (lessonCount > 0) {
+      throw new BadRequestException('Move or delete this chapter’s lessons before removing it');
+    }
+    // Self-assessment questions cascade-delete with the chapter.
+    await this.prisma.chapter.delete({ where: { id: chapterId } });
+    return { success: true };
+  }
+
+  // Resolve the chapter a new lesson should land in: the one requested, else
+  // the course's first chapter, else a freshly-created "Chapter 1".
+  private async resolveChapterForLesson(courseId: string, chapterId?: string): Promise<string> {
+    if (chapterId) {
+      const chapter = await this.prisma.chapter.findUnique({ where: { id: chapterId } });
+      if (!chapter || chapter.courseId !== courseId) throw new BadRequestException('Chapter not found on this course');
+      return chapter.id;
+    }
+    const first = await this.prisma.chapter.findFirst({ where: { courseId }, orderBy: { order: 'asc' } });
+    if (first) return first.id;
+    const created = await this.prisma.chapter.create({ data: { courseId, title: 'Chapter 1', order: 0 } });
+    return created.id;
+  }
+
   async addLesson(courseId: string, dto: CreateLessonDto) {
     await this.requireCourse(courseId);
-    return this.prisma.lesson.create({ data: { courseId, title: dto.title, content: dto.content, order: dto.order ?? 0 } });
+    const chapterId = await this.resolveChapterForLesson(courseId, dto.chapterId);
+    return this.prisma.lesson.create({
+      data: { courseId, chapterId, title: dto.title, content: dto.content, order: dto.order ?? 0 },
+    });
+  }
+
+  // --- self-assessment (ungraded practice) ---------------------------------
+
+  async addSelfAssessmentQuestion(chapterId: string, dto: CreateSelfAssessmentQuestionDto) {
+    await this.requireChapter(chapterId);
+    if (dto.correctIndex < 0 || dto.correctIndex >= dto.options.length) {
+      throw new BadRequestException('correctIndex must reference one of the provided options');
+    }
+    return this.prisma.selfAssessmentQuestion.create({
+      data: { chapterId, text: dto.text, options: dto.options, correctIndex: dto.correctIndex, explanation: dto.explanation, order: dto.order ?? 0 },
+    });
+  }
+
+  async deleteSelfAssessmentQuestion(questionId: string) {
+    const q = await this.prisma.selfAssessmentQuestion.findUnique({ where: { id: questionId } });
+    if (!q) throw new NotFoundException('Self-assessment question not found');
+    await this.prisma.selfAssessmentQuestion.delete({ where: { id: questionId } });
+    return { success: true };
+  }
+
+  // Grade a chapter's practice questions and return per-question feedback.
+  // Nothing is persisted — learners can retake freely; it never gates the course.
+  async checkSelfAssessment(courseId: string, chapterId: string, userId: string, dto: CheckSelfAssessmentDto) {
+    await this.requireEnrollment(courseId, userId);
+    const chapter = await this.prisma.chapter.findUnique({ where: { id: chapterId } });
+    if (!chapter || chapter.courseId !== courseId) throw new NotFoundException('Chapter not found on this course');
+
+    const questions = await this.prisma.selfAssessmentQuestion.findMany({ where: { chapterId }, orderBy: { order: 'asc' } });
+    if (questions.length === 0) throw new BadRequestException('This chapter has no self-assessment');
+
+    let correct = 0;
+    const results = questions.map((q) => {
+      const answer = dto.answers.find((a) => a.questionId === q.id);
+      const isCorrect = !!answer && answer.selectedIndex === q.correctIndex;
+      if (isCorrect) correct++;
+      return { questionId: q.id, correct: isCorrect, correctIndex: q.correctIndex, explanation: q.explanation };
+    });
+    return { correct, total: questions.length, results };
   }
 
   async addQuizQuestion(courseId: string, dto: CreateQuizQuestionDto) {
@@ -69,6 +158,13 @@ export class LmsService {
       include: {
         lessons: { orderBy: { order: 'asc' } },
         quizQuestions: { orderBy: { order: 'asc' } },
+        chapters: {
+          orderBy: { order: 'asc' },
+          include: {
+            lessons: { orderBy: { order: 'asc' } },
+            selfAssessmentQuestions: { orderBy: { order: 'asc' } },
+          },
+        },
       },
     });
     if (!course) throw new NotFoundException('Course not found');
@@ -94,6 +190,21 @@ export class LmsService {
       imageUrl: course.imageUrl,
       active: course.active,
       lessons: course.lessons,
+      chapters: course.chapters.map((ch) => ({
+        id: ch.id,
+        title: ch.title,
+        order: ch.order,
+        lessons: ch.lessons,
+        // Answer key + explanation only go to managers; learners get them
+        // per-question after they submit, via checkSelfAssessment.
+        selfAssessment: ch.selfAssessmentQuestions.map((q) => ({
+          id: q.id,
+          text: q.text,
+          options: q.options,
+          order: q.order,
+          ...(isManager ? { correctIndex: q.correctIndex, explanation: q.explanation } : {}),
+        })),
+      })),
       // Never leak the answer key to non-managers — front-end quiz form only needs text+options.
       quizQuestions: course.quizQuestions.map((q) => ({
         id: q.id,
@@ -398,6 +509,12 @@ export class LmsService {
     const course = await this.prisma.course.findUnique({ where: { id: courseId } });
     if (!course) throw new NotFoundException('Course not found');
     return course;
+  }
+
+  private async requireChapter(chapterId: string) {
+    const chapter = await this.prisma.chapter.findUnique({ where: { id: chapterId } });
+    if (!chapter) throw new NotFoundException('Chapter not found');
+    return chapter;
   }
 
   private async requireEnrollment(courseId: string, userId: string) {

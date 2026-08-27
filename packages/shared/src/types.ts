@@ -767,6 +767,31 @@ export interface QuizQuestionDTO {
   correctIndex?: number;
 }
 
+export interface SelfAssessmentQuestionDTO {
+  id: string;
+  text: string;
+  options: string[];
+  order: number;
+  // Only present for managers/authors; learners get the answer key back
+  // per-question after submitting, via the self-assessment check endpoint.
+  correctIndex?: number;
+  explanation?: string | null;
+}
+
+export interface ChapterDTO {
+  id: string;
+  title: string;
+  order: number;
+  lessons: LessonDTO[];
+  selfAssessment: SelfAssessmentQuestionDTO[];
+}
+
+export interface SelfAssessmentResultDTO {
+  correct: number;
+  total: number;
+  results: { questionId: string; correct: boolean; correctIndex: number; explanation: string | null }[];
+}
+
 export interface QuizAttemptDTO {
   id: string;
   enrollmentId: string;
@@ -791,6 +816,7 @@ export interface CourseDetailDTO {
   imageUrl: string | null;
   active: boolean;
   lessons: LessonDTO[];
+  chapters: ChapterDTO[];
   quizQuestions: QuizQuestionDTO[];
   enrolled: boolean;
   completedLessonIds: string[];

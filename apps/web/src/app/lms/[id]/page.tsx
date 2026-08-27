@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { AppShell } from '@/components/AppShell';
 import { useAuth } from '@/lib/auth-context';
 import { api, ApiError } from '@/lib/api';
-import { Role, type CourseDetailDTO } from '@holiday-vibez/shared';
+import { Role, type CourseDetailDTO, type SelfAssessmentResultDTO } from '@holiday-vibez/shared';
 
 export default function CourseDetailPage() {
   const params = useParams<{ id: string }>();
@@ -19,10 +19,20 @@ export default function CourseDetailPage() {
   const [submittingQuiz, setSubmittingQuiz] = useState(false);
   const isManager = me?.role === Role.ADMIN || me?.role === Role.DIRECTOR;
 
-  const [lessonForm, setLessonForm] = useState({ title: '', content: '' });
-  const [showLessonForm, setShowLessonForm] = useState(false);
-  const [questionForm, setQuestionForm] = useState({ text: '', options: ['', ''], correctIndex: 0 });
+  // Manager authoring drafts (one open at a time)
+  const [showChapterForm, setShowChapterForm] = useState(false);
+  const [chapterDraft, setChapterDraft] = useState('');
+  const [lessonChapterId, setLessonChapterId] = useState<string | null>(null);
+  const [lessonDraft, setLessonDraft] = useState({ title: '', content: '' });
+  const [saChapterId, setSaChapterId] = useState<string | null>(null);
+  const [saDraft, setSaDraft] = useState({ text: '', options: ['', ''], correctIndex: 0, explanation: '' });
   const [showQuestionForm, setShowQuestionForm] = useState(false);
+  const [questionForm, setQuestionForm] = useState({ text: '', options: ['', ''], correctIndex: 0 });
+
+  // Learner self-assessment state (per chapter)
+  const [saAnswers, setSaAnswers] = useState<Record<string, Record<string, number>>>({});
+  const [saResults, setSaResults] = useState<Record<string, SelfAssessmentResultDTO>>({});
+  const [saBusy, setSaBusy] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -79,17 +89,91 @@ export default function CourseDetailPage() {
     }
   }
 
-  async function handleAddLesson(e: FormEvent) {
+  async function handleAddChapter(e: FormEvent) {
     e.preventDefault();
     setError(null);
     try {
-      await api.post(`/lms/courses/${courseId}/lessons`, lessonForm);
-      setLessonForm({ title: '', content: '' });
-      setShowLessonForm(false);
+      await api.post(`/lms/courses/${courseId}/chapters`, { title: chapterDraft });
+      setChapterDraft('');
+      setShowChapterForm(false);
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to add chapter');
+    }
+  }
+
+  async function handleDeleteChapter(chapterId: string) {
+    setError(null);
+    try {
+      await api.delete(`/lms/chapters/${chapterId}`);
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to delete chapter');
+    }
+  }
+
+  async function handleAddLesson(e: FormEvent, chapterId: string) {
+    e.preventDefault();
+    setError(null);
+    try {
+      await api.post(`/lms/courses/${courseId}/lessons`, { ...lessonDraft, chapterId });
+      setLessonDraft({ title: '', content: '' });
+      setLessonChapterId(null);
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to add lesson');
     }
+  }
+
+  async function handleAddSaQuestion(e: FormEvent, chapterId: string) {
+    e.preventDefault();
+    setError(null);
+    try {
+      await api.post(`/lms/chapters/${chapterId}/self-assessment`, {
+        text: saDraft.text,
+        options: saDraft.options.filter((o) => o.trim() !== ''),
+        correctIndex: saDraft.correctIndex,
+        explanation: saDraft.explanation.trim() || undefined,
+      });
+      setSaDraft({ text: '', options: ['', ''], correctIndex: 0, explanation: '' });
+      setSaChapterId(null);
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to add self-assessment question');
+    }
+  }
+
+  async function handleDeleteSaQuestion(questionId: string) {
+    setError(null);
+    try {
+      await api.delete(`/lms/self-assessment/${questionId}`);
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to delete question');
+    }
+  }
+
+  async function handleCheckSelfAssessment(chapterId: string, questionIds: string[]) {
+    setSaBusy(chapterId);
+    setError(null);
+    try {
+      const answers = questionIds.map((qid) => ({ questionId: qid, selectedIndex: saAnswers[chapterId]?.[qid] ?? -1 }));
+      const result = await api.post<SelfAssessmentResultDTO>(`/lms/courses/${courseId}/chapters/${chapterId}/self-assessment/check`, { answers });
+      setSaResults((r) => ({ ...r, [chapterId]: result }));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to check answers');
+    } finally {
+      setSaBusy(null);
+    }
+  }
+
+  function resetSelfAssessment(chapterId: string) {
+    setSaResults((r) => {
+      const next = { ...r };
+      delete next[chapterId];
+      return next;
+    });
+    setSaAnswers((a) => ({ ...a, [chapterId]: {} }));
   }
 
   async function handleAddQuestion(e: FormEvent) {
@@ -152,52 +236,169 @@ export default function CourseDetailPage() {
         </div>
       )}
 
-      <div className="mt-4 rounded-lg bg-white p-4 shadow-card dark:bg-slate-800">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Lessons</p>
-          {isManager && (
-            <button onClick={() => setShowLessonForm((s) => !s)} className="text-sm text-brand hover:underline">
-              {showLessonForm ? 'Cancel' : 'Add lesson'}
-            </button>
-          )}
-        </div>
-
-        {isManager && showLessonForm && (
-          <form onSubmit={handleAddLesson} className="mt-2 flex flex-wrap items-end gap-2 rounded-lg border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-700 dark:bg-slate-900/30">
-            <input required placeholder="Lesson title" value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} className="w-56 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-            <input required placeholder="Content / video URL / notes" value={lessonForm.content} onChange={(e) => setLessonForm({ ...lessonForm, content: e.target.value })} className="flex-1 min-w-[200px] rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
-            <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Add</button>
-          </form>
+      {/* ---- Course content: chapters ---- */}
+      <div className="mt-4 flex items-center justify-between">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Course content</p>
+        {isManager && (
+          <button onClick={() => setShowChapterForm((s) => !s)} className="text-sm text-brand hover:underline">
+            {showChapterForm ? 'Cancel' : 'Add chapter'}
+          </button>
         )}
-
-        <ul className="mt-3 divide-y divide-slate-100 dark:divide-slate-700">
-          {course.lessons.map((l, idx) => {
-            const done = course.completedLessonIds.includes(l.id);
-            return (
-              <li key={l.id} className="flex items-center justify-between gap-3 py-2.5">
-                <div>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{idx + 1}. {l.title}</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">{l.content}</p>
-                </div>
-                {course.enrolled && !course.certificate && (
-                  <button
-                    onClick={() => handleMarkComplete(l.id)}
-                    disabled={done || busyLessonId === l.id}
-                    className={`shrink-0 rounded-lg px-2 py-0.5 text-xs font-medium ${done ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                  >
-                    {done ? 'Done' : busyLessonId === l.id ? 'Saving...' : 'Mark complete'}
-                  </button>
-                )}
-              </li>
-            );
-          })}
-          {course.lessons.length === 0 && <li className="py-2 text-sm text-slate-400">No lessons added yet.</li>}
-        </ul>
       </div>
 
+      {isManager && showChapterForm && (
+        <form onSubmit={handleAddChapter} className="mt-2 flex flex-wrap items-end gap-2 rounded-lg border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-700 dark:bg-slate-900/30">
+          <input required placeholder="Chapter title" value={chapterDraft} onChange={(e) => setChapterDraft(e.target.value)} className="w-64 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100" />
+          <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-2 text-sm font-medium text-white shadow-md shadow-brand-500/25 hover:opacity-90">Add chapter</button>
+        </form>
+      )}
+
+      {course.chapters.length === 0 && <p className="mt-3 text-sm text-slate-400">No chapters yet.</p>}
+
+      <div className="mt-3 space-y-4">
+        {course.chapters.map((ch, ci) => {
+          const result = saResults[ch.id];
+          return (
+            <div key={ch.id} className="rounded-xl bg-white p-4 shadow-card dark:bg-slate-800">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Chapter {ci + 1}: {ch.title}</p>
+                {isManager && (
+                  <div className="flex items-center gap-3 text-xs">
+                    <button onClick={() => { setLessonChapterId(lessonChapterId === ch.id ? null : ch.id); setLessonDraft({ title: '', content: '' }); }} className="text-brand hover:underline">
+                      {lessonChapterId === ch.id ? 'Cancel' : '+ Lesson'}
+                    </button>
+                    <button onClick={() => { setSaChapterId(saChapterId === ch.id ? null : ch.id); setSaDraft({ text: '', options: ['', ''], correctIndex: 0, explanation: '' }); }} className="text-brand hover:underline">
+                      {saChapterId === ch.id ? 'Cancel' : '+ Self-check'}
+                    </button>
+                    <button onClick={() => handleDeleteChapter(ch.id)} className="text-red-500 hover:underline">Delete</button>
+                  </div>
+                )}
+              </div>
+
+              {/* lessons */}
+              <ul className="mt-2 divide-y divide-slate-100 dark:divide-slate-700">
+                {ch.lessons.map((l, idx) => {
+                  const done = course.completedLessonIds.includes(l.id);
+                  return (
+                    <li key={l.id} className="flex items-center justify-between gap-3 py-2.5">
+                      <div>
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{idx + 1}. {l.title}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{l.content}</p>
+                      </div>
+                      {course.enrolled && !course.certificate && (
+                        <button
+                          onClick={() => handleMarkComplete(l.id)}
+                          disabled={done || busyLessonId === l.id}
+                          className={`shrink-0 rounded-lg px-2 py-0.5 text-xs font-medium ${done ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                        >
+                          {done ? 'Done' : busyLessonId === l.id ? 'Saving...' : 'Mark complete'}
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+                {ch.lessons.length === 0 && <li className="py-2 text-sm text-slate-400">No lessons in this chapter yet.</li>}
+              </ul>
+
+              {isManager && lessonChapterId === ch.id && (
+                <form onSubmit={(e) => handleAddLesson(e, ch.id)} className="mt-2 flex flex-wrap items-end gap-2 rounded-lg border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-700 dark:bg-slate-900/30">
+                  <input required placeholder="Lesson title" value={lessonDraft.title} onChange={(e) => setLessonDraft({ ...lessonDraft, title: e.target.value })} className="w-52 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100" />
+                  <input required placeholder="Content / video URL / notes" value={lessonDraft.content} onChange={(e) => setLessonDraft({ ...lessonDraft, content: e.target.value })} className="min-w-[200px] flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100" />
+                  <button type="submit" className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-2 text-sm font-medium text-white shadow-md shadow-brand-500/25 hover:opacity-90">Add</button>
+                </form>
+              )}
+
+              {/* self-assessment (ungraded practice) */}
+              {(ch.selfAssessment.length > 0 || (isManager && saChapterId === ch.id)) && (
+                <div className="mt-3 rounded-lg border border-amber-100 bg-amber-50/50 p-3 dark:border-amber-900/40 dark:bg-amber-900/10">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">Self-check · practice (not graded)</p>
+
+                  {/* manager view: list with answer key + delete */}
+                  {isManager ? (
+                    <ul className="mt-2 space-y-1.5">
+                      {ch.selfAssessment.map((q, qi) => (
+                        <li key={q.id} className="flex items-start justify-between gap-2 text-sm">
+                          <span className="text-slate-700 dark:text-slate-200">
+                            {qi + 1}. {q.text} <span className="text-emerald-600">→ {q.options[q.correctIndex ?? 0]}</span>
+                            {q.explanation && <span className="block text-xs text-slate-500 dark:text-slate-400">{q.explanation}</span>}
+                          </span>
+                          <button onClick={() => handleDeleteSaQuestion(q.id)} className="shrink-0 text-xs text-red-500 hover:underline">Remove</button>
+                        </li>
+                      ))}
+                      {ch.selfAssessment.length === 0 && <li className="text-sm text-slate-400">No self-check questions yet.</li>}
+                    </ul>
+                  ) : !course.enrolled ? (
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Enroll to try this chapter’s self-check.</p>
+                  ) : result ? (
+                    <div className="mt-2 space-y-2">
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-200">You got {result.correct} / {result.total} right.</p>
+                      {ch.selfAssessment.map((q, qi) => {
+                        const r = result.results.find((x) => x.questionId === q.id);
+                        const picked = saAnswers[ch.id]?.[q.id];
+                        return (
+                          <div key={q.id} className="text-sm">
+                            <p className="font-medium text-slate-800 dark:text-slate-100">
+                              {qi + 1}. {q.text} {r?.correct ? <span className="text-emerald-600">✓ correct</span> : <span className="text-red-600">✗ your answer: {picked != null && picked >= 0 ? q.options[picked] : '—'}</span>}
+                            </p>
+                            {!r?.correct && r && <p className="text-slate-600 dark:text-slate-300">Correct answer: {q.options[r.correctIndex]}</p>}
+                            {r?.explanation && <p className="text-xs text-slate-500 dark:text-slate-400">{r.explanation}</p>}
+                          </div>
+                        );
+                      })}
+                      <button onClick={() => resetSelfAssessment(ch.id)} className="mt-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200">Try again</button>
+                    </div>
+                  ) : (
+                    <div className="mt-2 space-y-3">
+                      {ch.selfAssessment.map((q, qi) => (
+                        <div key={q.id}>
+                          <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{qi + 1}. {q.text}</p>
+                          <div className="mt-1 flex flex-col gap-1">
+                            {q.options.map((opt, oi) => (
+                              <label key={oi} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                                <input type="radio" name={`sa-${q.id}`} checked={saAnswers[ch.id]?.[q.id] === oi} onChange={() => setSaAnswers((a) => ({ ...a, [ch.id]: { ...a[ch.id], [q.id]: oi } }))} />
+                                {opt}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => handleCheckSelfAssessment(ch.id, ch.selfAssessment.map((q) => q.id))}
+                        disabled={saBusy === ch.id}
+                        className="rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-60"
+                      >
+                        {saBusy === ch.id ? 'Checking...' : 'Check answers'}
+                      </button>
+                    </div>
+                  )}
+
+                  {isManager && saChapterId === ch.id && (
+                    <form onSubmit={(e) => handleAddSaQuestion(e, ch.id)} className="mt-3 flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
+                      <input required placeholder="Question" value={saDraft.text} onChange={(e) => setSaDraft({ ...saDraft, text: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100" />
+                      {saDraft.options.map((opt, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <input type="radio" name={`sa-correct-${ch.id}`} checked={saDraft.correctIndex === i} onChange={() => setSaDraft({ ...saDraft, correctIndex: i })} />
+                          <input required placeholder={`Option ${i + 1}`} value={opt} onChange={(e) => { const options = [...saDraft.options]; options[i] = e.target.value; setSaDraft({ ...saDraft, options }); }} className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100" />
+                        </div>
+                      ))}
+                      <input placeholder="Explanation (optional, shown after answering)" value={saDraft.explanation} onChange={(e) => setSaDraft({ ...saDraft, explanation: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100" />
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={() => setSaDraft({ ...saDraft, options: [...saDraft.options, ''] })} className="text-sm text-brand hover:underline">+ Add option</button>
+                        <button type="submit" className="ml-auto rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-2 text-sm font-medium text-white shadow-md shadow-brand-500/25 hover:opacity-90">Add question</button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ---- Final graded quiz ---- */}
       <div className="mt-4 rounded-lg bg-white p-4 shadow-card dark:bg-slate-800">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Quiz</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Final quiz (graded)</p>
           {isManager && (
             <button onClick={() => setShowQuestionForm((s) => !s)} className="text-sm text-brand hover:underline">
               {showQuestionForm ? 'Cancel' : 'Add question'}
@@ -207,33 +408,16 @@ export default function CourseDetailPage() {
 
         {isManager && showQuestionForm && (
           <form onSubmit={handleAddQuestion} className="mt-2 flex flex-col gap-2 rounded-lg border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-700 dark:bg-slate-900/30">
-            <input required placeholder="Question" value={questionForm.text} onChange={(e) => setQuestionForm({ ...questionForm, text: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors" />
+            <input required placeholder="Question" value={questionForm.text} onChange={(e) => setQuestionForm({ ...questionForm, text: e.target.value })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100" />
             {questionForm.options.map((opt, i) => (
               <div key={i} className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="correct"
-                  checked={questionForm.correctIndex === i}
-                  onChange={() => setQuestionForm({ ...questionForm, correctIndex: i })}
-                />
-                <input
-                  required
-                  placeholder={`Option ${i + 1}`}
-                  value={opt}
-                  onChange={(e) => {
-                    const options = [...questionForm.options];
-                    options[i] = e.target.value;
-                    setQuestionForm({ ...questionForm, options });
-                  }}
-                  className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors"
-                />
+                <input type="radio" name="correct" checked={questionForm.correctIndex === i} onChange={() => setQuestionForm({ ...questionForm, correctIndex: i })} />
+                <input required placeholder={`Option ${i + 1}`} value={opt} onChange={(e) => { const options = [...questionForm.options]; options[i] = e.target.value; setQuestionForm({ ...questionForm, options }); }} className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100" />
               </div>
             ))}
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => setQuestionForm({ ...questionForm, options: [...questionForm.options, ''] })} className="text-sm text-brand hover:underline">
-                + Add option
-              </button>
-              <button type="submit" className="ml-auto rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 shadow-md shadow-brand-500/25 px-3 py-2 text-sm font-medium text-white hover:opacity-90">Add question</button>
+              <button type="button" onClick={() => setQuestionForm({ ...questionForm, options: [...questionForm.options, ''] })} className="text-sm text-brand hover:underline">+ Add option</button>
+              <button type="submit" className="ml-auto rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 px-3 py-2 text-sm font-medium text-white shadow-md shadow-brand-500/25 hover:opacity-90">Add question</button>
             </div>
           </form>
         )}
@@ -262,7 +446,7 @@ export default function CourseDetailPage() {
         ) : course.enrolled && !allLessonsDone && course.quizQuestions.length > 0 ? (
           <p className="mt-2 text-sm text-slate-400">Complete all lessons to unlock the quiz.</p>
         ) : (
-          <p className="mt-2 text-sm text-slate-400">{course.quizQuestions.length} question{course.quizQuestions.length === 1 ? '' : 's'} in this course's quiz.</p>
+          <p className="mt-2 text-sm text-slate-400">{course.quizQuestions.length} question{course.quizQuestions.length === 1 ? '' : 's'} in this course&apos;s quiz.</p>
         )}
       </div>
     </AppShell>

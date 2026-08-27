@@ -1,7 +1,17 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { LmsService } from './lms.service';
-import { CreateCourseDto, CreateLessonDto, CreateQuizQuestionDto, SubmitQuizDto, UpdateCourseDto } from './dto/course.dto';
+import {
+  CheckSelfAssessmentDto,
+  CreateChapterDto,
+  CreateCourseDto,
+  CreateLessonDto,
+  CreateQuizQuestionDto,
+  CreateSelfAssessmentQuestionDto,
+  SubmitQuizDto,
+  UpdateChapterDto,
+  UpdateCourseDto,
+} from './dto/course.dto';
 import { CreateAssignmentDto } from './dto/assignment.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -55,6 +65,49 @@ export class LmsController {
   @Post('courses/:id/quiz-questions')
   addQuizQuestion(@Param('id') id: string, @Body() dto: CreateQuizQuestionDto) {
     return this.lmsService.addQuizQuestion(id, dto);
+  }
+
+  // --- chapters (manager authoring) ---
+  @Roles(...MANAGER_ROLES)
+  @Post('courses/:id/chapters')
+  addChapter(@Param('id') id: string, @Body() dto: CreateChapterDto) {
+    return this.lmsService.addChapter(id, dto);
+  }
+
+  @Roles(...MANAGER_ROLES)
+  @Patch('chapters/:chapterId')
+  updateChapter(@Param('chapterId') chapterId: string, @Body() dto: UpdateChapterDto) {
+    return this.lmsService.updateChapter(chapterId, dto);
+  }
+
+  @Roles(...MANAGER_ROLES)
+  @Delete('chapters/:chapterId')
+  deleteChapter(@Param('chapterId') chapterId: string) {
+    return this.lmsService.deleteChapter(chapterId);
+  }
+
+  // --- self-assessment (ungraded practice) ---
+  @Roles(...MANAGER_ROLES)
+  @Post('chapters/:chapterId/self-assessment')
+  addSelfAssessmentQuestion(@Param('chapterId') chapterId: string, @Body() dto: CreateSelfAssessmentQuestionDto) {
+    return this.lmsService.addSelfAssessmentQuestion(chapterId, dto);
+  }
+
+  @Roles(...MANAGER_ROLES)
+  @Delete('self-assessment/:questionId')
+  deleteSelfAssessmentQuestion(@Param('questionId') questionId: string) {
+    return this.lmsService.deleteSelfAssessmentQuestion(questionId);
+  }
+
+  @Roles(...ALL_ROLES)
+  @Post('courses/:id/chapters/:chapterId/self-assessment/check')
+  checkSelfAssessment(
+    @Param('id') id: string,
+    @Param('chapterId') chapterId: string,
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CheckSelfAssessmentDto,
+  ) {
+    return this.lmsService.checkSelfAssessment(id, chapterId, user.id, dto);
   }
 
   @Roles(...ALL_ROLES)

@@ -1736,6 +1736,7 @@ model Course {
   updatedAt   DateTime @updatedAt
 
   lessons       Lesson[]
+  chapters      Chapter[]
   quizQuestions QuizQuestion[]
   enrollments   Enrollment[]
   assignments   CourseAssignment[]
@@ -1743,10 +1744,30 @@ model Course {
   @@map("lms_courses")
 }
 
+// A grouping layer between Course and Lesson. Existing flat courses are
+// backfilled with a single "Chapter 1" holding all their lessons, so
+// Lesson.chapterId is nullable only to make that migration safe — new
+// lessons always land in a chapter.
+model Chapter {
+  id        String   @id @default(uuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  title     String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  lessons                 Lesson[]
+  selfAssessmentQuestions SelfAssessmentQuestion[]
+
+  @@map("lms_chapters")
+}
+
 model Lesson {
   id        String   @id @default(uuid())
   courseId  String
   course    Course   @relation(fields: [courseId], references: [id])
+  chapterId String?
+  chapter   Chapter? @relation(fields: [chapterId], references: [id])
   title     String
   content   String
   order     Int      @default(0)
@@ -1755,6 +1776,24 @@ model Lesson {
   progress LessonProgress[]
 
   @@map("lms_lessons")
+}
+
+// Ungraded per-chapter practice questions. Learners answer for immediate
+// feedback (with an optional explanation); attempts are never persisted and
+// never affect course completion — the course-level QuizQuestion remains the
+// graded exam that earns the certificate.
+model SelfAssessmentQuestion {
+  id           String   @id @default(uuid())
+  chapterId    String
+  chapter      Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  text         String
+  options      String[]
+  correctIndex Int
+  explanation  String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@map("lms_self_assessment_questions")
 }
 
 model QuizQuestion {
