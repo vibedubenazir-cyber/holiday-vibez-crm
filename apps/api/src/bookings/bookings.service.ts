@@ -308,4 +308,27 @@ export class BookingsService {
     }
     return sent;
   }
+
+  // Permanently removes a test/demo booking — used to unblock deleting the
+  // quotation/lead above it. TripTransfer, TravelerSession, TravelerDocument,
+  // and TripFlight cascade automatically when the Booking is deleted;
+  // Payment, Voucher, Invoice, Review, TripFeedback, InsurancePolicy, and
+  // DmcCommission do not, so they're removed explicitly first.
+  async purgeBooking(id: string) {
+    const booking = await this.prisma.booking.findUnique({ where: { id } });
+    if (!booking) throw new NotFoundException('Booking not found');
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.payment.deleteMany({ where: { bookingId: id } });
+      await tx.voucher.deleteMany({ where: { bookingId: id } });
+      await tx.invoice.deleteMany({ where: { bookingId: id } });
+      await tx.review.deleteMany({ where: { bookingId: id } });
+      await tx.tripFeedback.deleteMany({ where: { bookingId: id } });
+      await tx.insurancePolicy.deleteMany({ where: { bookingId: id } });
+      await tx.dmcCommission.updateMany({ where: { bookingId: id }, data: { bookingId: null } });
+      await tx.booking.delete({ where: { id } });
+    });
+
+    return { success: true };
+  }
 }

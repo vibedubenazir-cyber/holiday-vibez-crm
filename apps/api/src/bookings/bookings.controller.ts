@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/booking.dto';
@@ -40,5 +40,11 @@ export class BookingsController {
   @Patch(':id/status')
   updateStatus(@Param('id') id: string, @Body() dto: UpdateBookingStatusDto, @CurrentUser() user: AuthUser) {
     return this.bookingsService.updateStatus(id, dto.status, user);
+  }
+
+  @Roles(Role.DIRECTOR, Role.ADMIN)
+  @Delete(':id')
+  purgeBooking(@Param('id') id: string) {
+    return this.bookingsService.purgeBooking(id);
   }
 }
