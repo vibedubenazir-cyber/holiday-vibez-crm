@@ -77,4 +77,10 @@ export class QuotationsController {
   send(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.quotationsService.sendToClient(id, user);
   }
+
+  @Roles(Role.DIRECTOR, Role.ADMIN)
+  @Delete(':id')
+  deleteQuotation(@Param('id') id: string) {
+    return this.quotationsService.deleteQuotation(id);
+  }
 }

@@ -306,4 +306,28 @@ export class QuotationsService {
     this.assertActorScope(actor, quotation.consultantId, quotation.lead.branchId);
     return quotation;
   }
+
+  // Permanently removes a test/junk quotation. Refuses if it has a Booking
+  // (unique, so at most one) — that means real payment/voucher/invoice work
+  // may sit underneath, and force-deleting would either fail on the DB
+  // constraint or destroy real records. The old per-quotation Itinerary
+  // builder (distinct from the standalone ItineraryPlan module) cascades
+  // its own days/events automatically, so deleting it is enough.
+  async deleteQuotation(id: string) {
+    const quotation = await this.prisma.quotation.findUnique({ where: { id } });
+    if (!quotation) throw new NotFoundException('Quotation not found');
+
+    const booking = await this.prisma.booking.findUnique({ where: { quotationId: id } });
+    if (booking) {
+      throw new BadRequestException('Cannot delete — this quotation has a booking. Cancel/remove the booking first.');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.itinerary.deleteMany({ where: { quotationId: id } });
+      await tx.quotationItem.deleteMany({ where: { quotationId: id } });
+      await tx.quotation.delete({ where: { id } });
+    });
+
+    return { success: true };
+  }
 }
