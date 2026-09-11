@@ -46,7 +46,7 @@ export class LeadsController {
     return this.leadsService.listConsultants(user);
   }
 
-  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE, Role.AUDITOR)
   @Post()
   create(@Body() dto: CreateLeadDto, @CurrentUser() user: { id: string; role: Role; branchId: string | null }) {
     return this.leadsService.create(dto, user);
@@ -55,7 +55,7 @@ export class LeadsController {
   // CSV columns: source,clientName,phone,email,destination,branch — same write
   // tier as single-lead create(); each row auto-assigns round-robin same as a
   // one-off create, just looped with per-row error reporting.
-  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT)
+  @Roles(Role.DIRECTOR, Role.ADMIN, Role.BRANCH_MANAGER, Role.TRAVEL_CONSULTANT, Role.FINANCE, Role.AUDITOR)
   @Post('bulk-import')
   @UseInterceptors(FileInterceptor('file', { storage: memoryStorage(), limits: { fileSize: MAX_CSV_SIZE_BYTES } }))
   async bulkImport(@UploadedFile() file: Express.Multer.File, @CurrentUser() user: { id: string; role: Role; branchId: string | null }) {

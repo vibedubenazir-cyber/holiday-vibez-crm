@@ -171,8 +171,10 @@ export default function LeadsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const canCreate = me?.role === Role.ADMIN || me?.role === Role.BRANCH_MANAGER;
-  const canAssign = canCreate;
+  // Every login can add a lead — matches the backend's POST /leads roles.
+  // Assigning a consultant stays Admin/Branch Manager only (unchanged).
+  const canCreate = !!me;
+  const canAssign = me?.role === Role.ADMIN || me?.role === Role.BRANCH_MANAGER;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
