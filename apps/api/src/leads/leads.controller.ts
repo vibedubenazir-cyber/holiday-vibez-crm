@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { parse } from 'csv-parse/sync';
@@ -125,5 +125,11 @@ export class LeadsController {
     @CurrentUser() user: { id: string; role: Role; branchId: string | null },
   ) {
     return this.leadsService.completeReminder(id, reminderId, user);
+  }
+
+  @Roles(Role.DIRECTOR, Role.ADMIN)
+  @Delete(':id')
+  deleteLead(@Param('id') id: string) {
+    return this.leadsService.deleteLead(id);
   }
 }

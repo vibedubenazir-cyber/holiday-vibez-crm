@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { LeadNoteChannel, LeadSource, LeadStatus, Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateLeadDto, PublicCreateLeadDto, UpdateLeadDto } from './dto/lead.dto';
@@ -490,5 +490,43 @@ export class LeadsService {
       include: { assignedTo: { select: { name: true } } },
     });
     return this.mapReminder(updated);
+  }
+
+  // Permanently removes a test/junk lead with no real downstream activity.
+  // Refuses if it has a Quotation (which may carry a real Booking/payment
+  // chain) or a Traveler with any trip-app session/document — those mean
+  // this lead led to real work, and force-deleting would destroy it.
+  // Otherwise cleans up the lead's own footprint (notes/reminders cascade
+  // automatically at the DB level) before removing the row.
+  async deleteLead(id: string) {
+    await this.ensureExists(id);
+    const p = this.prisma;
+
+    const [quotationCount, travelerSessionCount, travelerDocumentCount] = await Promise.all([
+      p.quotation.count({ where: { leadId: id } }),
+      p.travelerSession.count({ where: { traveler: { leadId: id } } }),
+      p.travelerDocument.count({ where: { traveler: { leadId: id } } }),
+    ]);
+    if (quotationCount > 0 || travelerSessionCount > 0 || travelerDocumentCount > 0) {
+      throw new BadRequestException(
+        `Cannot delete — this lead has real downstream activity: ${quotationCount} quotation(s), ${travelerSessionCount} traveler session(s), ${travelerDocumentCount} traveler document(s).`,
+      );
+    }
+
+    await p.$transaction(async (tx) => {
+      await tx.itineraryPlan.updateMany({ where: { leadId: id }, data: { leadId: null } });
+      const conversations = await tx.conversation.findMany({ where: { leadId: id }, select: { id: true } });
+      const conversationIds = conversations.map((c) => c.id);
+      if (conversationIds.length) {
+        await tx.message.deleteMany({ where: { conversationId: { in: conversationIds } } });
+        await tx.conversation.deleteMany({ where: { id: { in: conversationIds } } });
+      }
+      await tx.automationLog.deleteMany({ where: { leadId: id } });
+      await tx.supportTicket.deleteMany({ where: { leadId: id } });
+      await tx.traveler.deleteMany({ where: { leadId: id } });
+      await tx.lead.delete({ where: { id } });
+    });
+
+    return { success: true };
   }
 }
