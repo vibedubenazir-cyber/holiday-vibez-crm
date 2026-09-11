@@ -86,14 +86,17 @@ export class LeadsService {
   }
 
   async create(dto: CreateLeadDto, actor: Actor) {
+    const branchId = this.resolveCreateBranchId(dto.branchId, actor);
     const lead = await this.createGuardedAgainstDuplicate(async (tx) => {
       const duplicate = await this.findDuplicateByPhone(dto.phone, tx);
       if (duplicate) {
-        // A Branch Manager creating a lead has no authorization to see another
-        // branch's customer name/destination/status (assertScope enforces this
-        // everywhere else) — redact those fields in the conflict message when
-        // the duplicate belongs to a branch the actor can't otherwise view.
-        const sameScope = actor.role !== Role.BRANCH_MANAGER || actor.branchId === duplicate.branchId;
+        // A Branch Manager/Consultant creating a lead has no authorization to
+        // see another branch's customer name/destination/status (assertScope
+        // enforces this everywhere else) — redact those fields in the
+        // conflict message when the duplicate belongs to a branch the actor
+        // can't otherwise view.
+        const branchScoped = actor.role === Role.BRANCH_MANAGER || actor.role === Role.TRAVEL_CONSULTANT;
+        const sameScope = !branchScoped || actor.branchId === duplicate.branchId;
         throw new ConflictException(
           sameScope
             ? `A lead with this phone number already exists: ${duplicate.clientName} — ${duplicate.destination} (status: ${duplicate.status}, id: ${duplicate.id})`
@@ -112,7 +115,7 @@ export class LeadsService {
           phone: dto.phone,
           email: dto.email,
           destination: dto.destination,
-          branchId: dto.branchId,
+          branchId,
           temperature: dto.temperature,
           travelDate: dto.travelDate ? new Date(dto.travelDate) : undefined,
           travelEndDate: dto.travelEndDate ? new Date(dto.travelEndDate) : undefined,
@@ -407,6 +410,18 @@ export class LeadsService {
     const lead = await this.prisma.lead.findUnique({ where: { id } });
     if (!lead) throw new NotFoundException('Lead not found');
     return lead;
+  }
+
+  // Branch Managers/Consultants can only ever create leads in their own
+  // branch — the DTO's branchId is a free-text field with no scoping of its
+  // own, so a branch-scoped actor's own branch always wins regardless of
+  // what they submitted. Director/Admin may target any branch.
+  private resolveCreateBranchId(requestedBranchId: string, actor: Actor): string {
+    if (actor.role === Role.BRANCH_MANAGER || actor.role === Role.TRAVEL_CONSULTANT) {
+      if (!actor.branchId) throw new ForbiddenException('Your account has no branch assigned');
+      return actor.branchId;
+    }
+    return requestedBranchId;
   }
 
   // --- Notes ---------------------------------------------------------------
