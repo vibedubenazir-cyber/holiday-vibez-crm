@@ -41,6 +41,9 @@ export default function UsersPage() {
     branchId: '',
   });
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', phone: '', role: Role.TRAVEL_CONSULTANT as string, branchId: '' });
+
   async function load() {
     try {
       const [u, b] = await Promise.all([
@@ -88,6 +91,27 @@ export default function UsersPage() {
     try {
       const nextStatus = u.status === UserStatus.ACTIVE ? UserStatus.ON_LEAVE : UserStatus.ACTIVE;
       await api.patch(`/users/${u.id}`, { status: nextStatus });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to update user');
+    }
+  }
+
+  function handleStartEdit(u: UserDTO) {
+    setError(null);
+    setEditingId(u.id);
+    setEditForm({ name: u.name, phone: u.phone, role: u.role, branchId: u.branchId ?? '' });
+  }
+
+  function handleCancelEdit() {
+    setEditingId(null);
+  }
+
+  async function handleSaveEdit(id: string) {
+    setError(null);
+    try {
+      await api.patch(`/users/${id}`, { ...editForm, branchId: editForm.branchId || null });
+      setEditingId(null);
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to update user');
@@ -146,33 +170,87 @@ export default function UsersPage() {
             </tr>
           </thead>
           <tbody>
-            {users.map((u) => (
-              <tr key={u.id} className="border-t border-slate-100">
-                <td className="px-4 py-2 font-medium text-slate-800 dark:text-slate-100">{u.name}</td>
-                <td className="px-4 py-2 text-slate-500 dark:text-slate-400">{u.email}</td>
-                <td className="px-4 py-2">
-                  <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[u.role] ?? 'bg-slate-200 text-slate-600'}`}>
-                    {u.role.replaceAll('_', ' ')}
-                  </span>
-                </td>
-                <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{branchName(u.branchId)}</td>
-                <td className="px-4 py-2">
-                  <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[u.status] ?? 'bg-slate-200 text-slate-600'}`}>
-                    {u.status.replaceAll('_', ' ')}
-                  </span>
-                </td>
-                {isAdmin && (
-                  <td className="px-4 py-2 text-right">
-                    <button onClick={() => handleStatusToggle(u)} className="mr-3 text-brand hover:underline">
-                      {u.status === 'ACTIVE' ? 'Mark on leave' : 'Mark active'}
+            {users.map((u) =>
+              editingId === u.id ? (
+                <tr key={u.id} className="border-t border-slate-100 bg-brand-50/40 dark:bg-slate-900/40">
+                  <td className="px-4 py-2">
+                    <input
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      className="w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors dark:border-slate-600 dark:bg-slate-800"
+                    />
+                  </td>
+                  <td className="px-4 py-2">
+                    <PhoneInput value={editForm.phone} onChange={(phone) => setEditForm({ ...editForm, phone })} />
+                  </td>
+                  <td className="px-4 py-2">
+                    <select
+                      value={editForm.role}
+                      onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                      className="w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors dark:border-slate-600 dark:bg-slate-800"
+                    >
+                      {ROLE_OPTIONS.map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="px-4 py-2">
+                    <select
+                      value={editForm.branchId}
+                      onChange={(e) => setEditForm({ ...editForm, branchId: e.target.value })}
+                      className="w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-100 transition-colors dark:border-slate-600 dark:bg-slate-800"
+                    >
+                      <option value="">No branch</option>
+                      {branches.map((b) => (
+                        <option key={b.id} value={b.id}>{b.name}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="px-4 py-2">
+                    <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[u.status] ?? 'bg-slate-200 text-slate-600'}`}>
+                      {u.status.replaceAll('_', ' ')}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 text-right whitespace-nowrap">
+                    <button onClick={() => handleSaveEdit(u.id)} className="mr-3 font-medium text-brand hover:underline">
+                      Save
                     </button>
-                    <button onClick={() => handleDeactivate(u.id)} className="text-red-600 hover:underline">
-                      Deactivate
+                    <button onClick={handleCancelEdit} className="text-slate-500 hover:underline">
+                      Cancel
                     </button>
                   </td>
-                )}
-              </tr>
-            ))}
+                </tr>
+              ) : (
+                <tr key={u.id} className="border-t border-slate-100">
+                  <td className="px-4 py-2 font-medium text-slate-800 dark:text-slate-100">{u.name}</td>
+                  <td className="px-4 py-2 text-slate-500 dark:text-slate-400">{u.email}</td>
+                  <td className="px-4 py-2">
+                    <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[u.role] ?? 'bg-slate-200 text-slate-600'}`}>
+                      {u.role.replaceAll('_', ' ')}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{branchName(u.branchId)}</td>
+                  <td className="px-4 py-2">
+                    <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[u.status] ?? 'bg-slate-200 text-slate-600'}`}>
+                      {u.status.replaceAll('_', ' ')}
+                    </span>
+                  </td>
+                  {isAdmin && (
+                    <td className="px-4 py-2 text-right whitespace-nowrap">
+                      <button onClick={() => handleStartEdit(u)} className="mr-3 text-brand hover:underline">
+                        Edit
+                      </button>
+                      <button onClick={() => handleStatusToggle(u)} className="mr-3 text-brand hover:underline">
+                        {u.status === 'ACTIVE' ? 'Mark on leave' : 'Mark active'}
+                      </button>
+                      <button onClick={() => handleDeactivate(u.id)} className="text-red-600 hover:underline">
+                        Deactivate
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ),
+            )}
           </tbody>
         </table>
       </div>
