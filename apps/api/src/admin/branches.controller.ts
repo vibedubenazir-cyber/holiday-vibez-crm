@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { BranchesService } from './branches.service';
 import { CreateBranchDto, UpdateBranchDto } from './dto/branch.dto';
@@ -27,5 +27,11 @@ export class BranchesController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateBranchDto) {
     return this.branchesService.update(id, dto);
+  }
+
+  @Roles(Role.ADMIN)
+  @Delete(':id')
+  purgeBranch(@Param('id') id: string) {
+    return this.branchesService.purgeBranch(id);
   }
 }
