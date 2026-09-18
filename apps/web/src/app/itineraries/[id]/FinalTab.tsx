@@ -98,7 +98,7 @@ export function FinalTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
       id: day.id,
       dayNumber: day.dayNumber,
       date: day.date,
-      events: day.events.map((e) => ({ id: e.id, type: e.type, name: e.name, destination: e.destination, date: e.date, description: e.description, photoUrl: e.photoUrl, details: e.details })),
+      events: day.events.map((e) => ({ id: e.id, type: e.type, name: e.name, destination: e.destination, date: e.date, endDate: e.endDate, description: e.description, photoUrl: e.photoUrl, details: e.details })),
     })),
     images: plan.images.map((i) => ({ id: i.id, url: i.url, caption: i.caption })),
     packageTerms: plan.packageTerms,
@@ -108,6 +108,7 @@ export function FinalTab({ plan, onReload }: { plan: ItineraryPlanDTO; onReload:
       return {
         id: option.id,
         label: option.label,
+        totalExcludingGst: t ? t.subtotalGross + t.baseMarkupAmount + t.extraMarkupAmount - t.discountAmount : 0,
         totalIncludingGst: t?.totalIncludingGst ?? 0,
         accommodations: option.accommodations
           .filter((a) => a.type === ItineraryEventType.ACCOMMODATION)

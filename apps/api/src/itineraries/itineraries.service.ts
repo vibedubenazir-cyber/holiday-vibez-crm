@@ -805,6 +805,7 @@ export class ItinerariesService {
         return {
           id: option.id,
           label: option.label,
+          totalExcludingGst: totals.subtotalGross + totals.baseMarkupAmount + totals.extraMarkupAmount - totals.discountAmount,
           totalIncludingGst: totals.totalIncludingGst,
           accommodations: option.accommodations.map((a) => ({
             id: a.id,

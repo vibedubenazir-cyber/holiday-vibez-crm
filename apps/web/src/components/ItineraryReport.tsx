@@ -24,6 +24,7 @@ export interface ItineraryReportEvent {
   name: string;
   destination: string | null;
   date: string | null;
+  endDate?: string | null;
   description: string | null;
   photoUrl: string | null;
   details?: ItineraryReportDetails | null;
@@ -39,6 +40,7 @@ export interface ItineraryReportDay {
 export interface ItineraryReportOption {
   id: string;
   label: string;
+  totalExcludingGst: number;
   totalIncludingGst: number;
   accommodations: {
     id: string;
@@ -120,6 +122,20 @@ function roomSummary(details?: ItineraryReportDetails | null): string | null {
     return n > 0 ? `${n} ${label}` : null;
   }).filter(Boolean);
   return parts.length ? parts.join(', ') : null;
+}
+
+// Accommodation events carry their stay facts in `destination`/`details`/
+// dates rather than a free-text description — without this an Option 2/3
+// hotel with no description typed in read as "the hotel isn't showing",
+// since the day card had nothing under the name at all.
+function accommodationFactLine(event: ItineraryReportEvent): string | null {
+  const parts = [
+    event.destination,
+    event.details?.roomName,
+    event.details?.mealPlan,
+    event.date && event.endDate ? `${formatDate(event.date)} - ${formatDate(event.endDate)}` : null,
+  ].filter(Boolean);
+  return parts.length ? parts.join(' · ') : null;
 }
 
 // The Build tab's description/terms fields are a single textarea with a
@@ -265,6 +281,9 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
                   {option.totalIncludingGst.toLocaleString('en-IN')} INR
                 </p>
                 <p className="text-xs text-slate-400">Total Including GST</p>
+                <p className="mt-1 text-xs text-slate-400">
+                  {option.totalExcludingGst.toLocaleString('en-IN', { maximumFractionDigits: 0 })} INR Excluding GST
+                </p>
                 <p className="mt-1 text-xs font-medium text-slate-500">
                   {perPerson.toLocaleString('en-IN', { maximumFractionDigits: 0 })} INR / person
                 </p>
@@ -343,8 +362,9 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
                 {day.date && ` – ${formatDate(day.date)}`}
               </div>
               <div className="mt-3 space-y-4">
-                {day.events.map((event) =>
-                  event.photoUrl ? (
+                {day.events.map((event) => {
+                  const factLine = event.type === 'ACCOMMODATION' ? accommodationFactLine(event) : null;
+                  return event.photoUrl ? (
                     <div key={event.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:flex sm:min-h-[11rem]">
                       {/* Fixed frame the photo fills and crops into — without it a
                           portrait photo's intrinsic height blows the card up to
@@ -357,6 +377,7 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
                           {event.name}
                           <StarRating details={event.details} />
                         </p>
+                        {factLine && <p className="mt-0.5 text-xs text-slate-400">{factLine}</p>}
                         {event.description && <DescriptionBlock text={event.description} bullets={event.details?.descriptionBullets} className="mt-1.5 text-sm leading-relaxed text-slate-500" />}
                       </div>
                     </div>
@@ -366,10 +387,11 @@ export function ItineraryReport({ data }: { data: ItineraryReportData }) {
                         {event.name}
                         <StarRating details={event.details} />
                       </p>
+                      {factLine && <p className="mt-0.5 text-xs text-slate-400">{factLine}</p>}
                       {event.description && <DescriptionBlock text={event.description} bullets={event.details?.descriptionBullets} className="mt-1.5 text-sm leading-relaxed text-slate-500" />}
                     </div>
-                  ),
-                )}
+                  );
+                })}
                 {day.events.length === 0 && <p className="text-sm text-slate-400">No events planned.</p>}
               </div>
             </div>

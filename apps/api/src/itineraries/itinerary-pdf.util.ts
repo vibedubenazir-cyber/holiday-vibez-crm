@@ -24,6 +24,8 @@ interface PdfEvent {
   type: string;
   name: string;
   destination?: string | null;
+  date?: string | Date | null;
+  endDate?: string | Date | null;
   description?: string | null;
   photoUrl?: string | null;
   // Prisma hands this back as JsonValue; narrowed at the point of use rather
@@ -321,7 +323,24 @@ export async function streamItineraryPdf(res: Response, plan: ItineraryPdfInput)
 
     for (const hotel of hotels) {
       const photoBuffer = await loadImageBuffer(hotel.photoUrl);
-      const blockHeight = photoBuffer ? 110 : 46;
+      const textX = photoBuffer ? MARGIN_X + 164 : MARGIN_X;
+      const textWidth = photoBuffer ? contentWidth - 164 : contentWidth;
+      const details = hotel.details as { hotelCategory?: number; roomName?: string; mealPlan?: string } | null | undefined;
+      const stars = Number(details?.hotelCategory ?? 0);
+      const nameLine = stars >= 1 ? `${hotel.name}  (${Math.min(5, Math.round(stars))} Star)` : hotel.name;
+      const factLine = [hotel.destination, details?.roomName, details?.mealPlan, hotel.date && hotel.endDate ? `${formatDate(hotel.date)} - ${formatDate(hotel.endDate)}` : null]
+        .filter(Boolean)
+        .join('  ·  ');
+      const description = hotel.description ? stripFormatting(hotel.description) : '';
+
+      // The photo frame is a fixed 100pt, but description text can run much
+      // longer — measure the actual text stack height (pdfkit has no
+      // "shrink to fit" mode) so the block reserves enough room and the next
+      // hotel/day banner doesn't get drawn on top of unfinished text.
+      let textBlockHeight = doc.fontSize(10).font('Helvetica-Bold').heightOfString(winAnsi(nameLine), { width: textWidth }) + 4;
+      if (factLine) textBlockHeight += doc.fontSize(8).font('Helvetica').heightOfString(winAnsi(factLine), { width: textWidth }) + 4;
+      if (description) textBlockHeight += doc.fontSize(9).font('Helvetica').heightOfString(winAnsi(description), { width: textWidth }) + 4;
+      const blockHeight = Math.max(photoBuffer ? 100 : 0, textBlockHeight);
       y = ensureSpace(y, blockHeight + 10);
 
       if (photoBuffer) {
@@ -330,22 +349,14 @@ export async function streamItineraryPdf(res: Response, plan: ItineraryPdfInput)
         doc.image(photoBuffer, MARGIN_X, y, { cover: [150, 100], align: 'center', valign: 'center' });
         doc.restore();
       }
-      const textX = photoBuffer ? MARGIN_X + 164 : MARGIN_X;
-      const textWidth = photoBuffer ? contentWidth - 164 : contentWidth;
-      const details = hotel.details as { hotelCategory?: number; roomName?: string; mealPlan?: string } | null | undefined;
-      const stars = Number(details?.hotelCategory ?? 0);
-      const nameLine = stars >= 1 ? `${hotel.name}  (${Math.min(5, Math.round(stars))} Star)` : hotel.name;
       doc.fontSize(10).font('Helvetica-Bold').fillColor(SLATE).text(winAnsi(nameLine), textX, y, { width: textWidth });
-      let ty = y + 14;
-      const factLine = [hotel.destination, details?.roomName, details?.mealPlan, hotel.date && hotel.endDate ? `${formatDate(hotel.date)} - ${formatDate(hotel.endDate)}` : null]
-        .filter(Boolean)
-        .join('  ·  ');
+      let ty = y + doc.heightOfString(winAnsi(nameLine), { width: textWidth }) + 4;
       if (factLine) {
         doc.fontSize(8).font('Helvetica').fillColor(SLATE_LIGHT).text(winAnsi(factLine), textX, ty, { width: textWidth });
-        ty += 12;
+        ty += doc.heightOfString(winAnsi(factLine), { width: textWidth }) + 4;
       }
-      if (hotel.description) {
-        doc.fontSize(9).font('Helvetica').fillColor(SLATE).text(winAnsi(stripFormatting(hotel.description)), textX, ty, { width: textWidth });
+      if (description) {
+        doc.fontSize(9).font('Helvetica').fillColor(SLATE).text(winAnsi(description), textX, ty, { width: textWidth });
       }
       y += blockHeight + 10;
     }
@@ -365,7 +376,33 @@ export async function streamItineraryPdf(res: Response, plan: ItineraryPdfInput)
 
     for (const event of day.events) {
       const photoBuffer = await loadImageBuffer(event.photoUrl);
-      const blockHeight = photoBuffer ? 110 : 46;
+      const textX = photoBuffer ? MARGIN_X + 164 : MARGIN_X;
+      const textWidth = photoBuffer ? contentWidth - 164 : contentWidth;
+      const eventDetails = event.details as { hotelCategory?: number | null; roomName?: string | null; mealPlan?: string | null } | null | undefined;
+      // "★" isn't in WinAnsi and would be stripped by winAnsi(), so the
+      // star rating the web report shows becomes a text suffix here.
+      const stars = Number(eventDetails?.hotelCategory ?? 0);
+      const nameLine = stars >= 1 ? `${event.name}  (${Math.min(5, Math.round(stars))} Star)` : event.name;
+      // Accommodation events carry their room/meal/stay-dates in `details`
+      // rather than `destination`/`description` alone — without this line
+      // an option-2/3 hotel with no free-text description rendered as just
+      // a bare name, which read as "the hotel isn't showing properly".
+      const factLine =
+        event.type === 'ACCOMMODATION'
+          ? [event.destination, eventDetails?.roomName, eventDetails?.mealPlan, event.date && event.endDate ? `${formatDate(event.date)} - ${formatDate(event.endDate)}` : null]
+              .filter(Boolean)
+              .join('  ·  ')
+          : event.destination ?? '';
+      const description = event.description ? stripFormatting(event.description) : '';
+
+      // Fixed-height blocks (110/46) didn't account for real text length, so
+      // long descriptions (e.g. a sightseeing highlights list) overflowed
+      // into the next event or the next day's banner. Measure the actual
+      // text stack instead, matching the fix applied to the Hotels section.
+      let textBlockHeight = doc.fontSize(10).font('Helvetica-Bold').heightOfString(winAnsi(nameLine), { width: textWidth }) + 4;
+      if (factLine) textBlockHeight += doc.fontSize(8).font('Helvetica').heightOfString(winAnsi(factLine), { width: textWidth }) + 4;
+      if (description) textBlockHeight += doc.fontSize(9).font('Helvetica').heightOfString(winAnsi(description), { width: textWidth }) + 4;
+      const blockHeight = Math.max(photoBuffer ? 100 : 0, textBlockHeight);
       y = ensureSpace(y, blockHeight + 10);
 
       if (photoBuffer) {
@@ -377,20 +414,14 @@ export async function streamItineraryPdf(res: Response, plan: ItineraryPdfInput)
         doc.image(photoBuffer, MARGIN_X, y, { cover: [150, 100], align: 'center', valign: 'center' });
         doc.restore();
       }
-      const textX = photoBuffer ? MARGIN_X + 164 : MARGIN_X;
-      const textWidth = photoBuffer ? contentWidth - 164 : contentWidth;
-      // "★" isn't in WinAnsi and would be stripped by winAnsi(), so the
-      // star rating the web report shows becomes a text suffix here.
-      const stars = Number((event.details as { hotelCategory?: number | null } | null | undefined)?.hotelCategory ?? 0);
-      const nameLine = stars >= 1 ? `${event.name}  (${Math.min(5, Math.round(stars))} Star)` : event.name;
       doc.fontSize(10).font('Helvetica-Bold').fillColor(SLATE).text(winAnsi(nameLine), textX, y, { width: textWidth });
-      let ty = y + 14;
-      if (event.destination) {
-        doc.fontSize(8).font('Helvetica').fillColor(SLATE_LIGHT).text(winAnsi(event.destination), textX, ty, { width: textWidth });
-        ty += 12;
+      let ty = y + doc.heightOfString(winAnsi(nameLine), { width: textWidth }) + 4;
+      if (factLine) {
+        doc.fontSize(8).font('Helvetica').fillColor(SLATE_LIGHT).text(winAnsi(factLine), textX, ty, { width: textWidth });
+        ty += doc.heightOfString(winAnsi(factLine), { width: textWidth }) + 4;
       }
-      if (event.description) {
-        doc.fontSize(9).font('Helvetica').fillColor(SLATE).text(winAnsi(stripFormatting(event.description)), textX, ty, { width: textWidth });
+      if (description) {
+        doc.fontSize(9).font('Helvetica').fillColor(SLATE).text(winAnsi(description), textX, ty, { width: textWidth });
       }
       y += blockHeight + 10;
     }

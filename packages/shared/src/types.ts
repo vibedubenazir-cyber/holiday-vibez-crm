@@ -1436,6 +1436,7 @@ export interface ItineraryPublicViewDTO {
   pricingOptions: {
     id: string;
     label: string;
+    totalExcludingGst: number;
     totalIncludingGst: number;
     accommodations: {
       id: string;
