@@ -14,11 +14,33 @@ const pg = new EmbeddedPostgres({
   persistent: true,
 });
 
+// On Windows, embedded-postgres's initdb writes `dynamic_shared_memory_type =
+// posix` into postgresql.conf, but POSIX shared memory doesn't exist on
+// Windows — so the server refuses to start ("invalid value ... Available
+// values: windows"). Rewrite it to the only value Windows supports before
+// starting. Idempotent (a no-op once already correct) and Windows-only, so it
+// never touches a Linux/macOS data dir.
+function fixWindowsSharedMemoryType() {
+  if (process.platform !== 'win32') return;
+  const confPath = path.join(dataDir, 'postgresql.conf');
+  if (!fs.existsSync(confPath)) return;
+  const conf = fs.readFileSync(confPath, 'utf8');
+  const fixed = conf.replace(
+    /^dynamic_shared_memory_type = posix/m,
+    'dynamic_shared_memory_type = windows',
+  );
+  if (fixed !== conf) {
+    fs.writeFileSync(confPath, fixed);
+    console.log('Patched dynamic_shared_memory_type=windows for Windows compatibility');
+  }
+}
+
 async function main() {
   const alreadyInitialised = fs.existsSync(dataDir) && fs.readdirSync(dataDir).length > 0;
   if (!alreadyInitialised) {
     await pg.initialise();
   }
+  fixWindowsSharedMemoryType();
   await pg.start();
   try {
     await pg.createDatabase('holiday_vibez_crm');
