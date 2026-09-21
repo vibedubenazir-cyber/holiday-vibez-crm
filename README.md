@@ -387,6 +387,10 @@ code.
 
 Requires Docker (or a local PostgreSQL + Redis) and Node 18+.
 
+> **On Windows?** The no-Docker path has a few platform-specific snags (embedded
+> Postgres config, Redis, Prisma connection limits, stale build cache). See
+> [LOCAL_DEV_WINDOWS.md](LOCAL_DEV_WINDOWS.md) for a working step-by-step.
+
 ```bash
 # 1. Start Postgres + Redis
 docker compose -f infra/docker-compose.yml up -d
