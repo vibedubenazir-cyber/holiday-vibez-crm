@@ -111,7 +111,10 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     TravelSearchModule,
     StorageModule,
     DataAdminModule,
-    JobsModule,
+    // Background jobs need Redis (BullMQ). On free-tier hosts without a Redis
+    // instance, REDIS_URL is unset — skip the whole module so the API still
+    // boots and serves requests; only the scheduled/automated jobs pause.
+    ...(process.env.REDIS_URL ? [JobsModule] : []),
     ClientsModule,
     HotelsModule,
     RoomTypesModule,

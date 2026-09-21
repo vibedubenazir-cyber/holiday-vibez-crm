@@ -1,0 +1,43 @@
+# Render Blueprint for the Holiday Vibez API (NestJS, monorepo).
+# Postgres is external (Neon); Redis is intentionally omitted — the API
+# boots without REDIS_URL and only the background-jobs module is skipped
+# (see apps/api/src/app.module.ts). Deploys from GitHub.
+#
+# One-time after the first successful deploy: seed the fresh Neon DB with
+# the demo data + logins (the seed uses create(), so run it exactly once):
+#   DATABASE_URL="<neon-url>" npm run seed -w apps/api
+services:
+  - type: web
+    name: holiday-vibez-api
+    runtime: node
+    plan: free
+    region: oregon
+    # --include=dev forces devDependencies (nest CLI, prisma, typescript) to
+    # install even if Render sets NODE_ENV=production during the build.
+    buildCommand: >-
+      npm ci --include=dev &&
+      npm run build:shared &&
+      npx prisma generate --schema apps/api/prisma/schema.prisma &&
+      npm run build -w apps/api
+    startCommand: >-
+      npx prisma migrate deploy --schema apps/api/prisma/schema.prisma &&
+      node apps/api/dist/main.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # The browser talks to the API same-origin via Vercel's /api proxy, so
+      # this is belt-and-suspenders; keep it aligned with the live web origin.
+      - key: WEB_ORIGIN
+        value: https://360.holidayvibez.com
+      # Secrets — set these in the Render dashboard (Environment tab):
+      - key: DATABASE_URL          # Neon pooled connection string (?sslmode=require)
+        sync: false
+      - key: JWT_SECRET            # any long random string
+        sync: false
+      - key: FIELD_ENCRYPTION_KEY  # exactly 32 characters
+        sync: false
+      # Optional integrations — the API runs fine without them; add later:
+      #   ANTHROPIC_API_KEY, WHATSAPP_*, EMAIL_PROVIDER_KEY, FCM_*,
+      #   PAYMENT_GATEWAY_*, FLIGHT_API_KEY, FOREX_API_KEY,
+      #   OBJECT_STORAGE_* (uploads fall back to ephemeral local disk),
+      #   PUBLIC_LEAD_API_KEY, REDIS_URL (re-enables background jobs)
